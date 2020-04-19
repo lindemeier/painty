@@ -21,8 +21,8 @@ using vec4 = vec<double, 4U>;
  * @param b
  * @return T
  */
-template <class T, size_t N, template <class, size_t> class Vec>
-T dot(const Vec<T, N>& a, const Vec<T, N>& b)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+T dot(const vec<T, N>& a, const vec<T, N>& b)
 {
   T d = static_cast<T>(0.0);
 
@@ -40,8 +40,8 @@ T dot(const Vec<T, N>& a, const Vec<T, N>& b)
  * @param b
  * @return T
  */
-template <class T, size_t N, template <class, size_t> class Vec>
-T operator*(const Vec<T, N>& a, const Vec<T, N>& b)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+T operator*(const vec<T, N>& a, const vec<T, N>& b)
 {
   return dot(a, b);
 }
@@ -53,10 +53,10 @@ T operator*(const Vec<T, N>& a, const Vec<T, N>& b)
  * @param b
  * @return T
  */
-template <class T, size_t N, template <class, size_t> class Vec>
-Vec<T, N> operator*(const T a, const Vec<T, N>& b)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+vec<T, N> operator*(const T a, const vec<T, N>& b)
 {
-  Vec<T, N> p = b;
+  vec<T, N> p = b;
   for (auto& v : p)
   {
     v *= a;
@@ -71,16 +71,16 @@ Vec<T, N> operator*(const T a, const Vec<T, N>& b)
  * @param b
  * @return T
  */
-template <class T, size_t N, template <class, size_t> class Vec>
-Vec<T, N> operator*(const Vec<T, N>& b, const T a)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+vec<T, N> operator*(const vec<T, N>& b, const T a)
 {
   return a * b;
 }
 
-template <class T, size_t N, template <class, size_t> class Vec>
-Vec<T, N> operator+(const Vec<T, N>& a, const Vec<T, N>& b)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+vec<T, N> operator+(const vec<T, N>& a, const vec<T, N>& b)
 {
-  Vec<T, N> d = a;
+  vec<T, N> d = a;
 
   for (size_t i = 0U; i < N; i++)
   {
@@ -89,10 +89,10 @@ Vec<T, N> operator+(const Vec<T, N>& a, const Vec<T, N>& b)
   return d;
 }
 
-template <class T, size_t N, template <class, size_t> class Vec>
-Vec<T, N> operator+(const Vec<T, N>& a, const T b)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+vec<T, N> operator+(const vec<T, N>& a, const T b)
 {
-  Vec<T, N> d = a;
+  vec<T, N> d = a;
 
   for (size_t i = 0U; i < N; i++)
   {
@@ -101,16 +101,16 @@ Vec<T, N> operator+(const Vec<T, N>& a, const T b)
   return d;
 }
 
-template <class T, size_t N, template <class, size_t> class Vec>
-Vec<T, N> operator+(const T b, const Vec<T, N> a)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+vec<T, N> operator+(const T b, const vec<T, N> a)
 {
   return a + b;
 }
 
-template <class T, size_t N, template <class, size_t> class Vec>
-Vec<T, N> operator-(const Vec<T, N>& a, const Vec<T, N>& b)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+vec<T, N> operator-(const vec<T, N>& a, const vec<T, N>& b)
 {
-  Vec<T, N> d = a;
+  vec<T, N> d = a;
 
   for (size_t i = 0U; i < N; i++)
   {
@@ -119,10 +119,10 @@ Vec<T, N> operator-(const Vec<T, N>& a, const Vec<T, N>& b)
   return d;
 }
 
-template <class T, size_t N, template <class, size_t> class Vec>
-Vec<T, N> operator-(const Vec<T, N>& a, const T b)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+vec<T, N> operator-(const vec<T, N>& a, const T b)
 {
-  Vec<T, N> d = a;
+  vec<T, N> d = a;
 
   for (size_t i = 0U; i < N; i++)
   {
@@ -131,8 +131,8 @@ Vec<T, N> operator-(const Vec<T, N>& a, const T b)
   return d;
 }
 
-template <class T, size_t N, template <class, size_t> class Vec>
-Vec<T, N> operator-(const T b, const Vec<T, N> a)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+vec<T, N> operator-(const T b, const vec<T, N> a)
 {
   return a - b;
 }
@@ -143,8 +143,8 @@ Vec<T, N> operator-(const T b, const Vec<T, N> a)
  * @param v
  * @return T
  */
-template <class T, size_t N, template <class, size_t> class Vec>
-T normSq(const Vec<T, N>& v)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+T normSq(const vec<T, N>& v)
 {
   return v * v;
 }
@@ -155,8 +155,8 @@ T normSq(const Vec<T, N>& v)
  * @param v
  * @return T
  */
-template <class T, size_t N, template <class, size_t> class Vec>
-T norm(const Vec<T, N>& v)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+T norm(const vec<T, N>& v)
 {
   return std::sqrt(v * v);
 }
@@ -167,14 +167,14 @@ T norm(const Vec<T, N>& v)
  * @param v
  * @return T the normalized vector.
  */
-template <class T, size_t N, template <class, size_t> class Vec>
-T normalized(const Vec<T, N>& v)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+T normalized(const vec<T, N>& v)
 {
   return std::sqrt(v * v);
 }
 
-template <class T, size_t N, template <class, size_t> class Vec>
-std::ostream& operator<<(std::ostream& os, const Vec<T, N> a)
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+std::ostream& operator<<(std::ostream& os, const vec<T, N> a)
 {
   os << "(";
   for (size_t i = 0U; i < N - 1U; i++)
