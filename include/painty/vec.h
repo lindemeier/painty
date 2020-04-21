@@ -4,6 +4,8 @@
 #include <cmath>
 #include <ostream>
 
+#include <painty/types.h>
+
 namespace painty
 {
 template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>

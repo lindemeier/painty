@@ -3,5 +3,6 @@
 
 #include "types.h"
 #include "vec.h"
+#include "mat.h"
 
 #endif  // PAINTY_H
