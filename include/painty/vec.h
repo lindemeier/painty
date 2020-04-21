@@ -77,6 +77,13 @@ vec<T, N> operator*(const vec<T, N>& b, const T a)
   return a * b;
 }
 
+/**
+ * @brief Add vectors component wise.
+ *
+ * @param a
+ * @param b
+ * @return T
+ */
 template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
 vec<T, N> operator+(const vec<T, N>& a, const vec<T, N>& b)
 {
@@ -89,6 +96,13 @@ vec<T, N> operator+(const vec<T, N>& a, const vec<T, N>& b)
   return d;
 }
 
+/**
+ * @brief Add a scalar to a vector component wise.
+ *
+ * @param a
+ * @param b
+ * @return T
+ */
 template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
 vec<T, N> operator+(const vec<T, N>& a, const T b)
 {
@@ -101,12 +115,13 @@ vec<T, N> operator+(const vec<T, N>& a, const T b)
   return d;
 }
 
-template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
-vec<T, N> operator+(const T b, const vec<T, N> a)
-{
-  return a + b;
-}
-
+/**
+ * @brief Subtract a scalar from a vector component wise.
+ *
+ * @param a
+ * @param b
+ * @return T
+ */
 template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
 vec<T, N> operator-(const vec<T, N>& a, const vec<T, N>& b)
 {
@@ -119,6 +134,13 @@ vec<T, N> operator-(const vec<T, N>& a, const vec<T, N>& b)
   return d;
 }
 
+/**
+ * @brief Subtract a scalar from a vector component wise.
+ *
+ * @param a
+ * @param b
+ * @return T
+ */
 template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
 vec<T, N> operator-(const vec<T, N>& a, const T b)
 {
@@ -129,12 +151,6 @@ vec<T, N> operator-(const vec<T, N>& a, const T b)
     d[i] -= b;
   }
   return d;
-}
-
-template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
-vec<T, N> operator-(const T b, const vec<T, N> a)
-{
-  return a - b;
 }
 
 /**

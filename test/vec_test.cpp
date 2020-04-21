@@ -38,5 +38,10 @@ TEST(VecTest, Operators)
   EXPECT_NEAR(2.0, (v - v2)[0], 0.0001);
   EXPECT_NEAR(2.0, (v + v2)[1], 0.0001);
 
+  EXPECT_NEAR(1.5, (v - 2.5)[0], 0.0001);
+  EXPECT_NEAR(-1.5, (v - 2.5)[1], 0.0001);
+  EXPECT_NEAR(5.5, (v + 1.5)[0], 0.0001);
+  EXPECT_NEAR(2.5, (v + 1.5)[1], 0.0001);
+
   std::cout << v2;
 }
