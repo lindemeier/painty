@@ -1,7 +1,17 @@
+/**
+ * @file mat.h
+ * @author thomas lindemeier
+ *
+ * @brief
+ *
+ * @date 2020-04-22
+ *
+ */
 #ifndef PAINTY_MAT_H
 #define PAINTY_MAT_H
 
 #include <memory>
+#include <vector>
 
 namespace painty
 {

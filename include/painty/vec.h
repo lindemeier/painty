@@ -1,3 +1,12 @@
+/**
+ * @file vec.h
+ * @author thomas lindemeier
+ *
+ * @brief
+ *
+ * @date 2020-04-22
+ *
+ */
 #ifndef PAINTY_VEC_H
 #define PAINTY_VEC_H
 
