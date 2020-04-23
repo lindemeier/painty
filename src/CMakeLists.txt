@@ -5,6 +5,8 @@ project(painty)
 # image io
 find_package(PNG REQUIRED)
 
+set (ColorConverter_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/3rdParty/ColorConverter/include)
+
 add_library(${PROJECT_NAME} STATIC
     image_io.cpp
 )
@@ -17,6 +19,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include/>
     PUBLIC $<INSTALL_INTERFACE:include/>
     PUBLIC $<BUILD_INTERFACE:${PNG_INCLUDE_DIR}>
+    PRIVATE ${ColorConverter_INCLUDE_DIR}
 )
 
 target_link_libraries(${PROJECT_NAME}

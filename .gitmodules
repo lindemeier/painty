@@ -1,0 +1,3 @@
+[submodule "3rdParty/ColorConverter"]
+	path = 3rdParty/ColorConverter
+	url = git@github.com:lindemeier/ColorConverter.git
