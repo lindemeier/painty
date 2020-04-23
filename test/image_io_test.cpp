@@ -22,9 +22,8 @@ TEST(ImageIoTest, ReadWriteRGB)
     for (uint32_t j = 0; j < linear_rgb.getCols(); j++)
     {
       const double p = j / static_cast<double>(linear_rgb.getCols() - 1U);
-      const double a = std::floor(static_cast<uint32_t>(p * steps));
-      const auto v = a / steps;
-      linear_rgb(i, j) = { v, v, v };
+
+      linear_rgb(i, j) = { p, p, p };
     }
   }
   painty::io::imSave("linear_rgb.png", linear_rgb);
@@ -56,10 +55,7 @@ TEST(ImageIoTest, ReadWriteSingle)
   {
     for (uint32_t j = 0; j < luminance.getCols(); j++)
     {
-      const double p = j / static_cast<double>(luminance.getCols() - 1U);
-      const double a = std::floor(static_cast<uint32_t>(p * steps));
-      const auto v = a / steps;
-      luminance(i, j) = v;
+      luminance(i, j) = j / static_cast<double>(luminance.getCols() - 1U);
     }
   }
   painty::io::imSave("luminance.png", luminance);
