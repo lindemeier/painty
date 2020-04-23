@@ -21,8 +21,5 @@ TEST(ImageIoTest, Read)
   std::cout << srgb.getCols() << " " << srgb.getRows() << std::endl;
 
   const auto& data = srgb.getData();
-  for (uint32_t i = 0U; i < data.size(); i += 1000)
-  {
-    std::cout << data[i] << std::endl;
-  }
+  std::cout << data[111111] << std::endl;
 }

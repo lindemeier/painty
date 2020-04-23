@@ -17,7 +17,7 @@ namespace painty
 {
 namespace io
 {
-void imRead(const std::string& filename, Mat<vec3>& srgb);
+void imRead(const std::string& filename, Mat<vec3>& linear_rgb);
 
 void imRead(const std::string& filename, Mat<double>& gray);
 
