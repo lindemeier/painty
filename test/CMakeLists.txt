@@ -9,8 +9,9 @@ include_directories(${GTEST_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}
   main.cpp
-  vec_test.cpp
   mat_test.cpp
+  image_io_test.cpp
+  vec_test.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

@@ -53,6 +53,16 @@ public:
     return (*_data_ptr)[one_d(i, j)];
   }
 
+  const std::vector<T>& getData() const
+  {
+    return *_data_ptr;
+  }
+
+  std::vector<T>& getData()
+  {
+    return *_data_ptr;
+  }
+
   /**
    * @brief Deep copy.
    *
@@ -74,7 +84,7 @@ private:
   uint32_t _rows = 0U;
   uint32_t _cols = 0U;
 
-  std::shared_ptr<std::vector<T>> _data_ptr;
+  std::shared_ptr<std::vector<T>> _data_ptr = nullptr;
 };
 
 }  // namespace painty

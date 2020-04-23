@@ -17,13 +17,13 @@ namespace painty
 {
 namespace io
 {
-bool imRead(const std::string& filename, Mat<vec3>& srgb);
+void imRead(const std::string& filename, Mat<vec3>& srgb);
 
-bool imRead(const std::string& filename, Mat<double>& gray);
+void imRead(const std::string& filename, Mat<double>& gray);
 
-bool imSave(const std::string& filename, const Mat<vec3>& srgb);
+void imSave(const std::string& filename, const Mat<vec3>& srgb);
 
-bool imSave(const std::string& filename, const Mat<double>& gray);
+void imSave(const std::string& filename, const Mat<double>& gray);
 }  // namespace io
 
 }  // namespace painty
