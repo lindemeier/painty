@@ -32,3 +32,5 @@
 *.app
 
 build/*
+linear_rgb.png
+luminance.png
