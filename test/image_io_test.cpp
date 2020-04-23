@@ -12,14 +12,13 @@
 
 #include <painty/painty.h>
 
-TEST(ImageIoTest, Read)
+TEST(ImageIoTest, ReadWrite)
 {
-  painty::Mat<painty::vec3> srgb;
+  painty::Mat<painty::vec3> linear_rgb;
 
-  painty::io::imRead("/home/tsl/Pictures/140467.png", srgb);
+  painty::io::imRead("/home/tsl/Pictures/140467.png", linear_rgb);
 
-  std::cout << srgb.getCols() << " " << srgb.getRows() << std::endl;
+  std::cout << linear_rgb.getCols() << " " << linear_rgb.getRows() << std::endl;
 
-  const auto& data = srgb.getData();
-  std::cout << data[111111] << std::endl;
+  painty::io::imSave("/home/tsl/Pictures/linear_rgb.png", linear_rgb);
 }

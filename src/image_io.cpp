@@ -5,7 +5,7 @@
 
 #include <png.h>
 
-void painty::io::imRead(const std::string& filename, Mat<vec3>& linear_rgb)
+bool painty::io::imRead(const std::string& filename, Mat<vec3>& linear_rgb)
 {
   png_image png_image; /* The control structure used by libpng */
                        /* Initialize the 'png_image' structure. */
@@ -13,6 +13,8 @@ void painty::io::imRead(const std::string& filename, Mat<vec3>& linear_rgb)
   png_image.version = PNG_IMAGE_VERSION;
 
   linear_rgb = Mat<vec3>();
+
+  auto success = false;
 
   if (png_image_begin_read_from_file(&png_image, filename.c_str()) != 0)
   {
@@ -33,12 +35,13 @@ void painty::io::imRead(const std::string& filename, Mat<vec3>& linear_rgb)
       auto& data = linear_rgb.getData();
       for (auto i = 0U; i < data.size(); i++)
       {
-        auto px = reinterpret_cast<png_uint_16p>(&(buffer[i * 3U * 2U]));
+        auto px_ptr = reinterpret_cast<png_uint_16p>(&(buffer[i * 3U * 2U]));
 
-        data[i][0] = static_cast<double>(px[0]) * scale;
-        data[i][1] = static_cast<double>(px[1]) * scale;
-        data[i][2] = static_cast<double>(px[2]) * scale;
+        data[i][0] = static_cast<double>(px_ptr[0]) * scale;
+        data[i][1] = static_cast<double>(px_ptr[1]) * scale;
+        data[i][2] = static_cast<double>(px_ptr[2]) * scale;
       }
+      success = true;
     }
 
     png_image_free(&png_image);
@@ -47,16 +50,46 @@ void painty::io::imRead(const std::string& filename, Mat<vec3>& linear_rgb)
       free(buffer);
     }
   }
+  return success;
 }
 
-void painty::io::imRead(const std::string& filename, Mat<double>& gray)
+bool painty::io::imRead(const std::string& filename, Mat<double>& gray)
 {
 }
 
-void painty::io::imSave(const std::string& filename, const Mat<vec3>& srgb)
+bool painty::io::imSave(const std::string& filename, const Mat<vec3>& linear_rgb)
 {
+  auto success = false;
+
+  png_image png_image;
+  memset(&png_image, 0, sizeof(png_image));
+  png_image.version = PNG_IMAGE_VERSION;
+
+  png_image.width = linear_rgb.getCols();
+  png_image.height = linear_rgb.getRows();
+  png_image.format = PNG_FORMAT_LINEAR_RGB;
+
+  const auto clamp = [](const double a, const double minv, const double maxv) {
+    return std::min(maxv, std::max(minv, a));
+  };
+
+  const auto& image_data = linear_rgb.getData();
+  std::vector<png_uint_16> bit16_data(image_data.size() * 3U);
+  constexpr auto scale = static_cast<double>(0xFFFF);
+  for (auto i = 0U; i < image_data.size(); i++)
+  {
+    auto px_ptr = reinterpret_cast<png_uint_16p>(&(bit16_data[i * 3U]));
+
+    px_ptr[0] = static_cast<png_uint_16>(clamp(image_data[i][0] * scale, 0U, 0xFFFF));
+    px_ptr[1] = static_cast<png_uint_16>(clamp(image_data[i][1] * scale, 0U, 0xFFFF));
+    px_ptr[2] = static_cast<png_uint_16>(clamp(image_data[i][2] * scale, 0U, 0xFFFF));
+  }
+
+  success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit16_data.data(), 0, NULL);
+
+  return success;
 }
 
-void painty::io::imSave(const std::string& filename, const Mat<double>& gray)
+bool painty::io::imSave(const std::string& filename, const Mat<double>& gray)
 {
 }
