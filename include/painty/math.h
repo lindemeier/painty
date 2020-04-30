@@ -10,19 +10,70 @@
 #ifndef PAINTY_MATH_H
 #define PAINTY_MATH_H
 
-// #include <vector>
+#include <cmath>
+#include <type_traits>
+#include <vector>
 
 #include <painty/vec.h>
 
 namespace painty
 {
-// https://www.in.tu-clausthal.de/fileadmin/homes/techreports/ifi0505hormann.pdf
-// Generalized barycentric coordinates for arbitrary polygons
+/**
+ * @brief Fuzzy comparison of floating points.
+ *
+ * @tparam Float the floating point type.
+ * @param[in] firstValue first value for comparison.
+ * @param[in] secondValue second value for comparison.
+ * @param[in] epsilon the fuzzyiness of the comparison.
+ * @return if the given values are fuzzy equal.
+ */
+template <typename Float>
+typename std::enable_if<std::is_floating_point<Float>::value, bool>::type fuzzyEqual(const Float firstValue,
+                                                                                     const Float secondValue,
+                                                                                     const Float epsilon)
+{
+  return std::fabs(firstValue - secondValue) < epsilon;
+}
+
+/**
+ * @brief Fuzzy comparison of floating points.
+ *
+ * @tparam Float the floating point type.
+ * @param[in] firstValue first value for comparison.
+ * @param[in] secondValue second value for comparison.
+ * @param[in] epsilon the fuzzyiness of the comparison.
+ * @return if the given values are fuzzy equal.
+ */
+template <typename Float, size_t N>
+typename std::enable_if<std::is_floating_point<Float>::value, bool>::type
+fuzzyEqual(const std::array<Float, N>& firstValue, const std::array<Float, N>& secondValue, const Float epsilon)
+{
+  auto equal = true;
+  for (size_t i = 0U; ((i < N) && equal); i++)
+  {
+    equal = fuzzyEqual<Float>(firstValue[i], secondValue[i], epsilon);
+  }
+  return equal;
+}
+
+/**
+ * @brief https://www.in.tu-clausthal.de/fileadmin/homes/techreports/ifi0505hormann.pdf Generalized barycentric
+ * coordinates for arbitrary polygons
+ *
+ * @tparam Value
+ * @param polygon list of 2d points in clock or anticlock wise order
+ * @param position the 2d position to interpolate a values
+ * @param values the list of values along the polygon
+ *
+ * @return Value the interpolated value at v
+ */
 template <class Value>
-Value generalized_barycentric_coordinates_interpolate(const std::vector<vec2>& polygon, const vec2& v,
+Value generalized_barycentric_coordinates_interpolate(const std::vector<vec2>& polygon, const vec2& position,
                                                       const std::vector<Value>& values)
 {
   const auto n = polygon.size();
+
+  constexpr auto Eps = std::numeric_limits<double>::epsilon() * 100.0;
 
   if (polygon.empty() || values.empty())
   {
@@ -42,7 +93,7 @@ Value generalized_barycentric_coordinates_interpolate(const std::vector<vec2>& p
   std::vector<vec2> s(n);
   for (size_t i = 0U; i < n; ++i)
   {
-    s[i] = polygon[i] - v;
+    s[i] = polygon[i] - position;
   }
   std::vector<double> r(n);
   std::vector<double> A(n);
@@ -54,7 +105,7 @@ Value generalized_barycentric_coordinates_interpolate(const std::vector<vec2>& p
 
     r[i] = norm(si);
 
-    if (r[i] == 0.)
+    if (fuzzyEqual(r[i], 0.0, Eps))
     {
       return *(valuesBegin + i);
     }
@@ -67,7 +118,7 @@ Value generalized_barycentric_coordinates_interpolate(const std::vector<vec2>& p
     A[i] = det / 2.0;
     D[i] = dot(si, si1);
 
-    if (A[i] == 0.0 && D[i] < 0.0)
+    if (fuzzyEqual(A[i], 0.0, Eps) && D[i] < 0.0)
     {
       double& ri1 = (i == n - 1) ? r[0] : r[i + 1];
       Value fi1 = (i == n - 1) ? values.front() : values[i + 1];
@@ -100,7 +151,14 @@ Value generalized_barycentric_coordinates_interpolate(const std::vector<vec2>& p
     f = f + w * values[i];
     W = W + w;
   }
-  return f / W;
+  if (!fuzzyEqual(W, 0.0, Eps))
+  {
+    return f / W;
+  }
+  else
+  {
+    return values.front();
+  }
 }
 }  // namespace painty
 

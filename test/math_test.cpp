@@ -50,3 +50,16 @@ TEST(MathTest, GeneralizedBarycentricCoordinatesInterpolate)
     EXPECT_NEAR(interpolated_color_at_position, 0.0, 0.000001);
   }
 }
+
+TEST(MathTest, FuzzyEqual)
+{
+  EXPECT_TRUE(painty::fuzzyEqual(0.0, 0.0, 0.0001));
+  EXPECT_TRUE(painty::fuzzyEqual(0.0, 0.0001, 0.0002));
+  EXPECT_FALSE(painty::fuzzyEqual(0.0, 0.0002, 0.0001));
+  EXPECT_FALSE(painty::fuzzyEqual(192391223.123123123, 192391223.123123123 - 0.001, 0.0001));
+  EXPECT_TRUE(painty::fuzzyEqual(192391223.123123123, 192391223.123123123 - 0.0001, 0.001));
+
+  std::array<double, 2UL> a = { 0.0, 0.0 };
+  std::array<double, 2UL> b = { 0.1, 0.8 };
+  EXPECT_TRUE(painty::fuzzyEqual(a, b, 1.0));
+}
