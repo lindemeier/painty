@@ -10,6 +10,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME}
   main.cpp
   mat_test.cpp
+  math_test.cpp
   image_io_test.cpp
   vec_test.cpp
 )
