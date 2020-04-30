@@ -25,6 +25,7 @@ bool painty::io::imRead(const std::string& filename, Mat<vec3>& linear_rgb)
     // PNG_FORMAT_FLAG_LINEAR | PNG_FORMAT_FLAG_COLOR
     // 3 channel 16bit depth
     png_image.format = PNG_FORMAT_LINEAR_RGB;
+    png_image.flags = PNG_IMAGE_FLAG_COLORSPACE_NOT_sRGB;
 
     buffer = static_cast<png_bytep>(std::malloc(PNG_IMAGE_SIZE(png_image)));
 
@@ -57,8 +58,8 @@ bool painty::io::imRead(const std::string& filename, Mat<vec3>& linear_rgb)
 
 bool painty::io::imRead(const std::string& filename, Mat<double>& gray)
 {
-  png_image png_image; /* The control structure used by libpng */
-                       /* Initialize the 'png_image' structure. */
+  png_image png_image;
+
   std::memset(&png_image, 0, (sizeof png_image));
   png_image.version = PNG_IMAGE_VERSION;
 
@@ -72,6 +73,7 @@ bool painty::io::imRead(const std::string& filename, Mat<double>& gray)
 
     // 1 channel 16bit depth
     png_image.format = PNG_FORMAT_LINEAR_Y;
+    png_image.flags = PNG_IMAGE_FLAG_COLORSPACE_NOT_sRGB;
 
     buffer = static_cast<png_bytep>(std::malloc(PNG_IMAGE_SIZE(png_image)));
 
@@ -100,7 +102,7 @@ bool painty::io::imRead(const std::string& filename, Mat<double>& gray)
   return success;
 }
 
-bool painty::io::imSave(const std::string& filename, const Mat<vec3>& linear_rgb)
+bool painty::io::imSave(const std::string& filename, const Mat<vec3>& linear_rgb, const ChannelDepth bit_depth)
 {
   auto success = false;
 
@@ -110,26 +112,47 @@ bool painty::io::imSave(const std::string& filename, const Mat<vec3>& linear_rgb
 
   png_image.width = linear_rgb.getCols();
   png_image.height = linear_rgb.getRows();
-  png_image.format = PNG_FORMAT_LINEAR_RGB;
+  png_image.format = (bit_depth == ChannelDepth::BITS_16) ? PNG_FORMAT_LINEAR_RGB : PNG_FORMAT_RGB;
+  png_image.flags = PNG_IMAGE_FLAG_COLORSPACE_NOT_sRGB;
 
   const auto& image_data = linear_rgb.getData();
-  std::vector<png_uint_16> bit16_data(image_data.size() * 3U);
-  constexpr auto scale = static_cast<double>(0xFFFF);
-  for (auto i = 0U; i < image_data.size(); i++)
+
+  if (bit_depth == ChannelDepth::BITS_16)
   {
-    auto px_ptr = reinterpret_cast<png_uint_16p>(&(bit16_data[i * 3U]));
+    std::vector<png_uint_16> bit16_data(image_data.size() * 3U);
+    constexpr auto scale = static_cast<double>(0xFFFF);
+    for (auto i = 0U; i < image_data.size(); i++)
+    {
+      auto px_ptr = reinterpret_cast<png_uint_16p>(&(bit16_data[i * 3U]));
 
-    px_ptr[0] = static_cast<png_uint_16>(std::clamp(image_data[i][0] * scale, 0.0, scale));
-    px_ptr[1] = static_cast<png_uint_16>(std::clamp(image_data[i][1] * scale, 0.0, scale));
-    px_ptr[2] = static_cast<png_uint_16>(std::clamp(image_data[i][2] * scale, 0.0, scale));
+      px_ptr[0] = static_cast<png_uint_16>(std::clamp(image_data[i][0] * scale, 0.0, scale));
+      px_ptr[1] = static_cast<png_uint_16>(std::clamp(image_data[i][1] * scale, 0.0, scale));
+      px_ptr[2] = static_cast<png_uint_16>(std::clamp(image_data[i][2] * scale, 0.0, scale));
+    }
+
+    success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit16_data.data(), 0, NULL);
   }
+  else
+  {
+    throw std::runtime_error("8bit saving currently not supported");
 
-  success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit16_data.data(), 0, NULL);
+    std::vector<png_byte> bit8_data(image_data.size() * 3U);
+    constexpr auto scale = static_cast<double>(0xFF);
+    for (auto i = 0U; i < image_data.size(); i++)
+    {
+      auto px_ptr = reinterpret_cast<png_bytep>(&(bit8_data[i * 3U]));
+
+      px_ptr[0] = static_cast<png_byte>(std::clamp(image_data[i][0] * scale, 0.0, scale));
+      px_ptr[1] = static_cast<png_byte>(std::clamp(image_data[i][1] * scale, 0.0, scale));
+      px_ptr[2] = static_cast<png_byte>(std::clamp(image_data[i][2] * scale, 0.0, scale));
+    }
+    success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit8_data.data(), 0, NULL);
+  }
 
   return success;
 }
 
-bool painty::io::imSave(const std::string& filename, const Mat<double>& gray)
+bool painty::io::imSave(const std::string& filename, const Mat<double>& gray, const ChannelDepth bit_depth)
 {
   auto success = false;
 
@@ -139,19 +162,32 @@ bool painty::io::imSave(const std::string& filename, const Mat<double>& gray)
 
   png_image.width = gray.getCols();
   png_image.height = gray.getRows();
-  png_image.format = PNG_FORMAT_LINEAR_Y;
+  png_image.format = (bit_depth == ChannelDepth::BITS_16) ? PNG_FORMAT_LINEAR_Y : PNG_FORMAT_GRAY;
+  png_image.flags = PNG_IMAGE_FLAG_COLORSPACE_NOT_sRGB;
 
   const auto& image_data = gray.getData();
-  std::vector<png_uint_16> bit16_data(image_data.size());
-  constexpr auto scale = static_cast<double>(0xFFFF);
-  for (auto i = 0U; i < image_data.size(); i++)
+  if (bit_depth == ChannelDepth::BITS_16)
   {
-    auto px_ptr = reinterpret_cast<png_uint_16p>(&(bit16_data[i]));
-
-    px_ptr[0] = static_cast<png_uint_16>(std::clamp(image_data[i] * scale, 0.0, scale));
+    std::vector<png_uint_16> bit16_data(image_data.size());
+    constexpr auto scale = static_cast<double>(0xFFFF);
+    for (auto i = 0U; i < image_data.size(); i++)
+    {
+      auto px_ptr = reinterpret_cast<png_uint_16p>(&(bit16_data[i]));
+      px_ptr[0] = static_cast<png_uint_16>(std::clamp(image_data[i] * scale, 0.0, scale));
+    }
+    success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit16_data.data(), 0, NULL);
   }
-
-  success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit16_data.data(), 0, NULL);
+  else
+  {
+    std::vector<png_byte> bit8_data(image_data.size());
+    constexpr auto scale = static_cast<double>(0xFF);
+    for (auto i = 0U; i < image_data.size(); i++)
+    {
+      auto px_ptr = reinterpret_cast<png_bytep>(&(bit8_data[i]));
+      px_ptr[0] = static_cast<png_byte>(std::clamp(image_data[i] * scale, 0.0, scale));
+    }
+    success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit8_data.data(), 0, NULL);
+  }
 
   return success;
 }
