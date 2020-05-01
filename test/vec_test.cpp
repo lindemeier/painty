@@ -33,6 +33,9 @@ TEST(VecTest, Norm)
 
   EXPECT_NEAR(17.0, painty::normSq(v), 0.0001);
   EXPECT_NEAR(std::sqrt(17.0), painty::norm(v), 0.0001);
+
+  painty::vec<double, 2> v2 = { 2.0, 0.0 };
+  EXPECT_NEAR(1.0, painty::normalized(v2)[0], 0.0001);
 }
 
 TEST(VecTest, Operators)

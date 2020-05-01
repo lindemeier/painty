@@ -13,6 +13,7 @@
 #include <cmath>
 #include <type_traits>
 #include <vector>
+#include <stdexcept>
 
 #include <painty/vec.h>
 
@@ -78,11 +79,11 @@ Value generalizedBarycentricCoordinatesInterpolate(const std::vector<vec2>& poly
 
   if (polygon.empty() || values.empty())
   {
-    return {};
+    throw std::invalid_argument("Polygon is empty");
   }
   else if (polygon.size() != values.size())
   {
-    return {};
+    throw std::invalid_argument("Polygon size differs from values size");
   }
   else if (n == 1U)
   {

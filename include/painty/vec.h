@@ -195,9 +195,21 @@ T norm(const vec<T, N>& v)
  * @return T the normalized vector.
  */
 template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
-T normalized(const vec<T, N>& v)
+vec<T, N> normalized(const vec<T, N>& v)
 {
-  return std::sqrt(v * v);
+  const auto nSq = normSq(v);
+  if (std::fabs(nSq) < (std::numeric_limits<T>::epsilon() * static_cast<T>(100.0)))
+  {
+    return v;
+  }
+  vec<T, N> c = v;
+  const auto scale = static_cast<T>(1.0) / std::sqrt(nSq);
+  for (auto& a : c)
+  {
+    a *= scale;
+  }
+
+  return c;
 }
 
 template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
