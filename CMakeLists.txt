@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.10.2)
 
 project(painty_root)
 
+# nlohmann json
+add_subdirectory(3rdParty/json)
+
 # lib
 add_subdirectory(src)
 

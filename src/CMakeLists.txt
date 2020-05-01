@@ -7,7 +7,9 @@ find_package(PNG REQUIRED)
 
 set (ColorConverter_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/3rdParty/ColorConverter/include)
 
+
 add_library(${PROJECT_NAME} STATIC
+    brush_stroke_sample.cpp
     image_io.cpp
     texture_warp.cpp
 )
@@ -23,6 +25,7 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE ${ColorConverter_INCLUDE_DIR}
 )
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} PRIVATE
     ${PNG_LIBRARY}
+    nlohmann_json::nlohmann_json
 )

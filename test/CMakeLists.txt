@@ -8,6 +8,7 @@ find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}
+  brush_stroke_sample_test.cpp
   main.cpp
   mat_test.cpp
   math_test.cpp

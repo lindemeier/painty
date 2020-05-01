@@ -1,5 +1,5 @@
 /**
- * @file image_io.cpp
+ * @file image_io.h
  * @author thomas lindemeier
  *
  * @brief
