@@ -68,6 +68,19 @@ double painty::BrushStrokeSample::getSampleAt(const vec2& xy) const
   return _thickness_map(xy);
 }
 
+/**
+ * @brief Sample the brush stroke texture at a canvas coordinate uv. The uv is warped implicitly to stroke sample space.
+ * Be sure to warp
+ *
+ * @param uv
+ *
+ * @return double 0.0 if xy outside of texture
+ */
+double painty::BrushStrokeSample::getSampleAtWarped(const vec2& uv) const
+{
+  return getSampleAt(_warper.warp(uv));
+}
+
 void painty::BrushStrokeSample::loadSample(const std::string& sampleDir)
 {
   _txy_l.clear();
@@ -118,5 +131,23 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir)
     }
   }
 
+  // create texture warper from spine
+  {
+    std::vector<vec2> uv;
+    for (auto p : _puv_l)
+    {
+      uv.push_back(p);
+    }
+    uv.insert(uv.end(), _puv_r.rbegin(), _puv_r.rend());
+    std::vector<vec2> t;
+    for (auto p : _txy_l)
+    {
+      t.push_back(p);
+    }
+    t.insert(t.end(), _txy_r.rbegin(), _txy_r.rend());
+    _warper.init(uv, t);
+  }
+
+  // load thickness map
   io::imRead(sampleDir + "/thickness_map.png", _thickness_map);
 }

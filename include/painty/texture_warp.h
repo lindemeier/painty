@@ -19,9 +19,11 @@ namespace painty
 class TextureWarp final
 {
 public:
-  TextureWarp(const std::vector<vec2>& in, const std::vector<vec2>& out);
+  TextureWarp();
 
-  vec2 warp(const vec2& p);
+  void init(const std::vector<vec2>& in, const std::vector<vec2>& out);
+
+  vec2 warp(const vec2& p) const;
 
 private:
   std::vector<vec2> _in;

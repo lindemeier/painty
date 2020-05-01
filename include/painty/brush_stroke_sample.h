@@ -14,6 +14,7 @@
 
 #include <painty/mat.h>
 #include <painty/vec.h>
+#include <painty/texture_warp.h>
 
 namespace painty
 {
@@ -30,6 +31,7 @@ public:
   void setThicknessMap(const Mat<double>& thicknessMap);
 
   double getSampleAt(const vec2& xy) const;
+  double getSampleAtWarped(const vec2& uv) const;
 
   void loadSample(const std::string& sampleDir);
 
@@ -45,6 +47,11 @@ private:
   std::vector<vec2> _puv_l;
   std::vector<vec2> _puv_c;
   std::vector<vec2> _puv_r;
+
+  /**
+   * @brief Warps positions. This is useful it the stroke sample ist not straight but a curved stroke.
+   */
+  TextureWarp _warper;
 };
 
 }  // namespace painty
