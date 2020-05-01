@@ -125,7 +125,7 @@ Value generalizedBarycentricCoordinatesInterpolate(const std::vector<vec2>& poly
       double& ri1 = (i == n - 1) ? r[0] : r[i + 1];
       Value fi1 = (i == n - 1) ? values.front() : values[i + 1];
       ri1 = norm(si1);
-      return (ri1 * values[i] + r[i] * fi1) / (r[i] + ri1);
+      return (ri1 * values[i] + r[i] * fi1) * (1.0 / (r[i] + ri1));
     }
   }
 
@@ -155,7 +155,7 @@ Value generalizedBarycentricCoordinatesInterpolate(const std::vector<vec2>& poly
   }
   if (!fuzzyCompare(W, 0.0, Eps))
   {
-    return f / W;
+    return f * (1.0 / W);
   }
   else
   {

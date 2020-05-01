@@ -10,8 +10,10 @@
 #ifndef PAINTY_VEC_H
 #define PAINTY_VEC_H
 
+#include <array>
 #include <cmath>
 #include <ostream>
+#include <type_traits>
 
 #include <painty/types.h>
 

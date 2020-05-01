@@ -9,6 +9,7 @@ set (ColorConverter_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/3rdParty/ColorConverter/incl
 
 add_library(${PROJECT_NAME} STATIC
     image_io.cpp
+    texture_warp.cpp
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
