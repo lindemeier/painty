@@ -34,3 +34,6 @@
 build/*
 linear_rgb.png
 luminance.png
+hugo.png
+linear_rgb_16.png
+luminance_16.png

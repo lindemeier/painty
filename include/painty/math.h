@@ -22,15 +22,15 @@ namespace painty
  * @brief Fuzzy comparison of floating points.
  *
  * @tparam Float the floating point type.
- * @param[in] firstValue first value for comparison.
- * @param[in] secondValue second value for comparison.
- * @param[in] epsilon the fuzzyiness of the comparison.
+ * @param firstValue first value for comparison.
+ * @param secondValue second value for comparison.
+ * @param epsilon
  * @return if the given values are fuzzy equal.
  */
 template <typename Float>
-typename std::enable_if<std::is_floating_point<Float>::value, bool>::type fuzzyEqual(const Float firstValue,
-                                                                                     const Float secondValue,
-                                                                                     const Float epsilon)
+typename std::enable_if<std::is_floating_point<Float>::value, bool>::type fuzzyCompare(const Float firstValue,
+                                                                                       const Float secondValue,
+                                                                                       const Float epsilon)
 {
   return std::fabs(firstValue - secondValue) < epsilon;
 }
@@ -39,19 +39,20 @@ typename std::enable_if<std::is_floating_point<Float>::value, bool>::type fuzzyE
  * @brief Fuzzy comparison of floating points.
  *
  * @tparam Float the floating point type.
- * @param[in] firstValue first value for comparison.
- * @param[in] secondValue second value for comparison.
- * @param[in] epsilon the fuzzyiness of the comparison.
+ * @param firstValue first value for comparison.
+ * @param secondValue second value for comparison.
+ * @param epsilon
+ *
  * @return if the given values are fuzzy equal.
  */
 template <typename Float, size_t N>
 typename std::enable_if<std::is_floating_point<Float>::value, bool>::type
-fuzzyEqual(const std::array<Float, N>& firstValue, const std::array<Float, N>& secondValue, const Float epsilon)
+fuzzyCompare(const std::array<Float, N>& firstValue, const std::array<Float, N>& secondValue, const Float epsilon)
 {
   auto equal = true;
   for (size_t i = 0U; ((i < N) && equal); i++)
   {
-    equal = fuzzyEqual<Float>(firstValue[i], secondValue[i], epsilon);
+    equal = fuzzyCompare<Float>(firstValue[i], secondValue[i], epsilon);
   }
   return equal;
 }
@@ -68,8 +69,8 @@ fuzzyEqual(const std::array<Float, N>& firstValue, const std::array<Float, N>& s
  * @return Value the interpolated value at v
  */
 template <class Value>
-Value generalized_barycentric_coordinates_interpolate(const std::vector<vec2>& polygon, const vec2& position,
-                                                      const std::vector<Value>& values)
+Value generalizedBarycentricCoordinatesInterpolate(const std::vector<vec2>& polygon, const vec2& position,
+                                                   const std::vector<Value>& values)
 {
   const auto n = polygon.size();
 
@@ -105,7 +106,7 @@ Value generalized_barycentric_coordinates_interpolate(const std::vector<vec2>& p
 
     r[i] = norm(si);
 
-    if (fuzzyEqual(r[i], 0.0, Eps))
+    if (fuzzyCompare(r[i], 0.0, Eps))
     {
       return *(valuesBegin + i);
     }
@@ -118,7 +119,7 @@ Value generalized_barycentric_coordinates_interpolate(const std::vector<vec2>& p
     A[i] = det / 2.0;
     D[i] = dot(si, si1);
 
-    if (fuzzyEqual(A[i], 0.0, Eps) && D[i] < 0.0)
+    if (fuzzyCompare(A[i], 0.0, Eps) && D[i] < 0.0)
     {
       double& ri1 = (i == n - 1) ? r[0] : r[i + 1];
       Value fi1 = (i == n - 1) ? values.front() : values[i + 1];
@@ -151,7 +152,7 @@ Value generalized_barycentric_coordinates_interpolate(const std::vector<vec2>& p
     f = f + w * values[i];
     W = W + w;
   }
-  if (!fuzzyEqual(W, 0.0, Eps))
+  if (!fuzzyCompare(W, 0.0, Eps))
   {
     return f / W;
   }
