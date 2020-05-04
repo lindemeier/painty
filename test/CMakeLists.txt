@@ -13,10 +13,11 @@ project(painty_test)
 
 add_executable(${PROJECT_NAME}
   brush_stroke_sample_test.cpp
+  image_io_test.cpp
   main.cpp
   mat_test.cpp
   math_test.cpp
-  image_io_test.cpp
+  spline_test.cpp
   vec_test.cpp
 )
 
@@ -28,3 +29,9 @@ target_link_libraries(${PROJECT_NAME}
 add_dependencies(${PROJECT_NAME}
   painty
 )
+
+if(MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+else()
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Weverything -Wno-c++98-compat -Wno-padded -Wno-documentation -Werror -Wno-global-constructors)
+endif()

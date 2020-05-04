@@ -16,7 +16,6 @@ TEST(ImageIoTest, ReadWriteRGB)
 {
   painty::Mat<painty::vec3> linear_rgb(256, 1024);
 
-  constexpr auto steps = 20U;
   for (uint32_t i = 0; i < linear_rgb.getRows(); i++)
   {
     for (uint32_t j = 0; j < linear_rgb.getCols(); j++)
@@ -60,7 +59,6 @@ TEST(ImageIoTest, ReadWriteSingle)
 {
   painty::Mat<double> luminance(256, 1024);
 
-  constexpr auto steps = 20U;
   for (uint32_t i = 0; i < luminance.getRows(); i++)
   {
     for (uint32_t j = 0; j < luminance.getCols(); j++)

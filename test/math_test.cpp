@@ -29,8 +29,7 @@ TEST(MathTest, GeneralizedBarycentricCoordinatesInterpolate)
     const painty::vec2 position = { 0.0, 0.0 };
     try
     {
-      const auto interpolated_color_at_position =
-          painty::generalizedBarycentricCoordinatesInterpolate(polygon, position, values);
+      painty::generalizedBarycentricCoordinatesInterpolate(polygon, position, values);
       FAIL() << "Expected std::invalid_argument";
     }
     catch (const std::invalid_argument& err)
@@ -58,8 +57,7 @@ TEST(MathTest, GeneralizedBarycentricCoordinatesInterpolate)
     const painty::vec2 position = { 0.0, 0.0 };
     try
     {
-      const auto interpolated_color_at_position =
-          painty::generalizedBarycentricCoordinatesInterpolate(polygon, position, values);
+      painty::generalizedBarycentricCoordinatesInterpolate(polygon, position, values);
       FAIL() << "Expected std::invalid_argument";
     }
     catch (const std::invalid_argument& err)

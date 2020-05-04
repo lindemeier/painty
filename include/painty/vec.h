@@ -27,6 +27,16 @@ using vec2 = vec<double, 2U>;
 using vec3 = vec<double, 3U>;
 using vec4 = vec<double, 4U>;
 
+template <typename T, size_t N>
+class DataType<vec<T, N> >
+{
+public:
+  using channel_type = T;
+  static constexpr int32_t rows = N;
+  static constexpr int32_t cols = 1;
+  static constexpr int32_t dim = rows * cols;
+};
+
 /**
  * @brief Compute dot product of given vectors.
  *
