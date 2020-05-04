@@ -1,11 +1,15 @@
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.16.0)
+
+# get google test
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        release-1.10.0
+)
+FetchContent_MakeAvailable(googletest)
 
 project(painty_test)
-
-
-# Locate GTest
-find_package(GTest REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME}
   brush_stroke_sample_test.cpp
@@ -16,13 +20,8 @@ add_executable(${PROJECT_NAME}
   vec_test.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC
-  $<BUILD_INTERFACE:${GTEST_INCLUDE_DIRS}>
-)
-
 target_link_libraries(${PROJECT_NAME}
-  ${GTEST_LIBRARIES}
-  pthread
+  gtest
   painty
 )
 
