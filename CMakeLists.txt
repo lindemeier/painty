@@ -9,9 +9,5 @@ if(RUN_TESTS)
     add_subdirectory(test)
 endif()
 
-
-# nlohmann json
-add_subdirectory(3rdParty/json)
-
 # lib
 add_subdirectory(src)

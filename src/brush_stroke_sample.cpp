@@ -11,8 +11,6 @@
 #include <fstream>
 #include <iostream>
 
-#include <nlohmann/json.hpp>
-
 #include <painty/brush_stroke_sample.h>
 #include <painty/image_io.h>
 
@@ -91,45 +89,53 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir)
   _puv_c.clear();
   _puv_r.clear();
 
-  nlohmann::json json;
-  {
-    std::ifstream i(sampleDir + "/spine.json");
-    i >> json;
-    i.close();
-  }
-  {
-    const auto arr_xy = json["txy_l"];
-    const auto arr_uv = json["puv_l"];
+  std::ifstream ifile(sampleDir + "/spine.txt");
 
-    for (auto i = 0U; i < arr_xy.size(); i++)
+  std::string line;
+
+  auto& points = _txy_l;
+  while (std::getline(ifile, line))
+  {
+    if (line == "txy_l")
     {
-      vec2 xy = { arr_xy[i][0].get<double>(), arr_xy[i][1].get<double>() };
-      vec2 uv = { arr_uv[i][0].get<double>(), arr_uv[i][1].get<double>() };
-      addCorr_l(xy, uv);
+      points = _txy_l;
+    }
+    else if (line == "txy_c")
+    {
+      points = _txy_c;
+    }
+    else if (line == "txy_r")
+    {
+      points = _txy_r;
+    }
+    else if (line == "puv_l")
+    {
+      points = _puv_l;
+    }
+    else if (line == "puv_c")
+    {
+      points = _puv_c;
+    }
+    else if (line == "puv_r")
+    {
+      points = _puv_r;
+    }
+    else if (line.empty())
+    {
+      continue;
+    }
+    else
+    {
+      const auto e = line.find_first_of(' ');
+      const auto x_str = line.substr(0U, e);
+      const auto y_str = line.substr(e + 1U, line.size());
+      const auto x = static_cast<double>(std::stod(x_str));
+      const auto y = static_cast<double>(std::stod(y_str));
+
+      points.push_back({ x, y });
     }
   }
-  {
-    const auto arr_xy = json["txy_c"];
-    const auto arr_uv = json["puv_c"];
-
-    for (auto i = 0U; i < arr_xy.size(); i++)
-    {
-      vec2 xy = { arr_xy[i][0].get<double>(), arr_xy[i][1].get<double>() };
-      vec2 uv = { arr_uv[i][0].get<double>(), arr_uv[i][1].get<double>() };
-      addCorr_c(xy, uv);
-    }
-  }
-  {
-    const auto arr_xy = json["txy_r"];
-    const auto arr_uv = json["puv_r"];
-
-    for (auto i = 0U; i < arr_xy.size(); i++)
-    {
-      vec2 xy = { arr_xy[i][0].get<double>(), arr_xy[i][1].get<double>() };
-      vec2 uv = { arr_uv[i][0].get<double>(), arr_uv[i][1].get<double>() };
-      addCorr_r(xy, uv);
-    }
-  }
+  ifile.close();
 
   // create texture warper from spine
   {

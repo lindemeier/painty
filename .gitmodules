@@ -1,6 +1,0 @@
-[submodule "3rdParty/ColorConverter"]
-	path = 3rdParty/ColorConverter
-	url = git@github.com:lindemeier/ColorConverter.git
-[submodule "3rdParty/json"]
-	path = 3rdParty/json
-	url = git@github.com:nlohmann/json.git

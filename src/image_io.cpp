@@ -5,12 +5,11 @@
 #include <string>
 
 #include <png.h>
-#include <ColorConverter/ColorConverter.hxx>
 
 bool painty::io::imRead(const std::string& filename, Mat<vec3>& linear_rgb)
 {
-  png_image png_image; /* The control structure used by libpng */
-                       /* Initialize the 'png_image' structure. */
+  png_image png_image;
+
   std::memset(&png_image, 0, (sizeof png_image));
   png_image.version = PNG_IMAGE_VERSION;
 

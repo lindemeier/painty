@@ -5,9 +5,6 @@ project(painty)
 # image io
 find_package(PNG REQUIRED)
 
-set (ColorConverter_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/3rdParty/ColorConverter/include)
-
-
 add_library(${PROJECT_NAME} STATIC
     brush_stroke_sample.cpp
     image_io.cpp
@@ -27,5 +24,4 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     ${PNG_LIBRARY}
-    nlohmann_json::nlohmann_json
 )
