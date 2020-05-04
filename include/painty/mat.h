@@ -64,8 +64,8 @@ public:
    */
   T operator()(const vec2& position) const
   {
-    const int32_t x = std::floor(position[0]);
-    const int32_t y = std::floor(position[1]);
+    const auto x = static_cast<int32_t>(std::floor(position[0]));
+    const auto y = static_cast<int32_t>(std::floor(position[1]));
 
     const auto x0 = BorderHandle(x, _cols);
     const auto x1 = BorderHandle(x + 1, _cols);
@@ -107,11 +107,11 @@ private:
     return i * _cols + j;
   }
 
-  static uint32_t BorderHandle(int32_t pos, int axisLength)
+  static uint32_t BorderHandle(int32_t pos, uint32_t axisLength)
   {
-    if (pos < axisLength && pos >= 0U)
+    if (pos < static_cast<int32_t>(axisLength) && pos >= 0)
     {
-      return pos;
+      return static_cast<uint32_t>(pos);
     }
 
     if (axisLength == 1U)
@@ -127,11 +127,11 @@ private:
       }
       else
       {
-        pos = axisLength - 1 - (pos - axisLength);
+        pos = static_cast<int32_t>(axisLength) - 1 - (pos - static_cast<int32_t>(axisLength));
       }
-    } while (std::abs(pos) >= std::abs(axisLength));
+    } while (std::abs(pos) >= static_cast<int32_t>(axisLength));
 
-    return pos;
+    return static_cast<uint32_t>(pos);
   }
 
   uint32_t _rows = 0U;

@@ -129,23 +129,23 @@ bool painty::io::imSave(const std::string& filename, const Mat<vec3>& linear_rgb
       px_ptr[2] = static_cast<png_uint_16>(std::clamp(image_data[i][2] * scale, 0.0, scale));
     }
 
-    success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit16_data.data(), 0, NULL);
+    success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit16_data.data(), 0, nullptr);
   }
   else
   {
     throw std::runtime_error("8bit saving currently not supported");
 
-    std::vector<png_byte> bit8_data(image_data.size() * 3U);
-    constexpr auto scale = static_cast<double>(0xFF);
-    for (auto i = 0U; i < image_data.size(); i++)
-    {
-      auto px_ptr = reinterpret_cast<png_bytep>(&(bit8_data[i * 3U]));
+    // std::vector<png_byte> bit8_data(image_data.size() * 3U);
+    // constexpr auto scale = static_cast<double>(0xFF);
+    // for (auto i = 0U; i < image_data.size(); i++)
+    // {
+    //   auto px_ptr = reinterpret_cast<png_bytep>(&(bit8_data[i * 3U]));
 
-      px_ptr[0] = static_cast<png_byte>(std::clamp(image_data[i][0] * scale, 0.0, scale));
-      px_ptr[1] = static_cast<png_byte>(std::clamp(image_data[i][1] * scale, 0.0, scale));
-      px_ptr[2] = static_cast<png_byte>(std::clamp(image_data[i][2] * scale, 0.0, scale));
-    }
-    success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit8_data.data(), 0, NULL);
+    //   px_ptr[0] = static_cast<png_byte>(std::clamp(image_data[i][0] * scale, 0.0, scale));
+    //   px_ptr[1] = static_cast<png_byte>(std::clamp(image_data[i][1] * scale, 0.0, scale));
+    //   px_ptr[2] = static_cast<png_byte>(std::clamp(image_data[i][2] * scale, 0.0, scale));
+    // }
+    // success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit8_data.data(), 0, nullptr);
   }
 
   return success;
@@ -174,7 +174,7 @@ bool painty::io::imSave(const std::string& filename, const Mat<double>& gray, co
       auto px_ptr = reinterpret_cast<png_uint_16p>(&(bit16_data[i]));
       px_ptr[0] = static_cast<png_uint_16>(std::clamp(image_data[i] * scale, 0.0, scale));
     }
-    success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit16_data.data(), 0, NULL);
+    success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit16_data.data(), 0, nullptr);
   }
   else
   {
@@ -185,7 +185,7 @@ bool painty::io::imSave(const std::string& filename, const Mat<double>& gray, co
       auto px_ptr = reinterpret_cast<png_bytep>(&(bit8_data[i]));
       px_ptr[0] = static_cast<png_byte>(std::clamp(image_data[i] * scale, 0.0, scale));
     }
-    success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit8_data.data(), 0, NULL);
+    success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit8_data.data(), 0, nullptr);
   }
 
   return success;

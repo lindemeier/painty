@@ -90,8 +90,6 @@ Value generalizedBarycentricCoordinatesInterpolate(const std::vector<vec2>& poly
     return values.front();
   }
 
-  auto valuesBegin = values.cbegin();
-
   std::vector<vec2> s(n);
   for (size_t i = 0U; i < n; ++i)
   {
@@ -109,7 +107,7 @@ Value generalizedBarycentricCoordinatesInterpolate(const std::vector<vec2>& poly
 
     if (fuzzyCompare(r[i], 0.0, Eps))
     {
-      return *(valuesBegin + i);
+      return values[i];
     }
 
     /*
