@@ -66,13 +66,10 @@ inline T CubicDerivativeFirst(const T& p_1, const T& p0, const T& p1, const T& p
 {
   using Float = typename DataType<T>::channel_type;
 
-  Float t2;
-  T a0, a1, a2;
-
-  t2 = t * t;
-  a0 = p2 - p1 - p_1 + p0;
-  a1 = p_1 - p0 - a0;
-  a2 = p1 - p_1;
+  Float t2 = t * t;
+  T  a0 = p2 - p1 - p_1 + p0;
+  T a1 = p_1 - p0 - a0;
+  T a2 = p1 - p_1;
 
   return static_cast<Float>(3.) * a0 * t2 + static_cast<Float>(2.) * a1 * t + a2;
 }
@@ -83,12 +80,8 @@ inline T CubicDerivativeSecond(const T& p_1, const T& p0, const T& p1, const T& 
 {
   using Float = typename DataType<T>::channel_type;
 
-  Float t2;
-  T a0, a1;
-
-  t2 = t * t;
-  a0 = p2 - p1 - p_1 + p0;
-  a1 = p_1 - p0 - a0;
+  T a0 = p2 - p1 - p_1 + p0;
+  T a1 = p_1 - p0 - a0;
 
   return static_cast<Float>(2.) * (static_cast<Float>(3.) * a0 * t + a1);
 }
