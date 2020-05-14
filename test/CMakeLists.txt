@@ -32,8 +32,14 @@ add_dependencies(${PROJECT_NAME}
   painty
 )
 
-if(MSVC)
-  target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
-else()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # using Clang
   target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Weverything -Wno-c++98-compat -Wno-padded -Wno-documentation -Werror -Wno-global-constructors)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  # using GCC
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Werror)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  # using Visual Studio C++
+  target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
 endif()
