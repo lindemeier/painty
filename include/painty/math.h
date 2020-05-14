@@ -160,6 +160,46 @@ Value generalizedBarycentricCoordinatesInterpolate(const std::vector<vec2>& poly
     return values.front();
   }
 }
+
+/**
+ * @brief Cotangent hyperbolicus
+ *
+ * @tparam Float
+ * @tparam 0
+ * @param x
+ * @return Float
+ */
+template <typename Float, typename std::enable_if_t<std::is_floating_point<Float>::value, int> = 0>
+Float coth(const Float& x)
+{
+  if (x > static_cast<Float>(20.0))
+  {
+    return static_cast<Float>(1.0);
+  }
+  else
+  {
+    if (std::fabs(x) > static_cast<Float>(0.0))
+    {
+      const auto res = std::cosh(x) / std::sinh(x);
+      return std::isnan(res) ? static_cast<Float>(1.0) : res;
+    }
+    else
+    {
+      return std::numeric_limits<Float>::infinity();
+    }
+  }
+}
+
+template <typename Float, size_t N, typename std::enable_if_t<std::is_floating_point<Float>::value, int> = 0>
+vec<Float, N> coth(const vec<Float, N>& x)
+{
+  vec<Float, N> res;
+  for (auto i = 0U; i < N; i++)
+  {
+    res[i] = coth(x[i]);
+  }
+}
+
 }  // namespace painty
 
 #endif  // PAINTY_MATH_H

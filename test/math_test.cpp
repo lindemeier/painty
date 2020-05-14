@@ -83,3 +83,15 @@ TEST(MathTest, fuzzyCompare)
   std::array<double, 2UL> b = { 0.1, 0.8 };
   EXPECT_TRUE(painty::fuzzyCompare(a, b, 1.0));
 }
+
+TEST(MathTest, coth)
+{
+  EXPECT_EQ(painty::coth(0.0), std::numeric_limits<double>::infinity());
+
+  constexpr auto Eps = 0.00001;
+  EXPECT_NEAR(painty::coth(0.176), 5.7403640542091674, Eps);
+  EXPECT_NEAR(painty::coth(0.09742), 10.297285488897547, Eps);
+  EXPECT_NEAR(painty::coth(1263.148), 1.0, Eps);
+  EXPECT_NEAR(painty::coth(18.0), 1.0, Eps);
+
+}
