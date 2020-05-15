@@ -1,5 +1,5 @@
 /**
- * @file mat.h
+ * @file paint_layer.h
  * @author thomas lindemeier
  *
  * @brief
@@ -21,7 +21,7 @@ namespace painty
  * @brief Stores paint and amount cellwise.
  */
 template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
-class PaintLayer
+class PaintLayer final
 {
 public:
   PaintLayer(uint32_t rows, uint32_t cols) : _K_buffer(rows, cols), _S_buffer(rows, cols), _V_buffer(rows, cols)

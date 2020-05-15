@@ -1,5 +1,5 @@
 /**
- * @file math.h
+ * @file kubelka_munk.h
  * @author thomas lindemeier
  *
  * @brief

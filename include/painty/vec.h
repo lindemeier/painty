@@ -57,16 +57,22 @@ T dot(const vec<T, N>& a, const vec<T, N>& b)
 }
 
 /**
- * @brief Compute dot product of given vectors.
+ * @brief Compute elementwise product of given vectors.
  *
  * @param a
  * @param b
  * @return T
  */
 template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
-T operator*(const vec<T, N>& a, const vec<T, N>& b)
+const vec<T, N> operator*(const vec<T, N>& a, const vec<T, N>& b)
 {
-  return dot(a, b);
+  vec<T, N> d = a;
+
+  for (size_t i = 0U; i < N; i++)
+  {
+    d[i] *= b[i];
+  }
+  return d;
 }
 
 /**
@@ -98,6 +104,44 @@ template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>
 vec<T, N> operator*(const vec<T, N>& b, const T a)
 {
   return a * b;
+}
+
+/**
+ * @brief Divide the vector by a scalar component wise.
+ *
+ * @param a
+ * @param b
+ * @return T
+ */
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+vec<T, N> operator/(const vec<T, N>& b, const T a)
+{
+  vec<T, N> d = b;
+
+  for (size_t i = 0U; i < N; i++)
+  {
+    d[i] /= a;
+  }
+  return d;
+}
+
+/**
+ * @brief Divide the vector by a scalar component wise.
+ *
+ * @param a
+ * @param b
+ * @return T
+ */
+template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+vec<T, N> operator/(const T a, const vec<T, N>& b)
+{
+  vec<T, N> d = b;
+
+  for (size_t i = 0U; i < N; i++)
+  {
+    d[i] /= a;
+  }
+  return d;
 }
 
 /**
@@ -185,7 +229,7 @@ vec<T, N> operator-(const vec<T, N>& a, const T b)
 template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
 T normSq(const vec<T, N>& v)
 {
-  return v * v;
+  return dot(v, v);
 }
 
 /**
@@ -197,7 +241,7 @@ T normSq(const vec<T, N>& v)
 template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
 T norm(const vec<T, N>& v)
 {
-  return std::sqrt(v * v);
+  return std::sqrt(normSq(v));
 }
 
 /**

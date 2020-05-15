@@ -94,7 +94,7 @@ public:
    *
    * @return Mat<T>
    */
-  Mat<T> clone()
+  Mat<T> clone() const
   {
     Mat<T> c(_rows, _cols);
     std::copy(_data_ptr->cbegin(), _data_ptr->cend(), c._data_ptr->begin());

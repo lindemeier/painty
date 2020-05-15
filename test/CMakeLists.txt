@@ -13,6 +13,7 @@ project(painty_test)
 
 add_executable(${PROJECT_NAME}
   brush_stroke_sample_test.cpp
+  canvas_test.cpp
   kubelka_munk_test.cpp
   image_io_test.cpp
   main.cpp

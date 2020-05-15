@@ -15,5 +15,6 @@
 #include "mat.h"
 #include "math.h"
 #include "image_io.h"
+#include "paint_layer.h"
 
 #endif  // PAINTY_H
