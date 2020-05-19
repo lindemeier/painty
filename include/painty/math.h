@@ -202,6 +202,57 @@ vec<Float, N> coth(const vec<Float, N>& x)
   }
 }
 
+/**
+ *
+ *@brief
+ *
+ * @tparam Float
+ * @tparam 0
+ * @param polygon
+ * @param vertex
+ * @return true
+ * @return false
+ *
+ * Adapted from :
+ * Copyright (c) 1970-2003, Wm. Randolph Franklin
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+disclaimers. Redistributions in binary form must reproduce the above copyright notice in the documentation and/or other
+materials provided with the distribution. The name of W. Randolph Franklin may not be used to endorse or promote
+products derived from this Software without specific prior written permission.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+template <typename Float, typename std::enable_if_t<std::is_floating_point<Float>::value, int> = 0>
+bool PointInPolyon(const std::vector<vec<Float, 2UL>>& polygon, const vec<Float, 2UL>& vertex)
+{
+  auto isInside = false;
+  // set to last and first element
+  auto p_prev = polygon.back();
+  auto p_curr = polygon.front();
+  // after using first and last, build line segments to end of polygon
+  for (auto p_prev_it = polygon.cbegin(), p_curr_it = (polygon.cbegin() + 1UL); p_curr_it != polygon.cend();
+       p_prev_it++, p_curr_it++)
+  {
+    if (((p_curr[1U] > vertex[1U]) != (p_prev[1U] > vertex[1U])) &&
+        (vertex[0U] < (p_prev[0U] - p_curr[0U]) * (vertex[1U] - p_curr[1U]) / (p_prev[1U] - p_curr[1U]) + p_curr[0U]))
+    {
+      isInside = !isInside;
+    }
+    p_prev = *p_prev_it;
+    p_curr = *p_curr_it;
+  }
+  return isInside;
+}
+
 }  // namespace painty
 
 #endif  // PAINTY_MATH_H

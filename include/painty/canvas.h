@@ -80,6 +80,11 @@ public:
     return _h_buffer;
   }
 
+  /**
+   * @brief Compose current wet layer onto substrate.
+   *
+   * @return Mat<vec<T, N>>
+   */
   Mat<vec<T, N>> composed() const
   {
     Mat<vec<T, N>> R1(_R0_buffer.getRows(), _R0_buffer.getCols());

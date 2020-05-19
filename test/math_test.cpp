@@ -93,5 +93,16 @@ TEST(MathTest, coth)
   EXPECT_NEAR(painty::coth(0.09742), 10.297285488897547, Eps);
   EXPECT_NEAR(painty::coth(1263.148), 1.0, Eps);
   EXPECT_NEAR(painty::coth(18.0), 1.0, Eps);
+}
 
+TEST(MathTest, PointInPoly)
+{
+  std::vector<painty::vec<double, 2UL>> polygon = { { -1.0, -1.0 }, { 1.0, -1.0 }, { 1.0, 1.0 }, { -1.0, 1.0 } };
+
+  EXPECT_TRUE(painty::PointInPolyon(polygon, { 0.5, 0.5 }));
+  EXPECT_TRUE(painty::PointInPolyon(polygon, { 0.0, 0.0 }));
+  EXPECT_TRUE(painty::PointInPolyon(polygon, { -1.0, -1.0 }));
+  EXPECT_FALSE(painty::PointInPolyon(polygon, { -1.1, -1.0 }));
+  EXPECT_FALSE(painty::PointInPolyon(polygon, { 5.1, 12.0 }));
+  EXPECT_FALSE(painty::PointInPolyon(polygon, { 0.2, -12.412 }));
 }
