@@ -14,9 +14,9 @@
 #include <painty/brush_stroke_sample.h>
 #include <painty/image_io.h>
 
-painty::BrushStrokeSample::BrushStrokeSample()
+painty::BrushStrokeSample::BrushStrokeSample(const std::string& sampleDir)
 {
-  loadSample("/home/tsl/development/painty/data/sample_0");
+  loadSample(sampleDir);
 }
 
 void painty::BrushStrokeSample::addCorr_l(const vec2& texPos, const vec2& uv)
@@ -68,15 +68,26 @@ double painty::BrushStrokeSample::getSampleAt(const vec2& xy) const
 
 /**
  * @brief Sample the brush stroke texture at a canvas coordinate uv. The uv is warped implicitly to stroke sample space.
- * Be sure to warp
- *
+ *  u : {0.0, 1.0}
+ *  v : {-1.0, 1.0}
  * @param uv
  *
  * @return double 0.0 if xy outside of texture
  */
-double painty::BrushStrokeSample::getSampleAtWarped(const vec2& uv) const
+double painty::BrushStrokeSample::getSampleAtUV(const vec2& uv) const
 {
   return getSampleAt(_warper.warp(uv));
+}
+
+/**
+ * @brief
+ *
+ * @return double
+ */
+double painty::BrushStrokeSample::getWidth() const
+{
+  // TODO instead of using first pair, this should be extended to something like a spline along the sample.
+  return _txy_r.front()[1U] - _txy_l.front()[1U];
 }
 
 void painty::BrushStrokeSample::loadSample(const std::string& sampleDir)
@@ -93,32 +104,32 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir)
 
   std::string line;
 
-  auto& points = _txy_l;
+  auto* points = &_txy_l;
   while (std::getline(ifile, line))
   {
     if (line == "txy_l")
     {
-      points = _txy_l;
+      points = &_txy_l;
     }
     else if (line == "txy_c")
     {
-      points = _txy_c;
+      points = &_txy_c;
     }
     else if (line == "txy_r")
     {
-      points = _txy_r;
+      points = &_txy_r;
     }
     else if (line == "puv_l")
     {
-      points = _puv_l;
+      points = &_puv_l;
     }
     else if (line == "puv_c")
     {
-      points = _puv_c;
+      points = &_puv_c;
     }
     else if (line == "puv_r")
     {
-      points = _puv_r;
+      points = &_puv_r;
     }
     else if (line.empty())
     {
@@ -132,7 +143,7 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir)
       const auto x = static_cast<double>(std::stod(x_str));
       const auto y = static_cast<double>(std::stod(y_str));
 
-      points.push_back({ x, y });
+      points->push_back({ x, y });
     }
   }
   ifile.close();

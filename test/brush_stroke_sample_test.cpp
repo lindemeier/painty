@@ -14,7 +14,7 @@
 
 TEST(BrushStrokeSample, Construct)
 {
-  const auto sample = painty::BrushStrokeSample();
+  const auto sample = painty::BrushStrokeSample("/home/tsl/development/painty/data/sample_0");
 
   EXPECT_EQ(800U, sample.getThicknessMap().getCols());
   EXPECT_EQ(171U, sample.getThicknessMap().getRows());

@@ -21,7 +21,7 @@ namespace painty
 class BrushStrokeSample final
 {
 public:
-  BrushStrokeSample();
+  BrushStrokeSample(const std::string& sampleDir);
 
   void addCorr_l(const vec2& texPos, const vec2& uv);
   void addCorr_c(const vec2& texPos, const vec2& uv);
@@ -31,9 +31,11 @@ public:
   void setThicknessMap(const Mat<double>& thicknessMap);
 
   double getSampleAt(const vec2& xy) const;
-  double getSampleAtWarped(const vec2& uv) const;
+  double getSampleAtUV(const vec2& uv) const;
 
   void loadSample(const std::string& sampleDir);
+
+  double getWidth() const;
 
 private:
   Mat<double> _thickness_map;
@@ -49,7 +51,7 @@ private:
   std::vector<vec2> _puv_r;
 
   /**
-   * @brief Warps positions. This is useful it the stroke sample ist not straight but a curved stroke.
+   * @brief Warps positions. This is useful it the stroke sample is not straight but a curved stroke.
    */
   TextureWarp _warper;
 };

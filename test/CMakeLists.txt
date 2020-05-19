@@ -21,6 +21,7 @@ add_executable(${PROJECT_NAME}
   math_test.cpp
   paint_layer_test.cpp
   spline_test.cpp
+  texture_brush_test.cpp
   vec_test.cpp
 )
 
