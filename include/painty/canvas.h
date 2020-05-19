@@ -263,10 +263,10 @@ public:
         }
         const vec<T, N> beta = lightPower * (1.0 / (4.0 * PI * std::pow(norm(lightDirection), 2.0)));
         const vec<T, N> result = (beta * NdotL) * ((1.0 - s) * Kd + s * specular) + ambient * Kd;
-
-        rgb(i, j)[0] = std::min(std::max(result[0], 0.0), 1.0);
-        rgb(i, j)[1] = std::min(std::max(result[1], 0.0), 1.0);
-        rgb(i, j)[2] = std::min(std::max(result[2], 0.0), 1.0);
+        
+        for (auto i = 0U; i < N; i++) {
+          rgb(i, j)[i] = std::min(std::max(result[i], 0.0), 1.0);
+        }
       }
     }
 
