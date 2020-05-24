@@ -235,7 +235,7 @@ public:
         vec<T, N> va = { size[0], size[1], s21 - s01 };
         va = normalized(va);
         vec<T, N> vb = { size[1], size[0], s12 - s10 };
-        va = normalized(vb);
+        vb = normalized(vb);
         // cross product
         vec<T, N> n{ va[1] * vb[2] - va[2] * vb[1], va[2] * vb[0] - va[0] * vb[2], va[0] * vb[1] - va[1] * vb[0] };
         n[2] *= -1.;
