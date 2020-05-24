@@ -24,7 +24,6 @@ TEST(TextureBrushTest, Construct)
 
   brush.applyTo({ { 10.0, 10.0 }, { 50.0, 50.0 }, { 150.0, 150.0 }, { 300.0, 300.0 } }, canvas);
 
-  // const auto linearRGB = canvas.getLightedRendering();
-  const auto linearRGB = canvas.composed();
-  painty::io::imSave("/tmp/testRender.png", linearRGB);
+  painty::io::imSave("/tmp/canvasComposed.png", canvas.composed());
+  painty::io::imSave("/tmp/getLightedRendering.png", canvas.getLightedRendering());
 }
