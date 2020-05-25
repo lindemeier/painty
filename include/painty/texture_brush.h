@@ -73,10 +73,6 @@ public:
     upCanvas.reserve(vertices.size());
     std::vector<vec2> downCanvas;
     downCanvas.reserve(vertices.size());
-    std::vector<vec2> upCanvasCage;
-    upCanvasCage.reserve(vertices.size());
-    std::vector<vec2> downCanvasCage;
-    downCanvasCage.reserve(vertices.size());
 
     // frames around the texture
     std::vector<vec2> upTex;
@@ -84,7 +80,7 @@ public:
     std::vector<vec2> downTex;
     downTex.reserve(vertices.size());
 
-    constexpr auto ScaleGBC = 0.7;
+    constexpr auto ScaleGBC = 1.0;
 
     for (auto i = 0U; i < vertices.size(); ++i)
     {
@@ -102,14 +98,11 @@ public:
 
       upCanvas.push_back(l);
       downCanvas.push_back(r);
-      upCanvasCage.push_back({ c[0] - radius * 1.1 * d[0], c[1] - radius * 1.1 * d[1] });
-      downCanvasCage.push_back({ c[0] + radius * 1.1 * d[0], c[1] + radius * 1.1 * d[1] });
 
       upTex.push_back({ u, -ScaleGBC });
       downTex.push_back({ u, ScaleGBC });
     }
     upCanvas.insert(upCanvas.begin(), downCanvas.rbegin(), downCanvas.rend());
-    upCanvasCage.insert(upCanvasCage.begin(), downCanvasCage.rbegin(), downCanvasCage.rend());
 
     upTex.insert(upTex.begin(), downTex.rbegin(), downTex.rend());
 
@@ -119,15 +112,6 @@ public:
 
     auto now = std::chrono::system_clock::now();
 
-    // distribute paint on temporary canvas
-    Mat<T> thicknessMap(static_cast<uint32_t>(boundMax[1U] - boundMin[1U]),
-                        static_cast<uint32_t>(boundMax[0U] - boundMin[0U]));
-    for (auto& v : thicknessMap.getData())
-    {
-      v = static_cast<T>(0.0);
-    }
-
-    // contains all affected pixels
     std::vector<vec<uint32_t, 2U>> pixels;
     for (auto x = static_cast<uint32_t>(boundMin[0U]); x <= static_cast<uint32_t>(boundMax[0U]); x++)
     {
@@ -138,7 +122,7 @@ public:
           continue;
         }
 
-        // if (!PointInPolyon(upCanvasCage, { static_cast<T>(x), static_cast<T>(y) }))
+        // if (!PointInPolyon(upCanvas, { static_cast<T>(x), static_cast<T>(y) }))
         // {
         //   continue;
         // }
@@ -153,46 +137,32 @@ public:
         }
 
         // retrieve the height of the sample at uv
-        const auto h = _brushStrokeSample.getSampleAtUV(canvasUV);
-        if (h > 0.0)
+        const auto Vtex = _brushStrokeSample.getSampleAtUV(canvasUV);
+        if (Vtex > 0.0)
         {
           canvas.checkDry(x, y, now);
 
-          thicknessMap(y - static_cast<uint32_t>(boundMin[1U]), x - static_cast<uint32_t>(boundMin[0U])) = h;
-          pixels.push_back({ x, y });
+          const auto Vcan = canvas.getPaintLayer().getV_buffer()(y, x);
+
+          const auto Vsum = Vcan + Vtex;
+          if (Vsum > static_cast<T>(0.0))
+          {
+            const T sc = static_cast<T>(1.0) / Vsum;
+
+            auto& K = canvas.getPaintLayer().getK_buffer()(y, x);
+            auto& S = canvas.getPaintLayer().getS_buffer()(y, x);
+            auto& V = canvas.getPaintLayer().getV_buffer()(y, x);
+
+            K = (Vcan * K + Vtex * _paintStored[0U]) * sc;
+            S = (Vcan * S + Vtex * _paintStored[1U]) * sc;
+            V = std::max(Vtex, Vcan);
+          }
         }
       }
     }
-
-    // compose temporary on canvas
-    composeTextureLayer(canvas, boundMin, thicknessMap, pixels);
   }
 
 private:
-  void composeTextureLayer(Canvas<T, N>& canvas, const vec2& boundMin, const Mat<T>& thicknessMap,
-                           const std::vector<vec<uint32_t, 2U>>& pixels) const
-  {
-    for (auto p : pixels)
-    {
-      const auto Vtex = thicknessMap({ static_cast<T>(p[1]) - boundMin[1U], static_cast<T>(p[0]) - boundMin[0U] });
-      const auto Vcan = canvas.getPaintLayer().getV_buffer()(p[1], p[0]);
-
-      const auto Vsum = Vcan + Vtex;
-      if (Vsum > static_cast<T>(0.0))
-      {
-        const T sc = static_cast<T>(1.0) / Vsum;
-
-        auto& K = canvas.getPaintLayer().getK_buffer()(p[1], p[0]);
-        auto& S = canvas.getPaintLayer().getS_buffer()(p[1], p[0]);
-        auto& V = canvas.getPaintLayer().getV_buffer()(p[1], p[0]);
-
-        K = (Vcan * K + Vtex * _paintStored[0U]) * sc;
-        S = (Vcan * S + Vtex * _paintStored[1U]) * sc;
-        V = std::max(Vtex, Vcan);
-      }
-    }
-  }
-
   /**
    * @brief Brush stroke texture sample that can be warped along a trajectory or list of vertices.
    *

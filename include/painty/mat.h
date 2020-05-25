@@ -109,16 +109,10 @@ private:
 
   static uint32_t BorderHandle(int32_t pos, uint32_t axisLength)
   {
-    if (pos < static_cast<int32_t>(axisLength) && pos >= 0)
-    {
-      return static_cast<uint32_t>(pos);
-    }
-
     if (axisLength == 1U)
     {
-      return 0;
+      return 0U;
     }
-
     do
     {
       if (pos < 0)
@@ -129,8 +123,7 @@ private:
       {
         pos = static_cast<int32_t>(axisLength) - 1 - (pos - static_cast<int32_t>(axisLength));
       }
-    } while (std::abs(pos) >= static_cast<int32_t>(axisLength));
-
+    } while (static_cast<uint32_t>(pos) >= axisLength);
     return static_cast<uint32_t>(pos);
   }
 

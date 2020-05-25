@@ -226,10 +226,10 @@ public:
       {
         // compute normal
         const T s11 = heightMap(i, j);
-        const T s01 = heightMap({ static_cast<T>(i), static_cast<T>(j) - 1.0 });
-        const T s21 = heightMap({ static_cast<T>(i), static_cast<T>(j) + 1.0 });
-        const T s10 = heightMap({ static_cast<T>(i) - 1.0, static_cast<T>(j) });
-        const T s12 = heightMap({ static_cast<T>(i) + 1.0, static_cast<T>(j) });
+        const T s01 = heightMap({ static_cast<T>(j) - 1.0, static_cast<T>(i) });
+        const T s21 = heightMap({ static_cast<T>(j) + 1.0, static_cast<T>(i) });
+        const T s10 = heightMap({ static_cast<T>(j), static_cast<T>(i) - 1.0 });
+        const T s12 = heightMap({ static_cast<T>(j), static_cast<T>(i) + 1.0 });
         vec<T, N> va = { size[0], size[1], s21 - s01 };
         va = va.normalized();
         vec<T, N> vb = { size[1], size[0], s12 - s10 };
