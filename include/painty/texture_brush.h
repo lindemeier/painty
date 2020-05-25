@@ -53,7 +53,7 @@ public:
 
     auto boundMin = vertices.front();
     auto boundMax = vertices.front();
-    for (const auto xy : vertices)
+    for (const auto& xy : vertices)
     {
       boundMin[0U] = std::min(boundMin[0U], xy[0U]);
       boundMin[1U] = std::min(boundMin[1U], xy[1U]);
@@ -92,7 +92,7 @@ public:
       const auto c = spineSpline.cubic(u);
 
       // spine tangent vector
-      auto t = normalized(spineSpline.cubicDerivative(u, 1));
+      auto t = spineSpline.cubicDerivative(u, 1).normalized();
 
       // compute perpendicular vector to spine
       const vec2 d = { -t[1], t[0] };

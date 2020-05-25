@@ -24,7 +24,7 @@ namespace painty
  *
  * @return vec<Float, N>
  */
-template <typename Float, size_t N, typename std::enable_if_t<std::is_floating_point<Float>::value, int> = 0>
+template <typename Float, int32_t N, typename std::enable_if_t<std::is_floating_point<Float>::value, int> = 0>
 vec<Float, N> ComputeReflectance(const vec<Float, N>& K, const vec<Float, N>& S_in, const vec<Float, N>& R0,
                                  const Float d)
 {

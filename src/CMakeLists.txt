@@ -5,6 +5,9 @@ project(painty)
 # image io
 find_package(PNG REQUIRED)
 
+# eigen
+find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+
 add_library(${PROJECT_NAME} STATIC
     brush_stroke_sample.cpp
     image_io.cpp
@@ -24,6 +27,7 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     ${PNG_LIBRARY}
+    Eigen3::Eigen
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
