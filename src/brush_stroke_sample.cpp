@@ -86,10 +86,24 @@ double painty::BrushStrokeSample::getSampleAtUV(const vec2& uv) const
  */
 double painty::BrushStrokeSample::getWidth() const
 {
-  // TODO instead of using first pair, this should be extended to something like a spline along the sample.
-  return _txy_r.front()[1U] - _txy_l.front()[1U];
+  return _widthMax;
 }
 
+/**
+ * @brief
+ *
+ * @return double
+ */
+double painty::BrushStrokeSample::getLength() const
+{
+  return _length;
+}
+
+/**
+ * @brief
+ *
+ * @param sampleDir
+ */
 void painty::BrushStrokeSample::loadSample(const std::string& sampleDir)
 {
   _txy_l.clear();
@@ -167,4 +181,12 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir)
 
   // load thickness map
   io::imRead(sampleDir + "/thickness_map.png", _thickness_map);
+
+  // scan through points and find the maximum width
+  _widthMax = 0.0;
+  for (auto l = _txy_l.cbegin(), r = _txy_r.cbegin(); (r != _txy_r.cend()) && (l != _txy_l.cend()); l++, r++)
+  {
+    _widthMax = std::max(_widthMax, normSq((*l) - (*r)));
+  }
+  _widthMax = std::sqrt(_widthMax);
 }

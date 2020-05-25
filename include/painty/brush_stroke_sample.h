@@ -36,6 +36,7 @@ public:
   void loadSample(const std::string& sampleDir);
 
   double getWidth() const;
+  double getLength() const;
 
 private:
   Mat<double> _thickness_map;
@@ -54,6 +55,9 @@ private:
    * @brief Warps positions. This is useful it the stroke sample is not straight but a curved stroke.
    */
   TextureWarp _warper;
+
+  double _widthMax = 0.0;
+  double _length = 0.0;
 };
 
 }  // namespace painty
