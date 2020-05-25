@@ -191,9 +191,7 @@ public:
     };
 
     const auto R_F = [](T VdotH, const vec<T, N>& Ks) {
-      vec<T, N> One;
-      One.fill(1.0);
-      return Ks + (One - Ks) * std::pow(1.0 - VdotH, 5.0);
+      return Ks + (vec<T, N>::Ones() - Ks) * std::pow(1.0 - VdotH, 5.0);
     };
 
     const auto Beckmann = [](T NdotH, T m) {
@@ -233,11 +231,11 @@ public:
         const T s10 = heightMap({ static_cast<T>(i) - 1.0, static_cast<T>(j) });
         const T s12 = heightMap({ static_cast<T>(i) + 1.0, static_cast<T>(j) });
         vec<T, N> va = { size[0], size[1], s21 - s01 };
-        va.normalize();
+        va = va.normalized();
         vec<T, N> vb = { size[1], size[0], s12 - s10 };
-        vb.normalize();
+        vb = vb.normalized();
         // cross product
-        vec<T, N> n{ va[1] * vb[2] - va[2] * vb[1], va[2] * vb[0] - va[0] * vb[2], va[0] * vb[1] - va[1] * vb[0] };
+        vec<T, N> n = va.cross(vb).normalized();
         n[2] *= -1.;
 
         const vec3 pixPos = { static_cast<T>(j), static_cast<T>(i), s11 };
@@ -255,8 +253,7 @@ public:
         const T NdotV = std::max(0.0, n.dot(v));
         const T NdotL = std::max(0.0, n.dot(l));
 
-        vec<T, N> specular;
-        specular.fill(0.0);
+        vec<T, N> specular = vec<T, N>::Zero();
         if (NdotL > 0.0 && NdotV > 0.0)
         {
           specular = (Beckmann(NdotH, m) * G(NdotH, NdotV, VdotH, NdotL) * R_F(VdotH, Ks)) / (NdotL * NdotV);
