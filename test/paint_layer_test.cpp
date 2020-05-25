@@ -30,13 +30,13 @@ TEST(PaintLayerTest, Construct)
   constexpr auto Eps = std::numeric_limits<double>::epsilon();
   for (size_t i = 0; i < K.size(); i++)
   {
-    for (auto v : K[i])
+    for (auto j = 0U; j < K[i].rows(); j++)
     {
-      EXPECT_NEAR(v, 0.0, Eps);
+      EXPECT_NEAR(K[i][j], 0.0, Eps);
     }
-    for (auto v : S[i])
+    for (auto j = 0U; j < S[i].rows(); j++)
     {
-      EXPECT_NEAR(v, 0.0, Eps);
+      EXPECT_NEAR(S[i][j], 0.0, Eps);
     }
     EXPECT_NEAR(V[i], 0.0, Eps);
   }

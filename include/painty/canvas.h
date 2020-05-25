@@ -191,9 +191,7 @@ public:
     };
 
     const auto R_F = [](T VdotH, const vec<T, N>& Ks) {
-      vec<T, N> One;
-      One.fill(1.0);
-      return Ks + (One - Ks) * std::pow(1.0 - VdotH, 5.0);
+      return Ks + (vec<T, N>::Ones() - Ks) * std::pow(1.0 - VdotH, 5.0);
     };
 
     const auto Beckmann = [](T NdotH, T m) {
@@ -233,36 +231,36 @@ public:
         const T s10 = heightMap({ static_cast<T>(i) - 1.0, static_cast<T>(j) });
         const T s12 = heightMap({ static_cast<T>(i) + 1.0, static_cast<T>(j) });
         vec<T, N> va = { size[0], size[1], s21 - s01 };
-        va = normalized(va);
+        va = va.normalized();
         vec<T, N> vb = { size[1], size[0], s12 - s10 };
-        vb = normalized(vb);
+        vb = vb.normalized();
         // cross product
-        vec<T, N> n{ va[1] * vb[2] - va[2] * vb[1], va[2] * vb[0] - va[0] * vb[2], va[0] * vb[1] - va[1] * vb[0] };
+        vec<T, N> n = va.cross(vb).normalized();
         n[2] *= -1.;
 
         const vec3 pixPos = { static_cast<T>(j), static_cast<T>(i), s11 };
         // const vec3d lightDirection = vec3d(-0.3, -0.1, -0.3).normalized();
-        const vec3 lightDirection = normalized(lightPos - pixPos);
-        const vec3 l = normalized(lightDirection);
-        const vec3 v = normalized(eyePos - pixPos);
-        const vec3 h = normalized(v + l);
+        const vec3 lightDirection = (lightPos - pixPos).normalized();
+        const vec3 l = (lightDirection).normalized();
+        const vec3 v = (eyePos - pixPos).normalized();
+        const vec3 h = (v + l).normalized();
 
         const vec<T, N> Kd = compR(i, j);  // surface diffuse color
         const vec<T, N> ambient = Kd * 0.2;
 
-        const T NdotH = std::max(0.0, dot(n, h));
-        const T VdotH = std::max(0.0, dot(v, h));
-        const T NdotV = std::max(0.0, dot(n, v));
-        const T NdotL = std::max(0.0, dot(n, l));
+        const T NdotH = std::max(0.0, n.dot(h));
+        const T VdotH = std::max(0.0, v.dot(h));
+        const T NdotV = std::max(0.0, n.dot(v));
+        const T NdotL = std::max(0.0, n.dot(l));
 
-        vec<T, N> specular;
-        specular.fill(0.0);
+        vec<T, N> specular = vec<T, N>::Zero();
         if (NdotL > 0.0 && NdotV > 0.0)
         {
           specular = (Beckmann(NdotH, m) * G(NdotH, NdotV, VdotH, NdotL) * R_F(VdotH, Ks)) / (NdotL * NdotV);
         }
-        const vec<T, N> beta = lightPower * (1.0 / (4.0 * PI * std::pow(norm(lightDirection), 2.0)));
-        const vec<T, N> result = (beta * NdotL) * ((1.0 - s) * Kd + s * specular) + ambient * Kd;
+        const vec<T, N> beta = lightPower * (1.0 / (4.0 * PI * std::pow(lightDirection.norm(), 2.0)));
+        const vec<T, N> result =
+            (beta * NdotL).array() * ((1.0 - s) * Kd + s * specular).array() + ambient.array() * Kd.array();
 
         for (auto u = 0U; u < N; u++)
         {

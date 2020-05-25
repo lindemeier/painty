@@ -186,7 +186,7 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir)
   _widthMax = 0.0;
   for (auto l = _txy_l.cbegin(), r = _txy_r.cbegin(); (r != _txy_r.cend()) && (l != _txy_l.cend()); l++, r++)
   {
-    _widthMax = std::max(_widthMax, normSq((*l) - (*r)));
+    _widthMax = std::max(_widthMax, ((*l) - (*r)).squaredNorm());
   }
   _widthMax = std::sqrt(_widthMax);
 }
