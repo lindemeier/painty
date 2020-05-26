@@ -19,9 +19,12 @@
 
 namespace painty
 {
-template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+template <class vector_type>
 class Canvas final
 {
+  using T = typename DataType<vector_type>::channel_type;
+  static constexpr auto N = DataType<vector_type>::dim;
+
 public:
   Canvas(const uint32_t rows, const uint32_t cols)
     : _paintLayer(rows, cols)
@@ -41,7 +44,7 @@ public:
 
     const auto rows = _paintLayer.getRows();
     const auto cols = _paintLayer.getCols();
-    _R0_buffer = Mat<vec<T, N>>(rows, cols);
+    _R0_buffer = Mat<vector_type>(rows, cols);
     _h_buffer = Mat<T>(rows, cols);
 
     _timeMap = Mat<std::chrono::system_clock::time_point>(rows, cols);
@@ -60,7 +63,7 @@ public:
     }
   }
 
-  const Mat<vec<T, N>>& getR0() const
+  const Mat<vector_type>& getR0() const
   {
     return _R0_buffer;
   }
@@ -70,7 +73,7 @@ public:
     return _h_buffer;
   }
 
-  Mat<vec<T, N>>& getR0()
+  Mat<vector_type>& getR0()
   {
     return _R0_buffer;
   }
@@ -80,12 +83,12 @@ public:
     return _h_buffer;
   }
 
-  Mat<vec<T, N>> getReflectanceLayerDry() const
+  Mat<vector_type> getReflectanceLayerDry() const
   {
     return _R0_buffer.clone();
   }
 
-  void setBackground(const Mat<vec<T, N>>& background)
+  void setBackground(const Mat<vector_type>& background)
   {
     clear();
     auto& r0_data = _R0_buffer.getData();
@@ -96,12 +99,12 @@ public:
     }
   }
 
-  const PaintLayer<T, N>& getPaintLayer() const
+  const PaintLayer<vector_type>& getPaintLayer() const
   {
     return _paintLayer;
   }
 
-  PaintLayer<T, N>& getPaintLayer()
+  PaintLayer<vector_type>& getPaintLayer()
   {
     return _paintLayer;
   }
@@ -162,17 +165,17 @@ private:
    * @brief Wet paint layer.
    *
    */
-  PaintLayer<T, N> _paintLayer;
+  PaintLayer<vector_type> _paintLayer;
   /**
    * @brief Background color as init for substrate.
    *
    */
-  vec<T, N> _backgroundColor;
+  vector_type _backgroundColor;
   /**
    * @brief Substrate reflectance. Layer of dried paint.
    *
    */
-  Mat<vec<T, N>> _R0_buffer;
+  Mat<vector_type> _R0_buffer;
   /**
    * @brief Height map.
    *

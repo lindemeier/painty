@@ -16,11 +16,14 @@
 
 namespace painty
 {
-template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+template <class vector_type>
 class TextureBrush final
 {
 private:
-  using KS = std::array<vec<T, N>, 2UL>;
+  using T = typename DataType<vector_type>::channel_type;
+  static constexpr auto N = DataType<vector_type>::dim;
+
+  using KS = std::array<vector_type, 2UL>;
 
 public:
   TextureBrush(const std::string& sampleDir) : _brushStrokeSample(sampleDir)
@@ -41,7 +44,7 @@ public:
     _paintStored = paint;
   }
 
-  void applyTo(const std::vector<vec2>& vertices, Canvas<T, N>& canvas) const
+  void applyTo(const std::vector<vec2>& vertices, Canvas<vector_type>& canvas) const
   {
     if (vertices.empty())
     {

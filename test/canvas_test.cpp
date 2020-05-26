@@ -14,7 +14,7 @@
 
 TEST(CanvasTest, Construct)
 {
-  auto layer = painty::Canvas<double, 3UL>(800, 600);
+  auto layer = painty::Canvas<painty::vec3>(800, 600);
 
   layer.clear();
 

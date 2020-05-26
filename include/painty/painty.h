@@ -12,9 +12,11 @@
 
 #include "types.h"
 #include "vec.h"
-#include "mat.h"
 #include "math.h"
+#include "mat.h"
+#include "canvas.h"
 #include "image_io.h"
 #include "paint_layer.h"
+#include "renderer.h"
 
 #endif  // PAINTY_H

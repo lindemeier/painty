@@ -16,13 +16,13 @@
 
 TEST(TextureBrushTest, Construct)
 {
-  auto brush = painty::TextureBrush<double, 3UL>("/home/tsl/development/painty/data/sample_0");
+  auto brush = painty::TextureBrush<painty::vec3>("/home/tsl/development/painty/data/sample_0");
 
   brush.dip({ { { 0.2, 0.3, 0.4 }, { 0.1, 0.23, 0.14 } } });
 
   constexpr auto height = 500U;
   constexpr auto width = 800;
-  auto canvas = painty::Canvas<double, 3UL>(height, width);
+  auto canvas = painty::Canvas<painty::vec3>(height, width);
   canvas.clear();
 
   std::vector<painty::vec2> path;
@@ -32,7 +32,7 @@ TEST(TextureBrushTest, Construct)
 
   brush.applyTo(path, canvas);
 
-  painty::Renderer<double, 3UL> renderer;
+  painty::Renderer<painty::vec3> renderer;
 
   painty::io::imSave("/tmp/canvasComposed.png", renderer.compose(canvas));
   painty::io::imSave("/tmp/getLightedRendering.png", renderer.render(canvas));

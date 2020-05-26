@@ -14,7 +14,7 @@
 
 TEST(PaintLayerTest, Construct)
 {
-  auto layer = painty::PaintLayer<double, 3UL>(800, 600);
+  auto layer = painty::PaintLayer<painty::vec3>(800, 600);
   EXPECT_EQ(layer.getCols(), layer.getK_buffer().getCols());
   EXPECT_EQ(layer.getCols(), layer.getS_buffer().getCols());
   EXPECT_EQ(layer.getCols(), layer.getV_buffer().getCols());
@@ -44,6 +44,6 @@ TEST(PaintLayerTest, Construct)
   auto r0 = painty::Mat<painty::vec<double, 3U>>(800, 600);
   layer.composeOnto(r0);
 
-  auto p_other = painty::PaintLayer<double, 3UL>(800, 600);
+  auto p_other = painty::PaintLayer<painty::vec3>(800, 600);
   layer.copyTo(p_other);
 }

@@ -13,21 +13,24 @@
 
 namespace painty
 {
-template <class T, size_t N, typename std::enable_if_t<std::is_floating_point<T>::value, int> = 0>
+template <class vector_type>
 class Renderer final
 {
+  using T = typename DataType<vector_type>::channel_type;
+  static constexpr auto N = DataType<vector_type>::dim;
+
 public:
   /**
    * @brief Compose current wet layer onto substrate.
    *
-   * @return Mat<vec<T, N>>
+   * @return Mat<vector_type>
    */
-  Mat<vec<T, N>> compose(const Canvas<T, N>& canvas) const
+  Mat<vector_type> compose(const Canvas<vector_type>& canvas) const
   {
     const auto& R0_buffer = canvas.getR0();
     const auto& paintLayer = canvas.getPaintLayer();
 
-    Mat<vec<T, N>> R1(R0_buffer.getRows(), R0_buffer.getCols());
+    Mat<vector_type> R1(R0_buffer.getRows(), R0_buffer.getCols());
 
     auto& r1_data = R1.getData();
     const auto& r0_data = R0_buffer.getData();
@@ -46,9 +49,9 @@ public:
   /**
    * @brief Render the canvas with directional light
    *
-   * @return Mat<vec<T, N>>
+   * @return Mat<vector_type>
    */
-  Mat<vec<T, N>> render(const Canvas<T, N>& canvas) const
+  Mat<vector_type> render(const Canvas<vector_type>& canvas) const
   {
     const auto G = [](T NdotH, T NdotV, T VdotH, T NdotL) {
       T G1 = 2.0 * NdotH * NdotV / VdotH;
@@ -56,8 +59,8 @@ public:
       return std::min(1.0, std::min(G1, G2));
     };
 
-    const auto R_F = [](T VdotH, const vec<T, N>& Ks) {
-      return Ks + (vec<T, N>::Ones() - Ks) * std::pow(1.0 - VdotH, 5.0);
+    const auto R_F = [](T VdotH, const vector_type& Ks) {
+      return Ks + (vector_type::Ones() - Ks) * std::pow(1.0 - VdotH, 5.0);
     };
 
     const auto Beckmann = [](T NdotH, T m) {
@@ -68,7 +71,7 @@ public:
 
     const auto compR = compose(canvas);
 
-    const vec<T, N> lightPos = { -200, -1500, -2000. };
+    const vector_type lightPos = { -200, -1500, -2000. };
 
     const vec2 size = { 2.0, 0.0 };
     const auto width = compR.getCols();
@@ -76,16 +79,16 @@ public:
 
     const vec3 eyePos = { width / 2.0, height / 2.0, -100. };
 
-    vec<T, N> lightPower;
+    vector_type lightPower;
     lightPower.fill(15.0);
-    vec<T, N> Ks;
+    vector_type Ks;
     Ks.fill(1.);      // surface specular color: equal to R_F(0)
     const T m = 0.5;  // material roughness (average slope of microfacets)
     const T s = 0.2;  // percentage of incoming light which is specularly reflected
 
     Mat<T> heightMap = canvas.getPaintLayer().getV_buffer();
 
-    Mat<vec<T, N>> rgb(height, width);
+    Mat<vector_type> rgb(height, width);
 
     for (auto i = 0U; i < height; ++i)
     {
@@ -97,12 +100,12 @@ public:
         const T s21 = heightMap({ static_cast<T>(j) + 1.0, static_cast<T>(i) });
         const T s10 = heightMap({ static_cast<T>(j), static_cast<T>(i) - 1.0 });
         const T s12 = heightMap({ static_cast<T>(j), static_cast<T>(i) + 1.0 });
-        vec<T, N> va = { size[0], size[1], s21 - s01 };
+        vector_type va = { size[0], size[1], s21 - s01 };
         va = va.normalized();
-        vec<T, N> vb = { size[1], size[0], s12 - s10 };
+        vector_type vb = { size[1], size[0], s12 - s10 };
         vb = vb.normalized();
         // cross product
-        vec<T, N> n = va.cross(vb).normalized();
+        vector_type n = va.cross(vb).normalized();
         n[2] *= -1.;
 
         const vec3 pixPos = { static_cast<T>(j), static_cast<T>(i), s11 };
@@ -112,21 +115,21 @@ public:
         const vec3 v = (eyePos - pixPos).normalized();
         const vec3 h = (v + l).normalized();
 
-        const vec<T, N> Kd = compR(i, j);  // surface diffuse color
-        const vec<T, N> ambient = Kd * 0.2;
+        const vector_type Kd = compR(i, j);  // surface diffuse color
+        const vector_type ambient = Kd * 0.2;
 
         const T NdotH = std::max(0.0, n.dot(h));
         const T VdotH = std::max(0.0, v.dot(h));
         const T NdotV = std::max(0.0, n.dot(v));
         const T NdotL = std::max(0.0, n.dot(l));
 
-        vec<T, N> specular = vec<T, N>::Zero();
+        vector_type specular = vector_type::Zero();
         if (NdotL > 0.0 && NdotV > 0.0)
         {
           specular = (Beckmann(NdotH, m) * G(NdotH, NdotV, VdotH, NdotL) * R_F(VdotH, Ks)) / (NdotL * NdotV);
         }
-        const vec<T, N> beta = lightPower * (1.0 / (4.0 * PI * std::pow(lightDirection.norm(), 2.0)));
-        const vec<T, N> result =
+        const vector_type beta = lightPower * (1.0 / (4.0 * PI * std::pow(lightDirection.norm(), 2.0)));
+        const vector_type result =
             (beta * NdotL).array() * ((1.0 - s) * Kd + s * specular).array() + ambient.array() * Kd.array();
 
         for (auto u = 0U; u < N; u++)
