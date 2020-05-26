@@ -21,13 +21,11 @@ TEST(CanvasTest, Construct)
   layer.getR0();
   layer.get_h();
   layer.getReflectanceLayerDry();
-  layer.composed();
+
   layer.setBackground(painty::Mat<painty::vec<double, 3UL>>(800, 600));
 
   layer.getPaintLayer();
   layer.getTimeMap();
   layer.setDryingTime(std::chrono::milliseconds(5000));
   layer.checkDry(5U, 5U, std::chrono::system_clock::now());
-
-  layer.getLightedRendering();
 }
