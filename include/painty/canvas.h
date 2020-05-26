@@ -119,6 +119,26 @@ public:
     return _timeMap;
   }
 
+  void dryCanvas()
+  {
+    const auto timePoint = std::chrono::system_clock::now();
+    for (auto y = 0U; y < _paintLayer.getRows(); y++)
+    {
+      for (auto x = 0U; x < _paintLayer.getCols(); x++)
+      {
+        const auto v = _paintLayer.getV_buffer()(y, x);
+        _h_buffer(y, x) += v;
+        getR0()(y, x) =
+            ComputeReflectance(_paintLayer.getK_buffer()(y, x), _paintLayer.getS_buffer()(y, x), getR0()(y, x), v);
+        _paintLayer.getV_buffer()(y, x) = 0.0;
+        _paintLayer.getK_buffer()(y, x).fill(0.0);
+        _paintLayer.getS_buffer()(y, x).fill(0.0);
+
+        _timeMap(y, x) = timePoint;
+      }
+    }
+  }
+
   void checkDry(uint32_t x, uint32_t y, const std::chrono::system_clock::time_point& timePoint)
   {
     T v = _paintLayer.getV_buffer()(y, x);
