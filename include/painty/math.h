@@ -202,6 +202,29 @@ vec<Float, N> coth(const vec<Float, N>& x)
   }
 }
 
+template <typename Float, typename std::enable_if_t<std::is_floating_point<Float>::value, int> = 0>
+Float acoth(const Float& x)
+{
+  if (fuzzyCompare(x, 1.0, static_cast<Float>(100.0) * std::numeric_limits<Float>::epsilon()))
+  {
+    return std::numeric_limits<Float>::infinity();
+  }
+  else
+  {
+    return std::log((x + static_cast<Float>(1.0)) / (x - static_cast<Float>(1.0))) / static_cast<Float>(2.0);
+  }
+}
+
+template <typename Float, size_t N, typename std::enable_if_t<std::is_floating_point<Float>::value, int> = 0>
+vec<Float, N> acoth(const vec<Float, N>& x)
+{
+  vec<Float, N> res;
+  for (auto i = 0U; i < N; i++)
+  {
+    res[i] = acoth(x[i]);
+  }
+}
+
 /**
  *
  *@brief

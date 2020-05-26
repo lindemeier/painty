@@ -34,6 +34,11 @@ public:
     }
   }
 
+  void setRadius(const double radius)
+  {
+    _radius = radius;
+  }
+
   /**
    * @brief Dip the brush in paint paint.
    *
@@ -52,8 +57,6 @@ public:
     }
 
     // compute bounding rectangle
-    const auto radius = _brushStrokeSample.getWidth() / 2.0;
-
     auto boundMin = vertices.front();
     auto boundMax = vertices.front();
     for (const auto& xy : vertices)
@@ -63,27 +66,25 @@ public:
       boundMax[0U] = std::max(boundMax[0U], xy[0U]);
       boundMax[1U] = std::max(boundMax[1U], xy[1U]);
     }
-    boundMin[0U] = std::max(boundMin[0U] - radius, 0.0);
-    boundMax[0U] = std::min(boundMax[0U] + radius, static_cast<T>(canvas.getPaintLayer().getCols() - 1U));
-    boundMin[1U] = std::max(boundMin[1U] - radius, 0.0);
-    boundMax[1U] = std::min(boundMax[1U] + radius, static_cast<T>(canvas.getPaintLayer().getRows() - 1U));
+    boundMin[0U] = std::max(boundMin[0U] - _radius, 0.0);
+    boundMax[0U] = std::min(boundMax[0U] + _radius, static_cast<T>(canvas.getPaintLayer().getCols() - 1U));
+    boundMin[1U] = std::max(boundMin[1U] - _radius, 0.0);
+    boundMax[1U] = std::min(boundMax[1U] + _radius, static_cast<T>(canvas.getPaintLayer().getRows() - 1U));
 
     // spine
     SplineEval<std::vector<vec2>::const_iterator> spineSpline(vertices.cbegin(), vertices.cend());
 
     // construct frames around the vertices
-    std::vector<vec2> upCanvas;
-    upCanvas.reserve(vertices.size());
-    std::vector<vec2> downCanvas;
-    downCanvas.reserve(vertices.size());
+    std::vector<vec2> upCanvasCoordinates;
+    upCanvasCoordinates.reserve(vertices.size());
+    std::vector<vec2> downCanvasCoordinates;
+    downCanvasCoordinates.reserve(vertices.size());
 
     // frames around the texture
-    std::vector<vec2> upTex;
-    upTex.reserve(vertices.size());
-    std::vector<vec2> downTex;
-    downTex.reserve(vertices.size());
-
-    constexpr auto ScaleGBC = 1.0;
+    std::vector<vec2> upUv;
+    upUv.reserve(vertices.size());
+    std::vector<vec2> downUv;
+    downUv.reserve(vertices.size());
 
     for (auto i = 0U; i < vertices.size(); ++i)
     {
@@ -96,24 +97,26 @@ public:
       // compute perpendicular vector to spine
       const vec2 d = { -t[1], t[0] };
 
-      const auto l = c - radius * d * ScaleGBC;
-      const auto r = c + radius * d * ScaleGBC;
+      const auto l = c - _radius * d;
+      const auto r = c + _radius * d;
 
-      upCanvas.push_back(l);
-      downCanvas.push_back(r);
+      upCanvasCoordinates.push_back(l);
+      downCanvasCoordinates.push_back(r);
 
-      upTex.push_back({ u, -ScaleGBC });
-      downTex.push_back({ u, ScaleGBC });
+      constexpr auto uvM = 1.0;
+      upUv.push_back({ u, -uvM });
+      downUv.push_back({ u, uvM });
     }
-    upCanvas.insert(upCanvas.begin(), downCanvas.rbegin(), downCanvas.rend());
+    upCanvasCoordinates.insert(upCanvasCoordinates.begin(), downCanvasCoordinates.rbegin(),
+                               downCanvasCoordinates.rend());
 
-    upTex.insert(upTex.begin(), downTex.rbegin(), downTex.rend());
+    upUv.insert(upUv.begin(), downUv.rbegin(), downUv.rend());
 
     // canvas coordinates to uv coordinates
-    TextureWarp tex2uv;
-    tex2uv.init(upCanvas, upTex);
+    TextureWarp canvas2uv;
+    canvas2uv.init(upCanvasCoordinates, upUv);
 
-    auto now = std::chrono::system_clock::now();
+    const auto now = std::chrono::system_clock::now();
 
     std::vector<vec<uint32_t, 2U>> pixels;
     for (auto x = static_cast<uint32_t>(boundMin[0U]); x <= static_cast<uint32_t>(boundMax[0U]); x++)
@@ -125,13 +128,13 @@ public:
           continue;
         }
 
-        // if (!PointInPolyon(upCanvas, { static_cast<T>(x), static_cast<T>(y) }))
+        // if (!PointInPolyon(upCanvasCoordinates, { static_cast<T>(x), static_cast<T>(y) }))
         // {
         //   continue;
         // }
 
         // transform canvas coordinates to uv local coordinates
-        vec2 canvasUV = tex2uv.warp({ static_cast<T>(x), static_cast<T>(y) });
+        vec2 canvasUV = canvas2uv.warp({ static_cast<T>(x), static_cast<T>(y) });
 
         // uv not in stroke
         if ((canvasUV[0U] < 0.0) || (canvasUV[0U] > 1.0) || (canvasUV[1U] < -1.0) || (canvasUV[1U] > 1.0))
@@ -177,6 +180,8 @@ private:
    *
    */
   KS _paintStored;
+
+  double _radius = 0.0;
 };
 }  // namespace painty
 

@@ -86,6 +86,49 @@ vec<Float, N> ComputeReflectance(const vec<Float, N>& K, const vec<Float, N>& S_
 
   return R;
 }
+
+// Curtis, C. J., Anderson, S. E., Seims, J. E., Fleischer, K. W., & Salesin, D. H. (1997).
+// Computer-generated watercolor.
+// Proceedings of the 24th Annual Conference on Computer Graphics and Interactive Techniques - SIGGRAPH ’97,
+// 421–430. http://doi.org/10.1145/258734.258896
+template <typename Float, int32_t N, typename std::enable_if_t<std::is_floating_point<Float>::value, int> = 0>
+void ComputeScatteringAndAbsorption(const vec<Float, N>& Rb, const vec<Float, N>& Rw, vec<Float, N>& K,
+                                    vec<Float, N>& S)
+{
+  for (size_t i = 0; i < N; i++)
+  {
+    if (!(Rb[i] < Rw[i] && Rb[i] > 0 && Rb[i] < 1.0 && Rw[i] > 0 && Rw[i] < 1.0))
+    {
+      throw std::invalid_argument("on black or white inputs violate one of the following conditions: 0 < black < white "
+                                  "< 1");
+    }
+  }
+
+  vec<Float, N> a;
+  for (int32_t i = 0; i < N; i++)
+  {
+    a[i] = 0.5 * (Rw[i] + (Rb[i] - Rw[i] + 1.) / Rb[i]);
+  }
+  vec<Float, N> b;
+  for (int32_t i = 0; i < N; i++)
+  {
+    b[i] = std::sqrt(a[i] * a[i] - 1.);
+  }
+  vec<Float, N> arg;
+  for (int32_t i = 0; i < N; i++)
+  {
+    arg[i] = (b[i] * b[i] - (a[i] - Rw[i]) * (a[i] - 1.)) / (b[i] * (1. - Rw[i]));
+  }
+  for (int32_t i = 0; i < N; i++)
+  {
+    S[i] = (1. / b[i]) * painty::acoth(arg[i]);
+  }
+  for (int32_t i = 0; i < N; i++)
+  {
+    K[i] = S[i] * (a[i] - 1.);
+  }
+}
+
 }  // namespace painty
 
 #endif  // PAINTY_KUBELKA_MUNK_H
