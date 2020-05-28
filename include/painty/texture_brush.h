@@ -13,6 +13,7 @@
 #include <painty/canvas.h>
 #include <painty/brush_stroke_sample.h>
 #include <painty/spline.h>
+#include <painty/smudge.h>
 
 namespace painty
 {
@@ -26,7 +27,8 @@ private:
   using KS = std::array<vector_type, 2UL>;
 
 public:
-  TextureBrush(const std::string& sampleDir) : _brushStrokeSample(sampleDir)
+  TextureBrush(const std::string& sampleDir)
+    : _brushStrokeSample(sampleDir), _smudge(static_cast<uint32_t>(2.0 * _radius))
   {
     for (auto& c : _paintStored)
     {
@@ -37,6 +39,8 @@ public:
   void setRadius(const double radius)
   {
     _radius = radius;
+
+    _smudge = Smudge<vector_type>(static_cast<uint32_t>(2.0 * radius));
   }
 
   /**
@@ -49,7 +53,7 @@ public:
     _paintStored = paint;
   }
 
-  void applyTo(const std::vector<vec2>& vertices, Canvas<vector_type>& canvas) const
+  void applyTo(const std::vector<vec2>& vertices, Canvas<vector_type>& canvas)
   {
     if (vertices.empty())
     {
@@ -70,6 +74,12 @@ public:
     boundMax[0U] = std::min(boundMax[0U] + _radius, static_cast<T>(canvas.getPaintLayer().getCols() - 1U));
     boundMin[1U] = std::max(boundMin[1U] - _radius, 0.0);
     boundMax[1U] = std::min(boundMax[1U] + _radius, static_cast<T>(canvas.getPaintLayer().getRows() - 1U));
+
+    auto length = 0.0;
+    for (auto i = 1UL; i < vertices.size(); ++i)
+    {
+      length += (vertices[i] - vertices[i - 1]).norm();
+    }
 
     // spine
     SplineEval<std::vector<vec2>::const_iterator> spineSpline(vertices.cbegin(), vertices.cend());
@@ -118,6 +128,12 @@ public:
 
     const auto now = std::chrono::system_clock::now();
 
+    Mat<T> thicknessMap(static_cast<uint32_t>(boundMax[1] - boundMin[1] + 1U),
+                        static_cast<uint32_t>(boundMax[0] - boundMin[0] + 1U));
+    for (auto& p : thicknessMap.getData())
+    {
+      p = static_cast<T>(0.0);
+    }
     std::vector<vec<uint32_t, 2U>> pixels;
     for (auto x = static_cast<uint32_t>(boundMin[0U]); x <= static_cast<uint32_t>(boundMax[0U]); x++)
     {
@@ -147,23 +163,33 @@ public:
         if (Vtex > 0.0)
         {
           canvas.checkDry(x, y, now);
-
-          const auto Vcan = canvas.getPaintLayer().getV_buffer()(y, x);
-
-          const auto Vsum = Vcan + Vtex;
-          if (Vsum > static_cast<T>(0.0))
-          {
-            const T sc = static_cast<T>(1.0) / Vsum;
-
-            auto& K = canvas.getPaintLayer().getK_buffer()(y, x);
-            auto& S = canvas.getPaintLayer().getS_buffer()(y, x);
-            auto& V = canvas.getPaintLayer().getV_buffer()(y, x);
-
-            K = (Vcan * K + Vtex * _paintStored[0U]) * sc;
-            S = (Vcan * S + Vtex * _paintStored[1U]) * sc;
-            V = std::max(Vtex, Vcan);
-          }
+          thicknessMap(y - static_cast<uint32_t>(boundMin[1U]), x - static_cast<uint32_t>(boundMin[0U])) = Vtex;
+          pixels.emplace_back(x, y);
         }
+      }
+    }
+
+    _smudge.smudge(canvas, boundMin, spineSpline, length, thicknessMap);
+
+    for (const auto& p : pixels)
+    {
+      const auto x = p[0U];
+      const auto y = p[1U];
+      const auto Vtex = thicknessMap(y - static_cast<uint32_t>(boundMin[1U]), x - static_cast<uint32_t>(boundMin[0U]));
+      const auto Vcan = canvas.getPaintLayer().getV_buffer()(y, x);
+
+      const auto Vsum = Vcan + Vtex;
+      if (Vsum > static_cast<T>(0.0))
+      {
+        const T sc = static_cast<T>(1.0) / Vsum;
+
+        auto& K = canvas.getPaintLayer().getK_buffer()(y, x);
+        auto& S = canvas.getPaintLayer().getS_buffer()(y, x);
+        auto& V = canvas.getPaintLayer().getV_buffer()(y, x);
+
+        K = (Vcan * K + Vtex * _paintStored[0U]) * sc;
+        S = (Vcan * S + Vtex * _paintStored[1U]) * sc;
+        V = std::max(Vtex, Vcan);
       }
     }
   }
@@ -181,7 +207,17 @@ private:
    */
   KS _paintStored;
 
+  /**
+   * @brief
+   *
+   */
   double _radius = 0.0;
+
+  /**
+   * @brief
+   *
+   */
+  Smudge<vector_type> _smudge;
 };
 }  // namespace painty
 
