@@ -34,6 +34,10 @@ add_dependencies(${PROJECT_NAME}
   painty
 )
 
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD_REQUIRED ON)
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d")
+
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # using Clang
