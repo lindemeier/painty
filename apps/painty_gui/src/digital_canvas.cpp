@@ -26,6 +26,7 @@ DigitalCanvas::DigitalCanvas(const uint32_t width, const uint32_t height, QObjec
   , _canvasPtr(nullptr)
   , _brushStrokePath()
   , _brushPtr(std::make_unique<painty::TextureBrush<painty::vec3>>("/home/tsl/development/painty/data/sample_0"))
+  , _brushPtr2(std::make_unique<painty::FootprintBrush<painty::vec3>>(256U))
 {
   this->setBackgroundBrush(QBrush(QColor(128, 128, 128)));
   _pixmapItem = this->addPixmap(QPixmap(static_cast<int32_t>(width), static_cast<int32_t>(height)));
@@ -49,6 +50,7 @@ void DigitalCanvas::setColor(const QColor& Rbc, const QColor& Rwc)
   {
     painty::ComputeScatteringAndAbsorption(Rb, Rw, K, S);
     _brushPtr->dip({ K, S });
+    _brushPtr2->dip({ K, S });
   }
   catch (std::invalid_argument)
   {
@@ -88,6 +90,10 @@ void DigitalCanvas::mousePressEvent(QGraphicsSceneMouseEvent* event)
   {
     _brushStrokePath.push_back(p);
   }
+
+  _brushPtr2->applyTo(p, 0.0, *_canvasPtr);
+  updateCanvas();
+
   event->ignore();
 }
 
@@ -114,18 +120,18 @@ void DigitalCanvas::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
     _brushStrokePath.push_back(p);
   }
 
-  // spline
-  painty::SplineEval<std::vector<painty::vec2>::const_iterator> spline(_brushStrokePath.cbegin(),
-                                                                       _brushStrokePath.cend());
-  // sample in radius steps
-  std::vector<painty::vec2> cubicPoints;
-  const auto radiusStep = 1.0 / (_brushRadius * 2.0);
-  for (auto t = 0.0; t <= 1.0; t += radiusStep)
-  {
-    cubicPoints.push_back(spline.cubic(t));
-  }
+  // // spline
+  // painty::SplineEval<std::vector<painty::vec2>::const_iterator> spline(_brushStrokePath.cbegin(),
+  //                                                                      _brushStrokePath.cend());
+  // // sample in radius steps
+  // std::vector<painty::vec2> cubicPoints;
+  // const auto radiusStep = 1.0 / (_brushRadius * 2.0);
+  // for (auto t = 0.0; t <= 1.0; t += radiusStep)
+  // {
+  //   cubicPoints.push_back(spline.cubic(t));
+  // }
 
-  _brushPtr->applyTo(cubicPoints, *_canvasPtr);
+  // _brushPtr->applyTo(cubicPoints, *_canvasPtr);
 
   event->ignore();
   updateCanvas();

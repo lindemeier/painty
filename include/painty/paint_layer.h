@@ -130,6 +130,13 @@ public:
     std::copy(_V_buffer.getData().cbegin(), _V_buffer.getData().cend(), other._V_buffer.getData().begin());
   }
 
+  void set(uint32_t i, uint32_t j, const vector_type& k, const vector_type& s, const T v)
+  {
+    _K_buffer(i, j) = k;
+    _S_buffer(i, j) = s;
+    _V_buffer(i, j) = v;
+  }
+
 private:
   /**
    * @brief Absorption

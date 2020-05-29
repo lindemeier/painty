@@ -8,6 +8,7 @@
 
 #include <painty/canvas.h>
 #include <painty/texture_brush.h>
+#include <painty/footprint_brush.h>
 
 namespace edavid
 {
@@ -45,6 +46,7 @@ private:
   std::shared_ptr<painty::Canvas<painty::vec3>> _canvasPtr;
 
   std::unique_ptr<painty::TextureBrush<painty::vec3>> _brushPtr;
+  std::unique_ptr<painty::FootprintBrush<painty::vec3>> _brushPtr2;
 
   std::vector<painty::vec2> _brushStrokePath;
 
