@@ -138,15 +138,15 @@ public:
           // bidirectional transfer
           // canvas
           const auto Vi_canvas = canvas.getPaintLayer().getV_buffer()(i_canvas, j_canvas);
-          const auto Vl_canvas = Vi_canvas * (1.0 - Ap) * _transferRateCanvas * time;  // volume leaving the canvas
-          const auto Vr_canvas = Vi_canvas - Vl_canvas;                                // volume staying on the canvas
+          const auto Vl_canvas = Vi_canvas * Ap * _transferRateCanvas * time;  // volume leaving the canvas
+          const auto Vr_canvas = Vi_canvas - Vl_canvas;                        // volume staying on the canvas
           const auto CiK_canvas = canvas.getPaintLayer().getK_buffer()(i_canvas, j_canvas);
           const auto CiS_canvas = canvas.getPaintLayer().getS_buffer()(i_canvas, j_canvas);
 
           // pickup map
           const auto Vi_brush = _pickupMap.getV_buffer()(i_map, j_map);
-          const auto Vl_brush = Vi_brush * (1. - Ap) * _transferRateBrush * time;  // volume leaving the pickup map
-          const auto Vr_brush = Vi_brush - Vl_brush;                               // volume staying on the pickup map
+          const auto Vl_brush = Vi_brush * Ap * _transferRateBrush * time;  // volume leaving the pickup map
+          const auto Vr_brush = Vi_brush - Vl_brush;                        // volume staying on the pickup map
           const auto CiK_brush = _pickupMap.getK_buffer()(i_map, j_map);
           const auto CiS_brush = _pickupMap.getS_buffer()(i_map, j_map);
 

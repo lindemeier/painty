@@ -51,6 +51,8 @@ private:
   std::vector<painty::vec2> _brushStrokePath;
 
   double _brushRadius = 15.0;
+
+  bool _mousePressed = false;
 };
 
 class DigitalCanvasView : public QGraphicsView
