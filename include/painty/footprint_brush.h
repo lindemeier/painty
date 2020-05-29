@@ -25,9 +25,10 @@ class FootprintBrush final
 public:
   FootprintBrush() = default;
 
+  // size has to cover all brush transfomations
+  // consider padding the pickup map
   FootprintBrush(const uint32_t size)
-    : _sizeFootprint(size)
-    , _sizeMap(static_cast<uint32_t>(std::ceil(std::sqrt(2.0) * size)))
+    : _sizeMap(size)
     , _maxBrushVolume(800.0)
     , _footprint(0, 0)
     , _pickupMap(_sizeMap, _sizeMap)
@@ -36,7 +37,7 @@ public:
   {
     Mat<double> fp_original;
     io::imRead("/home/tsl/development/painty/data/footprint/footprint.png", fp_original);
-    _footprint = fp_original.scaled(_sizeFootprint, _sizeFootprint);
+    _footprint = fp_original.scaled(_sizeMap, _sizeMap);
 
     _pickupMap.clear();
     _paintReservoir.clear();
@@ -51,12 +52,10 @@ public:
    */
   void dip(const std::array<vector_type, 2UL>& paint)
   {
-    const auto h = _footprint.getRows();
-    const auto w = _footprint.getCols();
     clean();
-    for (auto i = 0U; i < h; i++)
+    for (auto i = 0U; i < _sizeMap; i++)
     {
-      for (auto j = 0U; j < w; j++)
+      for (auto j = 0U; j < _sizeMap; j++)
       {
         _paintReservoir.set(i, j, paint[0U], paint[1U], _maxBrushVolume);
         if (_footprint(i, j) > 0.)
@@ -69,12 +68,9 @@ public:
 
   void clean()
   {
-    const auto h = _footprint.getRows();
-    const auto w = _footprint.getCols();
-
-    for (auto i = 0U; i < h; i++)
+    for (auto i = 0U; i < _sizeMap; i++)
     {
-      for (auto j = 0U; j < w; j++)
+      for (auto j = 0U; j < _sizeMap; j++)
       {
         _pickupMap.set(i, j, vector_type::Zero(), vector_type::Zero(), 0.);
         _paintReservoir.set(i, j, vector_type::Zero(), vector_type::Zero(), 0.);
@@ -90,10 +86,15 @@ public:
     const int32_t hr = (h - 1) / 2;
     const int32_t wr = (w - 1) / 2;
 
+    const auto now = std::chrono::system_clock::now();
+
     for (int32_t row = -hr; row <= hr; row++)
     {
       for (int32_t col = -wr; col <= wr; col++)
       {
+        // TODO use rotated canvas coordinates bounding rectangle (axis aligned)
+        // inverse!
+
         // compute rotated coordinates
         const vec2 xy = { static_cast<double>(col) * std::cos(theta) - static_cast<double>(row) * std::sin(theta),
                           static_cast<double>(col) * std::sin(theta) + static_cast<double>(row) * std::cos(theta) };
@@ -103,9 +104,18 @@ public:
         const auto i_map = static_cast<int32_t>(round(xy[1U] + hr));
         const auto j_map = static_cast<int32_t>(round(xy[0U] + wr));
 
-        // skip pixels outside of canvas
+        // TODO
+        // canvas.checkDry(j_canvas, i_canvas, now);
+
+        // skip sampels outside of canvas
         if ((i_canvas < 0) || (j_canvas < 0) || (j_canvas >= canvas.getPaintLayer().getCols()) ||
             (i_canvas >= canvas.getPaintLayer().getRows()))
+        {
+          continue;
+        }
+
+        // skip sampels outside of pickup map
+        if ((i_map < 0) || (j_map < 0) || (j_map >= _sizeMap) || (i_map >= _sizeMap))
         {
           continue;
         }
@@ -177,8 +187,6 @@ public:
 private:
   uint32_t _sizeMap;
 
-  uint32_t _sizeFootprint;
-
   Mat<double> _footprint;
 
   PaintLayer<vector_type> _pickupMap;
@@ -187,7 +195,7 @@ private:
 
   T _maxBrushVolume = static_cast<T>(0.0);
 
-  T _transferRateCanvas = static_cast<T>(0.2);
+  T _transferRateCanvas = static_cast<T>(0.1);
   T _transferRateBrush = static_cast<T>(0.2);
 
   double _currentAngle = 0.0;
