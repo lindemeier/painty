@@ -60,8 +60,9 @@ void DigitalCanvas::setColor(const QColor& Rbc, const QColor& Rwc)
 
 void DigitalCanvas::setBrushRadius(int radius)
 {
-  _brushPtr->setRadius(radius);
   _brushRadius = static_cast<double>(radius);
+  _brushPtr->setRadius(_brushRadius);
+  _brushPtr2->setRadius(_brushRadius);
 
   QPixmap cursorMap(2 * radius + 1, 2 * radius + 1);
   cursorMap.fill(QColor(255, 255, 255, 0));

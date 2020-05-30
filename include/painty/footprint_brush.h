@@ -27,23 +27,31 @@ public:
 
   // size has to cover all brush transfomations
   // consider padding the pickup map
-  FootprintBrush(const uint32_t size)
-    : _sizeMap(size)
-    , _maxBrushVolume(800.0)
-    , _footprint(0, 0)
-    , _pickupMap(_sizeMap, _sizeMap)
-    , _paintReservoir(_sizeMap, _sizeMap)
+  FootprintBrush(const double radius)
+    : _sizeMap(0U), _maxBrushVolume(800.0), _footprint(0U, 0U), _pickupMap(0U, 0U), _paintReservoir(0U, 0U)
 
   {
-    Mat<double> fp_original;
-    io::imRead("/home/tsl/development/painty/data/footprint/footprint.png", fp_original);
-    _footprint = fp_original.scaled(_sizeMap, _sizeMap);
+    io::imRead("/home/tsl/development/painty/data/footprint/footprint.png", _footprintFullSize);
 
-    _pickupMap.clear();
-    _paintReservoir.clear();
+    setRadius(radius);
   }
 
   ~FootprintBrush() = default;
+
+  void setRadius(const double radius)
+  {
+    _radius = radius;
+
+    _sizeMap = static_cast<uint32_t>(2.0 * std::ceil(radius) + 1.0);
+
+    _footprint = _footprintFullSize.scaled(_sizeMap, _sizeMap);
+
+    _pickupMap = PaintLayer<vector_type>(_sizeMap, _sizeMap);
+    _pickupMap.clear();
+
+    _paintReservoir = PaintLayer<vector_type>(_sizeMap, _sizeMap);
+    _paintReservoir.clear();
+  }
 
   /**
    * @brief Dip the brush in paint paint.
@@ -185,9 +193,13 @@ public:
   }
 
 private:
+  double _radius;
+
   uint32_t _sizeMap;
 
   Mat<double> _footprint;
+
+  Mat<double> _footprintFullSize;
 
   PaintLayer<vector_type> _pickupMap;
 
@@ -196,6 +208,7 @@ private:
   T _maxBrushVolume = static_cast<T>(0.0);
 
   T _transferRateCanvas = static_cast<T>(0.1);
+
   T _transferRateBrush = static_cast<T>(0.2);
 
   double _currentAngle = 0.0;
