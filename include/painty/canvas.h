@@ -142,7 +142,7 @@ public:
   void checkDry(uint32_t x, uint32_t y, const std::chrono::system_clock::time_point& timePoint)
   {
     T v = _paintLayer.getV_buffer()(y, x);
-    if ((_dryingTime.count() > 0.0) && (v > 0.0))
+    if ((_dryingTime.count() > 0.0) && (v > 0.001))
     {
       auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(timePoint - _timeMap(y, x));
 

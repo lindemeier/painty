@@ -113,7 +113,7 @@ public:
         const auto j_map = static_cast<int32_t>(round(xy[0U] + wr));
 
         // TODO
-        // canvas.checkDry(j_canvas, i_canvas, now);
+        canvas.checkDry(j_canvas, i_canvas, now);
 
         // skip sampels outside of canvas
         if ((i_canvas < 0) || (j_canvas < 0) || (j_canvas >= canvas.getPaintLayer().getCols()) ||
