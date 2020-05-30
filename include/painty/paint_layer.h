@@ -130,6 +130,15 @@ public:
     std::copy(_V_buffer.getData().cbegin(), _V_buffer.getData().cend(), other._V_buffer.getData().begin());
   }
 
+  /**
+   * @brief Update a cell of the canvas.
+   *
+   * @param i the row index
+   * @param j the col index
+   * @param k Scattering
+   * @param s Absorption
+   * @param v Volume
+   */
   void set(uint32_t i, uint32_t j, const vector_type& k, const vector_type& s, const T v)
   {
     _K_buffer(i, j) = k;

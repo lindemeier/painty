@@ -88,6 +88,7 @@ public:
 
   void applyTo(const vec2& center, const double theta, Canvas<vector_type>& canvas)
   {
+    constexpr auto Eps = 0.0000001;
     constexpr auto time = 1.0;
     const int32_t h = _footprint.getRows();
     const int32_t w = _footprint.getCols();
@@ -129,7 +130,7 @@ public:
         }
 
         const auto Ap = _footprint(i_map, j_map);
-        if (Ap > 0.0)
+        if (Ap > Eps)
         {
           const auto clamp = [](double x, double min, double max) { return std::min(max, std::max(x, min)); };
 
@@ -137,29 +138,30 @@ public:
           const auto Vi_reservoir = _paintReservoir.getV_buffer()(i_map, j_map);
           const auto Vl_reservoir = clamp(1.0 - _pickupMap.getV_buffer()(i_map, j_map), 0.0,
                                           Vi_reservoir);  // volume leaving the brush reservoir
-          const auto Vp = 1. - Vl_reservoir;
+          const auto Vp = 1.0 - Vl_reservoir;
           const auto Vr_reservoir = Vi_reservoir - Vl_reservoir;  // volume staying on the canvas
           const auto CiK_reservoir = _paintReservoir.getK_buffer()(i_map, j_map);
           const auto CiS_reservoir = _paintReservoir.getS_buffer()(i_map, j_map);
 
           // reservoir to to pickup map
-          if (Vl_reservoir > 0.)
+          if (Vl_reservoir > Eps)
           {
-            _pickupMap.getK_buffer()(i_map, j_map) =
-                (Vp * _pickupMap.getK_buffer()(i_map, j_map) + Vl_reservoir * CiK_reservoir);
-            _pickupMap.getS_buffer()(i_map, j_map) =
-                (Vp * _pickupMap.getS_buffer()(i_map, j_map) + Vl_reservoir * CiS_reservoir);
-            _pickupMap.getV_buffer()(i_map, j_map) += Vl_reservoir;
+            const auto k = (Vp * _pickupMap.getK_buffer()(i_map, j_map) + Vl_reservoir * CiK_reservoir);
+            const auto s = (Vp * _pickupMap.getS_buffer()(i_map, j_map) + Vl_reservoir * CiS_reservoir);
+            const auto v = _pickupMap.getV_buffer()(i_map, j_map) + Vl_reservoir;
+
+            _pickupMap.set(i_map, j_map, k, s, v);
+
             _paintReservoir.getV_buffer()(i_map, j_map) = Vr_reservoir;
           }
 
           // bidirectional transfer
-          // canvas
+          // canvas paints and volumes
           const auto Vi_canvas = canvas.getPaintLayer().getV_buffer()(i_canvas, j_canvas);
           const auto Vl_canvas = Vi_canvas * Ap * _transferRateCanvas * time;  // volume leaving the canvas
           const auto Vr_canvas = Vi_canvas - Vl_canvas;                        // volume staying on the canvas
-          const auto CiK_canvas = canvas.getPaintLayer().getK_buffer()(i_canvas, j_canvas);
-          const auto CiS_canvas = canvas.getPaintLayer().getS_buffer()(i_canvas, j_canvas);
+          const auto CiK_canvas = canvas.getPaintLayer().getK_buffer()(i_canvas, j_canvas);  // corresponding scattering
+          const auto CiS_canvas = canvas.getPaintLayer().getS_buffer()(i_canvas, j_canvas);  // corresponding absorption
 
           // pickup map
           const auto Vi_brush = _pickupMap.getV_buffer()(i_map, j_map);
@@ -169,23 +171,23 @@ public:
           const auto CiS_brush = _pickupMap.getS_buffer()(i_map, j_map);
 
           // brush pickup map to canvas
-          if ((Vr_canvas + Vl_brush) > 0.0)
+          if ((Vr_canvas + Vl_brush) > Eps)
           {
-            canvas.getPaintLayer().getK_buffer()(i_canvas, j_canvas) =
-                (Vr_canvas * CiK_canvas + Vl_brush * CiK_brush) / (Vr_canvas + Vl_brush);
-            canvas.getPaintLayer().getS_buffer()(i_canvas, j_canvas) =
-                (Vr_canvas * CiS_canvas + Vl_brush * CiS_brush) / (Vr_canvas + Vl_brush);
-            canvas.getPaintLayer().getV_buffer()(i_canvas, j_canvas) = Vr_canvas + Vl_brush;
+            const auto k = (Vr_canvas * CiK_canvas + Vl_brush * CiK_brush) / (Vr_canvas + Vl_brush);
+            const auto s = (Vr_canvas * CiS_canvas + Vl_brush * CiS_brush) / (Vr_canvas + Vl_brush);
+            const auto v = Vr_canvas + Vl_brush;
+
+            canvas.getPaintLayer().set(i_canvas, j_canvas, k, s, v);
           }
 
           // canvas to brush pickup
-          if ((Vr_brush + Vl_canvas) > 0.0)
+          if ((Vr_brush + Vl_canvas) > Eps)
           {
-            _pickupMap.getK_buffer()(i_map, j_map) =
-                (Vr_brush * CiK_brush + Vl_canvas * CiK_canvas) / (Vr_brush + Vl_canvas);
-            _pickupMap.getS_buffer()(i_map, j_map) =
-                (Vr_brush * CiS_brush + Vl_canvas * CiS_canvas) / (Vr_brush + Vl_canvas);
-            _pickupMap.getV_buffer()(i_map, j_map) = Vr_brush + Vl_canvas;
+            const auto k = (Vr_brush * CiK_brush + Vl_canvas * CiK_canvas) / (Vr_brush + Vl_canvas);
+            const auto s = (Vr_brush * CiS_brush + Vl_canvas * CiS_canvas) / (Vr_brush + Vl_canvas);
+            const auto v = Vr_brush + Vl_canvas;
+
+            _pickupMap.set(i_map, j_map, k, s, v);
           }
         }
       }
