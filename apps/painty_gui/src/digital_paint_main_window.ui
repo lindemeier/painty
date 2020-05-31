@@ -115,7 +115,10 @@
         <number>60</number>
        </property>
        <property name="value">
-        <number>10</number>
+        <number>30</number>
+       </property>
+       <property name="sliderPosition">
+        <number>30</number>
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
