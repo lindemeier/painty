@@ -73,7 +73,8 @@ public:
         _paintReservoir.set(i, j, paint[0U], paint[1U], _maxBrushVolume);
         if (_footprint(i, j) > 0.)
         {
-          _pickupMap.set(i, j, paint[0U], paint[1U], 0.0);
+          _pickupMap.set(i, j, vector_type::Zero(), vector_type::Zero(), 0.0);
+          // _pickupMap.set(i, j, { 0.99, 0.99, 0.99 }, { 0.01, 0.01, 0.01 }, _footprint(i, j));
         }
       }
     }
@@ -109,131 +110,137 @@ public:
         // TODO use rotated canvas coordinates bounding rectangle (axis aligned)
         // inverse!
 
-        // compute rotated coordinates
-        const vec2 xy = { static_cast<double>(col) * std::cos(theta) - static_cast<double>(row) * std::sin(theta),
-                          static_cast<double>(col) * std::sin(theta) + static_cast<double>(row) * std::cos(theta) };
-        // nearest neighbor
-        const auto i_canvas = static_cast<int32_t>(round(xy[1U] + center[1U]));
-        const auto j_canvas = static_cast<int32_t>(round(xy[0U] + center[0U]));
-        const auto i_map = static_cast<int32_t>(round(xy[1U] + hr));
-        const auto j_map = static_cast<int32_t>(round(xy[0U] + wr));
+        const vec<int32_t, 2UL> xy_canvas = { col + center[0U], row + center[1U] };
+        const vec<int32_t, 2UL> xy_map = { col + wr, row + hr };
 
         // skip sampels outside of canvas
-        if ((i_canvas < 0) || (j_canvas < 0) || (j_canvas >= canvas.getPaintLayer().getCols()) ||
-            (i_canvas >= canvas.getPaintLayer().getRows()))
+        if ((xy_canvas[1U] < 0) || (xy_canvas[0U] < 0) || (xy_canvas[0U] >= canvas.getPaintLayer().getCols()) ||
+            (xy_canvas[1U] >= canvas.getPaintLayer().getRows()))
         {
           continue;
         }
 
         // skip samples outside of pickup map
-        if ((i_map < 0) || (j_map < 0) || (j_map >= _sizeMap) || (i_map >= _sizeMap))
+        if ((xy_map[1U] < 0) || (xy_map[0U] < 0) || (xy_map[0U] >= _sizeMap) || (xy_map[1U] >= _sizeMap))
         {
           continue;
         }
 
         // TODO
-        canvas.checkDry(j_canvas, i_canvas, now);
+        canvas.checkDry(xy_canvas[0U], xy_canvas[1U], now);
 
-        const auto fp = _footprint(i_map, j_map);
+        const auto fp = _footprint(xy_map[1U], xy_map[0U]);
         if (fp > Eps)
         {
-          refillPaint(i_map, j_map);
+          refillPaint(xy_map);
 
-          pickupPaint(i_canvas, j_canvas, i_map, j_map, canvas.getPaintLayer());
+          pickupPaint(xy_canvas, xy_map, canvas.getPaintLayer());
 
-          depositPaint(i_canvas, j_canvas, i_map, j_map, canvas.getPaintLayer());
+          depositPaint(xy_canvas, xy_map, canvas.getPaintLayer());
         }
       }
     }
   }
 
+  const PaintLayer<vector_type>& getPickupMap() const
+  {
+    return _pickupMap;
+  }
+
+  const Mat<double>& getFootprint() const
+  {
+    return _footprint;
+  }
+
 private:
-  void pickupPaint(const uint32_t i_canvas, const uint32_t j_canvas, const uint32_t i_map, const uint32_t j_map,
+  void pickupPaint(const vec<int32_t, 2UL>& xy_canvas, const vec<int32_t, 2UL>& xy_map,
                    PaintLayer<vector_type>& canvasLayer)
   {
     // todo let time pass
     constexpr auto timePassed = 1.0;
 
-    const auto fp = _footprint(i_map, j_map);
+    const auto fp = _footprint(xy_map[1U], xy_map[0U]);
 
-    const auto V_CanvasContained = canvasLayer.getV_buffer()(i_canvas, j_canvas);
+    const auto V_CanvasContained = canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
 
     // volume leaving the canvas
-    const auto V_CanvasLeaving = V_CanvasContained * _transferRateCanvas * timePassed * (1.0 - fp);
+    const auto V_CanvasLeaving = V_CanvasContained * _transferRatePickupFromCanvas * timePassed * (fp);
     const auto V_CanvasRemaining = V_CanvasContained - V_CanvasLeaving;
     // update volume on canvas
-    canvasLayer.getV_buffer()(i_canvas, j_canvas) = V_CanvasRemaining;
+    canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]) = V_CanvasRemaining;
 
     // transfer paint to pickup map from canvas
-    const auto V_PickupMap = _pickupMap.getV_buffer()(i_map, j_map);
+    const auto V_PickupMap = _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]);
     constexpr auto Eps = 0.0000001;
     const auto V_total = V_PickupMap + V_CanvasLeaving;
     if (V_total > Eps)
     {
-      const auto k = (V_PickupMap * _pickupMap.getK_buffer()(i_map, j_map) +
-                      V_CanvasLeaving * canvasLayer.getK_buffer()(i_canvas, j_canvas)) /
+      const auto k = (V_PickupMap * _pickupMap.getK_buffer()(xy_map[1U], xy_map[0U]) +
+                      V_CanvasLeaving * canvasLayer.getK_buffer()(xy_canvas[1U], xy_canvas[0U])) /
                      V_total;
-      const auto s = (V_PickupMap * _pickupMap.getS_buffer()(i_map, j_map) +
-                      V_CanvasLeaving * canvasLayer.getS_buffer()(i_canvas, j_canvas)) /
+      const auto s = (V_PickupMap * _pickupMap.getS_buffer()(xy_map[1U], xy_map[0U]) +
+                      V_CanvasLeaving * canvasLayer.getS_buffer()(xy_canvas[1U], xy_canvas[0U])) /
                      V_total;
-      _pickupMap.set(i_map, j_map, k, s, V_total);
+      _pickupMap.set(xy_map[1U], xy_map[0U], k, s, V_total);
     }
   }
 
-  void depositPaint(const uint32_t i_canvas, const uint32_t j_canvas, const uint32_t i_map, const uint32_t j_map,
+  void depositPaint(const vec<int32_t, 2UL>& xy_canvas, const vec<int32_t, 2UL>& xy_map,
                     PaintLayer<vector_type>& canvasLayer)
   {
     // todo let time pass
     constexpr auto timePassed = 1.0;
 
-    const auto fp = _footprint(i_map, j_map);
+    const auto fp = _footprint(xy_map[1U], xy_map[0U]);
 
-    const auto V_PickupMapContained = _pickupMap.getV_buffer()(i_map, j_map);
+    const auto V_PickupMapContained = _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]);
 
-    // volume leaving the canvas
-    const auto V_PickupMapLeaving = V_PickupMapContained * _transferRateBrush * timePassed * fp;
+    // volume leaving the pickup map
+    const auto V_PickupMapLeaving = V_PickupMapContained * _transferRatePickupMapToCanvas * timePassed * fp;
     const auto V_PickupMapRemaining = V_PickupMapContained - V_PickupMapLeaving;
     // update volume on pickupmap
-    _pickupMap.getV_buffer()(i_map, j_map) = V_PickupMapRemaining;
+    _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]) = V_PickupMapRemaining;
 
-    // transfer paint to canvas from pickup map
-    const auto V_Canvas = canvasLayer.getV_buffer()(i_canvas, j_canvas);
+    // transfer paint to canvas from brush and pickup color
+    const auto V_Canvas = canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
     constexpr auto Eps = 0.0000001;
     const auto V_total = V_Canvas + V_PickupMapLeaving;
     if (V_total > Eps)
     {
-      const auto k = (V_PickupMapLeaving * _pickupMap.getK_buffer()(i_map, j_map) +
-                      V_Canvas * canvasLayer.getK_buffer()(i_canvas, j_canvas)) /
+      const auto k = (V_PickupMapLeaving * _pickupMap.getK_buffer()(xy_map[1U], xy_map[0U]) +
+                      V_Canvas * canvasLayer.getK_buffer()(xy_canvas[1U], xy_canvas[0U])) /
                      V_total;
-      const auto s = (V_PickupMapLeaving * _pickupMap.getS_buffer()(i_map, j_map) +
-                      V_Canvas * canvasLayer.getS_buffer()(i_canvas, j_canvas)) /
+      const auto s = (V_PickupMapLeaving * _pickupMap.getS_buffer()(xy_map[1U], xy_map[0U]) +
+                      V_Canvas * canvasLayer.getS_buffer()(xy_canvas[1U], xy_canvas[0U])) /
                      V_total;
-      canvasLayer.set(i_canvas, j_canvas, k, s, V_total);
+      canvasLayer.set(xy_canvas[1U], xy_canvas[0U], k, s, V_total);
     }
   }
 
-  void refillPaint(const uint32_t i_map, const uint32_t j_map)
+  void refillPaint(const vec<int32_t, 2UL>& xy_map)
   {
+    // TODO transfer rate reservoir to brush
+
     // refill interaction layer of brush
-    const auto Vi_reservoir = _paintReservoir.getV_buffer()(i_map, j_map);
-    const auto Vl_reservoir = std::min(Vi_reservoir, std::max(1.0 - _pickupMap.getV_buffer()(i_map, j_map),
+    const auto Vi_reservoir = _paintReservoir.getV_buffer()(xy_map[1U], xy_map[0U]);
+    const auto Vl_reservoir = std::min(Vi_reservoir, std::max(1.0 - _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]),
                                                               0.0));  // volume leaving the brush reservoir
     const auto Vp = 1.0 - Vl_reservoir;
     const auto Vr_reservoir = Vi_reservoir - Vl_reservoir;  // volume staying on the canvas
-    const auto CiK_reservoir = _paintReservoir.getK_buffer()(i_map, j_map);
-    const auto CiS_reservoir = _paintReservoir.getS_buffer()(i_map, j_map);
+    const auto CiK_reservoir = _paintReservoir.getK_buffer()(xy_map[1U], xy_map[0U]);
+    const auto CiS_reservoir = _paintReservoir.getS_buffer()(xy_map[1U], xy_map[0U]);
 
     // reservoir to to pickup map
     constexpr auto Eps = 0.0000001;
     if (Vl_reservoir > Eps)
     {
-      const auto k = (Vp * _pickupMap.getK_buffer()(i_map, j_map) + Vl_reservoir * CiK_reservoir);
-      const auto s = (Vp * _pickupMap.getS_buffer()(i_map, j_map) + Vl_reservoir * CiS_reservoir);
-      const auto v = _pickupMap.getV_buffer()(i_map, j_map) + Vl_reservoir;
+      const auto k = (Vp * _pickupMap.getK_buffer()(xy_map[1U], xy_map[0U]) + Vl_reservoir * CiK_reservoir);
+      const auto s = (Vp * _pickupMap.getS_buffer()(xy_map[1U], xy_map[0U]) + Vl_reservoir * CiS_reservoir);
+      const auto v = _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]) + Vl_reservoir;
 
-      _pickupMap.set(i_map, j_map, k, s, v);
+      _pickupMap.set(xy_map[1U], xy_map[0U], k, s, v);
 
-      _paintReservoir.getV_buffer()(i_map, j_map) = Vr_reservoir;
+      _paintReservoir.getV_buffer()(xy_map[1U], xy_map[0U]) = Vr_reservoir;
     }
   }
 
@@ -251,9 +258,9 @@ private:
 
   T _maxBrushVolume = static_cast<T>(0.0);
 
-  T _transferRateCanvas = static_cast<T>(0.1);
+  T _transferRatePickupFromCanvas = static_cast<T>(0.1);
 
-  T _transferRateBrush = static_cast<T>(0.1);
+  T _transferRatePickupMapToCanvas = static_cast<T>(0.1);
 
   double _currentAngle = 0.0;
 

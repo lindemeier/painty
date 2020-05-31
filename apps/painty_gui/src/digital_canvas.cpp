@@ -20,13 +20,14 @@ std::shared_ptr<painty::Canvas<painty::vec3>> DigitalCanvas::getCanvas() const
   return _canvasPtr;
 }
 
-DigitalCanvas::DigitalCanvas(const uint32_t width, const uint32_t height, QObject* parent)
+DigitalCanvas::DigitalCanvas(const uint32_t width, const uint32_t height, QObject* parent, QLabel* pickupMapLabelPtr)
   : QGraphicsScene(0., 0., static_cast<double>(width), static_cast<double>(height), parent)
   , _pixmapItem(nullptr)
   , _canvasPtr(nullptr)
   , _brushStrokePath()
   , _brushPtr(std::make_unique<painty::TextureBrush<painty::vec3>>("/home/tsl/development/painty/data/sample_0"))
   , _brushPtr2(std::make_unique<painty::FootprintBrush<painty::vec3>>(256U))
+  , _pickupMapLabelPtr(pickupMapLabelPtr)
 {
   this->setBackgroundBrush(QBrush(QColor(128, 128, 128)));
   _pixmapItem = this->addPixmap(QPixmap(static_cast<int32_t>(width), static_cast<int32_t>(height)));
@@ -39,6 +40,11 @@ DigitalCanvas::DigitalCanvas(const uint32_t width, const uint32_t height, QObjec
 
 DigitalCanvas::~DigitalCanvas()
 {
+}
+
+void DigitalCanvas::setPickupMapLabelPtr(QLabel* labelPtr)
+{
+  _pickupMapLabelPtr = labelPtr;
 }
 
 void DigitalCanvas::setColor(const QColor& Rbc, const QColor& Rwc)
@@ -148,25 +154,63 @@ void DigitalCanvas::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
   updateCanvas();
 
   event->ignore();
-  updateCanvas();
 }
 
 void DigitalCanvas::updateCanvas()
 {
   painty::Renderer<painty::vec3> renderer;
-  painty::Mat<painty::vec3> rgb = renderer.compose(*_canvasPtr);
-  painty::Mat<painty::vec<uchar, 3UL>> rgb_8(rgb.getRows(), rgb.getCols());
-
-  const auto& fdata = rgb.getData();
-  auto& bdata = rgb_8.getData();
-  for (auto i = 0UL; i < fdata.size(); i++)
   {
-    bdata[i][0] = static_cast<uchar>(fdata[i][0] * 255.0);
-    bdata[i][1] = static_cast<uchar>(fdata[i][1] * 255.0);
-    bdata[i][2] = static_cast<uchar>(fdata[i][2] * 255.0);
+    painty::Mat<painty::vec3> rgb = renderer.compose(*_canvasPtr);
+    painty::Mat<painty::vec<uchar, 3UL>> rgb_8(rgb.getRows(), rgb.getCols());
+
+    QImage qimage(rgb.getCols(), rgb.getRows(), QImage::Format_RGB32);
+    for (auto i = 0U; i < rgb.getRows(); i++)
+    {
+      for (auto j = 0U; j < rgb.getCols(); j++)
+      {
+        qimage.setPixel(j, i,
+                        qRgb(static_cast<uint8_t>(rgb(i, j)[0U] * 255.0), static_cast<uint8_t>(rgb(i, j)[1U] * 255.0),
+                             static_cast<uint8_t>(rgb(i, j)[2U] * 255.0)));
+      }
+    }
+    _pixmapItem->setPixmap(QPixmap::fromImage(qimage));
   }
-  _pixmapItem->setPixmap(
-      QPixmap::fromImage(QImage(&(bdata.front()[0]), rgb_8.getCols(), rgb_8.getRows(), QImage::Format_RGB888)));
+  {
+    painty::Mat<painty::vec3> white(_brushPtr2->getPickupMap().getRows(), _brushPtr2->getPickupMap().getCols());
+    for (auto& p : white.getData())
+    {
+      p = painty::vec3::Ones();
+    }
+    painty::Mat<painty::vec3> rgb = renderer.compose(_brushPtr2->getPickupMap(), white);
+    painty::Mat<painty::vec<uchar, 3UL>> rgb_8(rgb.getRows(), rgb.getCols());
+
+    QImage qimage(rgb.getCols(), rgb.getRows(), QImage::Format_RGB32);
+    for (auto i = 0U; i < rgb.getRows(); i++)
+    {
+      for (auto j = 0U; j < rgb.getCols(); j++)
+      {
+        qimage.setPixel(j, i,
+                        qRgb(static_cast<uint8_t>(rgb(i, j)[0U] * 255.0), static_cast<uint8_t>(rgb(i, j)[1U] * 255.0),
+                             static_cast<uint8_t>(rgb(i, j)[2U] * 255.0)));
+      }
+    }
+    _pickupMapLabelPtr->setPixmap(QPixmap::fromImage(qimage.scaled(256, 256)));
+  }
+
+  // {
+  //   painty::Mat<double> fp = _brushPtr2->getFootprint();
+
+  //   QImage qimage(fp.getCols(), fp.getRows(), QImage::Format_Grayscale8);
+  //   for (auto i = 0U; i < fp.getRows(); i++)
+  //   {
+  //     for (auto j = 0U; j < fp.getCols(); j++)
+  //     {
+  //       const auto g = static_cast<uint8_t>(fp(i, j) * 255.0);
+  //       qimage.setPixel(j, i, qRgb(g, g, g));
+  //     }
+  //   }
+  //   _pickupMapLabelPtr->setPixmap(QPixmap::fromImage(qimage.scaled(256, 256)));
+  // }
 }
 
 DigitalCanvas* DigitalCanvasView::getDigitalCanvas()
@@ -174,16 +218,17 @@ DigitalCanvas* DigitalCanvasView::getDigitalCanvas()
   return _digitalCanvas.get();
 }
 
-DigitalCanvasView::DigitalCanvasView(const uint32_t width, const uint32_t height, QWidget* parent)
+DigitalCanvasView::DigitalCanvasView(const uint32_t width, const uint32_t height, QWidget* parent,
+                                     QLabel* pickupMapLabelPtr)
   : QGraphicsView(parent)
 {
-  _digitalCanvas = std::make_unique<DigitalCanvas>(width, height, this);
+  _digitalCanvas = std::make_unique<DigitalCanvas>(width, height, this, pickupMapLabelPtr);
   this->setScene(_digitalCanvas.get());
 }
 
-DigitalCanvasView::DigitalCanvasView(QWidget* parent) : QGraphicsView(parent)
+DigitalCanvasView::DigitalCanvasView(QWidget* parent, QLabel* pickupMapLabelPtr) : QGraphicsView(parent)
 {
-  _digitalCanvas = std::make_unique<DigitalCanvas>(1024U, 768U, this);
+  _digitalCanvas = std::make_unique<DigitalCanvas>(1024U, 768U, this, pickupMapLabelPtr);
   this->setScene(_digitalCanvas.get());
 }
 

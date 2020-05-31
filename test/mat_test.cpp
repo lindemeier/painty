@@ -61,8 +61,8 @@ TEST(MatTest, BilinearInterpolate)
 
 TEST(MatTest, Resize)
 {
-  constexpr auto testColor = static_cast<uint8_t>(120U);
-  painty::Mat<uint8_t> m0(256U, 256U);
+  constexpr auto testColor = 0.5;
+  painty::Mat<double> m0(256U, 256U);
   for (auto& p : m0.getData())
   {
     p = testColor;

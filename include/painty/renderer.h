@@ -10,6 +10,7 @@
 
 #include <painty/canvas.h>
 #include <painty/mat.h>
+#include <painty/paint_layer.h>
 
 namespace painty
 {
@@ -21,15 +22,12 @@ class Renderer final
 
 public:
   /**
-   * @brief Compose current wet layer onto substrate.
+   * @brief Compose wet layer onto substrate.
    *
    * @return Mat<vector_type>
    */
-  Mat<vector_type> compose(const Canvas<vector_type>& canvas) const
+  Mat<vector_type> compose(const PaintLayer<vector_type>& paintLayer, const Mat<vector_type>& R0_buffer) const
   {
-    const auto& R0_buffer = canvas.getR0();
-    const auto& paintLayer = canvas.getPaintLayer();
-
     Mat<vector_type> R1(R0_buffer.getRows(), R0_buffer.getCols());
 
     auto& r1_data = R1.getData();
@@ -44,6 +42,19 @@ public:
       r1_data[i] = ComputeReflectance(K[i], S[i], r0_data[i], V[i]);
     }
     return R1;
+  }
+
+  /**
+   * @brief Compose current wet layer of canvas onto substrate.
+   *
+   * @return Mat<vector_type>
+   */
+  Mat<vector_type> compose(const Canvas<vector_type>& canvas) const
+  {
+    const auto& R0_buffer = canvas.getR0();
+    const auto& paintLayer = canvas.getPaintLayer();
+
+    return compose(paintLayer, R0_buffer);
   }
 
   /**

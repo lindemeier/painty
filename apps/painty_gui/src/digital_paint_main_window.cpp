@@ -15,7 +15,8 @@ DigitalPaintMainWindow::DigitalPaintMainWindow(QWidget* parent)
   : QMainWindow(parent), ui(new Ui::DigitalPaintMainWindow)
 {
   ui->setupUi(this);
-  m_canvasView = new DigitalCanvasView(1024U, 768U, this);
+  m_canvasView = new DigitalCanvasView(1024U, 768U, this, ui->pickupMapLabel);
+
   this->setCentralWidget(m_canvasView);
 
   KMVisualizeWidget* km = ui->kmWidget;

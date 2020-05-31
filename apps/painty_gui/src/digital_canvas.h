@@ -3,6 +3,7 @@
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QLabel>
 
 #include <memory>
 
@@ -23,10 +24,12 @@ class DigitalCanvas : public QGraphicsScene
   Q_OBJECT
 
 public:
-  DigitalCanvas(const uint32_t width, const uint32_t height, QObject* parent);
+  DigitalCanvas(const uint32_t width, const uint32_t height, QObject* parent, QLabel* pickupMapLabelPtr);
   virtual ~DigitalCanvas();
 
   std::shared_ptr<painty::Canvas<painty::vec3>> getCanvas() const;
+
+  void setPickupMapLabelPtr(QLabel* labelPtr);
 
 public slots:
   void setColor(const QColor& Rbc, const QColor& Rwc);
@@ -53,6 +56,8 @@ private:
   double _brushRadius = 15.0;
 
   bool _mousePressed = false;
+
+  QLabel* _pickupMapLabelPtr = nullptr;
 };
 
 class DigitalCanvasView : public QGraphicsView
@@ -61,8 +66,8 @@ class DigitalCanvasView : public QGraphicsView
   int32_t _currentKey;
 
 public:
-  DigitalCanvasView(const uint32_t width, const uint32_t height, QWidget* parent);
-  DigitalCanvasView(QWidget* parent);
+  DigitalCanvasView(const uint32_t width, const uint32_t height, QWidget* parent, QLabel* pickupMapLabelPtr);
+  DigitalCanvasView(QWidget* parent, QLabel* pickupMapLabelPtr);
   virtual ~DigitalCanvasView();
 
   DigitalCanvas* getDigitalCanvas();
