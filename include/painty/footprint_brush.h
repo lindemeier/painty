@@ -141,6 +141,20 @@ public:
   }
 
 private:
+  template <class Type>
+  Type blend(const T v_a, const Type& a, const T v_b, const Type& b) const
+  {
+    constexpr auto Eps = static_cast<T>(0.0000001);
+    const T vTotal = v_a + v_b;
+
+    auto res = a;
+    if (vTotal > Eps)
+    {
+      res = (v_a * a + v_b * b) / vTotal;
+    }
+    return res;
+  }
+
   void pickupPaint(const vec<int32_t, 2UL>& xy_canvas, const vec<int32_t, 2UL>& xy_map,
                    PaintLayer<vector_type>& canvasLayer)
   {
@@ -158,17 +172,17 @@ private:
     canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]) = V_CanvasRemaining;
 
     // transfer paint to pickup map from canvas
+    // TODO max capacity of pickup map
     const auto V_PickupMap = _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]);
     constexpr auto Eps = 0.0000001;
     const auto V_total = V_PickupMap + V_CanvasLeaving;
     if (V_total > Eps)
     {
-      const auto k = (V_PickupMap * _pickupMap.getK_buffer()(xy_map[1U], xy_map[0U]) +
-                      V_CanvasLeaving * canvasLayer.getK_buffer()(xy_canvas[1U], xy_canvas[0U])) /
-                     V_total;
-      const auto s = (V_PickupMap * _pickupMap.getS_buffer()(xy_map[1U], xy_map[0U]) +
-                      V_CanvasLeaving * canvasLayer.getS_buffer()(xy_canvas[1U], xy_canvas[0U])) /
-                     V_total;
+      const auto k = blend(V_PickupMap, _pickupMap.getK_buffer()(xy_map[1U], xy_map[0U]), V_CanvasLeaving,
+                           canvasLayer.getK_buffer()(xy_canvas[1U], xy_canvas[0U]));
+
+      const auto s = blend(V_PickupMap, _pickupMap.getS_buffer()(xy_map[1U], xy_map[0U]), V_CanvasLeaving,
+                           canvasLayer.getS_buffer()(xy_canvas[1U], xy_canvas[0U]));
       _pickupMap.set(xy_map[1U], xy_map[0U], k, s, V_total);
     }
   }
@@ -199,21 +213,17 @@ private:
     if (V_total > Eps)
     {
       // blend brush color with pickup color as source color
-      const auto k_source =
-          (V_PickupMapLeaving * _pickupMap.getK_buffer()(xy_map[1U], xy_map[0U]) + V_BrushLeave * _paintIntrinsic[0U]) /
-          V_total;
-      const auto s_source =
-          (V_PickupMapLeaving * _pickupMap.getS_buffer()(xy_map[1U], xy_map[0U]) + V_BrushLeave * _paintIntrinsic[1U]) /
-          V_total;
+      const auto k_source = blend(V_PickupMapLeaving, _pickupMap.getK_buffer()(xy_map[1U], xy_map[0U]), V_BrushLeave,
+                                  _paintIntrinsic[0U]);
+      const auto s_source = blend(V_PickupMapLeaving, _pickupMap.getS_buffer()(xy_map[1U], xy_map[0U]), V_BrushLeave,
+                                  _paintIntrinsic[1U]);
 
       // blend source color with canvas
       const auto V_canvas = canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
-      const auto k = (V_canvas * canvasLayer.getK_buffer()(xy_canvas[1U], xy_canvas[0U]) + V_total * k_source) /
-                     (V_canvas + V_total);
-      const auto s = (V_canvas * canvasLayer.getS_buffer()(xy_canvas[1U], xy_canvas[0U]) + V_total * s_source) /
-                     (V_canvas + V_total);
+      const auto k = blend(V_canvas, canvasLayer.getK_buffer()(xy_canvas[1U], xy_canvas[0U]), V_total, k_source);
+      const auto s = blend(V_canvas, canvasLayer.getS_buffer()(xy_canvas[1U], xy_canvas[0U]), V_total, s_source);
 
-      canvasLayer.set(xy_canvas[1U], xy_canvas[0U], k, s, V_total);
+      canvasLayer.set(xy_canvas[1U], xy_canvas[0U], k, s, V_total + V_canvas);
     }
   }
 
@@ -225,9 +235,11 @@ private:
 
   Mat<double> _footprintFullSize;
 
+  T _maxBrushVolume = static_cast<T>(0.0);
+
   PaintLayer<vector_type> _pickupMap;
 
-  T _maxBrushVolume = static_cast<T>(0.0);
+  T _pickupMapMaxCapacity = static_cast<T>(1.0);
 
   T _transferRatePickupFromCanvas = static_cast<T>(0.1);
 
