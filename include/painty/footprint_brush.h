@@ -162,18 +162,20 @@ private:
     constexpr auto timePassed = 1.0;
 
     const auto fp = _footprint(xy_map[1U], xy_map[0U]);
+    const auto V_PickupMap = _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]);
+    const auto leftInPickupMap = _pickupMapMaxCapacity - V_PickupMap;
 
     const auto V_CanvasContained = canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
 
     // volume leaving the canvas
-    const auto V_CanvasLeaving = V_CanvasContained * _transferRatePickupFromCanvas * timePassed * (fp);
+    const auto V_CanvasLeaving =
+        std::min(leftInPickupMap, V_CanvasContained * _transferRatePickupFromCanvas * timePassed * fp);
     const auto V_CanvasRemaining = V_CanvasContained - V_CanvasLeaving;
     // update volume on canvas
     canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]) = V_CanvasRemaining;
 
     // transfer paint to pickup map from canvas
     // TODO max capacity of pickup map
-    const auto V_PickupMap = _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]);
     constexpr auto Eps = 0.0000001;
     const auto V_total = V_PickupMap + V_CanvasLeaving;
     if (V_total > Eps)
@@ -213,10 +215,11 @@ private:
     if (V_total > Eps)
     {
       // blend brush color with pickup color as source color
-      const auto k_source = blend(V_PickupMapLeaving, _pickupMap.getK_buffer()(xy_map[1U], xy_map[0U]), V_BrushLeave,
-                                  _paintIntrinsic[0U]);
-      const auto s_source = blend(V_PickupMapLeaving, _pickupMap.getS_buffer()(xy_map[1U], xy_map[0U]), V_BrushLeave,
-                                  _paintIntrinsic[1U]);
+      const auto invPickupMapContained = _pickupMapMaxCapacity - V_PickupMapContained;
+      const auto k_source = blend(V_PickupMapContained, _pickupMap.getK_buffer()(xy_map[1U], xy_map[0U]),
+                                  invPickupMapContained, _paintIntrinsic[0U]);
+      const auto s_source = blend(V_PickupMapContained, _pickupMap.getS_buffer()(xy_map[1U], xy_map[0U]),
+                                  invPickupMapContained, _paintIntrinsic[1U]);
 
       // blend source color with canvas
       const auto V_canvas = canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
