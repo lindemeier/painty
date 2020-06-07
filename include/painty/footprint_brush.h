@@ -16,7 +16,7 @@
 
 #include <iostream>
 
-#define PRINT(x) std::cout << #x ":\t" << x << std::endl
+// #define PRINT(x) std::cout << #x ":\t" << x << std::endl
 
 namespace painty
 {
@@ -54,14 +54,14 @@ public:
     _pickupMap = PaintLayer<vector_type>(_sizeMap, _sizeMap);
     _pickupMap.clear();
 
-    PRINT(_radius);
-    PRINT(width);
-    PRINT(_sizeMap);
+    // PRINT(_radius);
+    // PRINT(width);
+    // PRINT(_sizeMap);
 
-    const auto fcols = _footprint.getCols();
-    const auto frows = _footprint.getRows();
-    PRINT(fcols);
-    PRINT(frows);
+    // const auto fcols = _footprint.getCols();
+    // const auto frows = _footprint.getRows();
+    // PRINT(fcols);
+    // PRINT(frows);
   }
 
   /**
@@ -102,11 +102,13 @@ public:
     {
       for (int32_t col = -wr; col <= wr; col++)
       {
-        // TODO use rotated canvas coordinates bounding rectangle (axis aligned)
-        // inverse!
-
         const vec<int32_t, 2UL> xy_canvas = { col + center[0U], row + center[1U] };
-        const vec<int32_t, 2UL> xy_map = { col + wr, row + hr };
+
+        const auto cosTheta = std::cos(-theta);
+        const auto sinTheta = std::sin(-theta);
+        const auto rotatedCol = col * cosTheta - row * sinTheta;
+        const auto rotatedRow = col * sinTheta + row * cosTheta;
+        const vec<int32_t, 2UL> xy_map = { rotatedCol + wr, rotatedRow + hr };
 
         // skip sampels outside of canvas
         if ((xy_canvas[1U] < 0) || (xy_canvas[0U] < 0) || (xy_canvas[0U] >= canvas.getPaintLayer().getCols()) ||
