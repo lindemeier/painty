@@ -149,6 +149,35 @@ public:
     return s;
   }
 
+  /**
+   * @brief Return a padded copy of the mat.
+   *
+   * @param left
+   * @param right
+   * @param up
+   * @param down
+   * @param paddingValue
+   * @return Mat<T>
+   */
+  Mat<T> padded(const uint32_t left, const uint32_t right, const uint32_t up, const uint32_t down,
+                const T& paddingValue) const
+  {
+    Mat<T> s(_rows + up + down, _cols + left + right);
+    // initialize all to default value
+    for (auto& v : s.getData())
+    {
+      v = paddingValue;
+    }
+    for (auto i = 0U; i < _rows; i++)
+    {
+      for (auto j = 0U; j < _cols; j++)
+      {
+        s(i + up, j + left) = (*this)(i, j);
+      }
+    }
+    return s;
+  }
+
 private:
   inline size_t one_d(uint32_t i, uint32_t j) const
   {

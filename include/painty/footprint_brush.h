@@ -16,6 +16,8 @@
 
 #include <iostream>
 
+#define PRINT(x) std::cout << #x ":\t" << x << std::endl
+
 namespace painty
 {
 template <class vector_type>
@@ -42,13 +44,24 @@ public:
   void setRadius(const double radius)
   {
     _radius = radius;
+    const auto width = static_cast<uint32_t>(2.0 * std::ceil(radius) + 1.0);
+    _sizeMap = static_cast<uint32_t>(std::ceil(std::sqrt(2.0) * width));
 
-    _sizeMap = static_cast<uint32_t>(2.0 * std::ceil(radius) + 1.0);
+    const auto pad = (_sizeMap - width) / 2;
 
-    _footprint = _footprintFullSize.scaled(_sizeMap, _sizeMap);
+    _footprint = _footprintFullSize.scaled(width, width).padded(pad, pad, pad, pad, 0.0);
 
     _pickupMap = PaintLayer<vector_type>(_sizeMap, _sizeMap);
     _pickupMap.clear();
+
+    PRINT(_radius);
+    PRINT(width);
+    PRINT(_sizeMap);
+
+    const auto fcols = _footprint.getCols();
+    const auto frows = _footprint.getRows();
+    PRINT(fcols);
+    PRINT(frows);
   }
 
   /**
@@ -61,14 +74,6 @@ public:
     clean();
 
     _paintIntrinsic = paint;
-
-    for (auto i = 0U; i < _sizeMap; i++)
-    {
-      for (auto j = 0U; j < _sizeMap; j++)
-      {
-        _pickupMap.set(i, j, vector_type::Zero(), vector_type::Zero(), 0.0);
-      }
-    }
   }
 
   void clean()
