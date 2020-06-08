@@ -178,6 +178,45 @@ public:
     return s;
   }
 
+  /**
+   * @brief Rotate a mat around its center.
+   *
+   * @param from
+   * @param to
+   * @param theta angle
+   */
+  static void rotate(const Mat<T>& from, Mat<T>& to, const double theta)
+  {
+    if ((to.getCols() != from.getCols()) || (to.getRows() != from.getRows()))
+    {
+      to = Mat<T>(from._rows, from._cols);
+    }
+    // use the inverse rotation, to -> from
+    const auto cosTheta = std::cos(-theta);
+    const auto sinTheta = std::sin(-theta);
+    const double cRow = to.getRows() * 0.5;
+    const double cCol = to.getCols() * 0.5;
+    for (auto row = 0U; row < to._rows; row++)
+    {
+      for (auto col = 0U; col < to._cols; col++)
+      {
+        // translate center to zero
+        const auto tRow = row - cRow;
+        const auto tCol = col - cCol;
+
+        // rotate around center
+        const auto rotatedCol = tCol * cosTheta - tRow * sinTheta;
+        const auto rotatedRow = tCol * sinTheta + tRow * cosTheta;
+
+        // translate back
+        const double nRow = rotatedRow + cRow;
+        const double nCol = rotatedCol + cCol;
+
+        to(row, col) = from({ nCol, nRow });
+      }
+    }
+  }
+
 private:
   inline size_t one_d(uint32_t i, uint32_t j) const
   {

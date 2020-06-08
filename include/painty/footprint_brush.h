@@ -10,6 +10,8 @@
 #ifndef PAINTY_FOOTPRINT_BRUSH_H
 #define PAINTY_FOOTPRINT_BRUSH_H
 
+#include <random>
+
 #include <painty/canvas.h>
 #include <painty/image_io.h>
 #include <painty/paint_layer.h>
@@ -89,6 +91,10 @@ public:
 
   void applyTo(const vec2& center, const double theta, Canvas<vector_type>& canvas)
   {
+    static std::random_device rd;
+    static std::mt19937 mt(rd());
+    std::uniform_int_distribution<int32_t> dist(-1, 1);
+
     constexpr auto Eps = 0.0000001;
     constexpr auto time = 1.0;
     const int32_t h = _footprint.getRows();
@@ -108,7 +114,8 @@ public:
         const auto sinTheta = std::sin(-theta);
         const auto rotatedCol = col * cosTheta - row * sinTheta;
         const auto rotatedRow = col * sinTheta + row * cosTheta;
-        const vec<int32_t, 2UL> xy_map = { rotatedCol + wr, rotatedRow + hr };
+        const vec<int32_t, 2UL> xy_map = { dist(mt) + std::round(rotatedCol + wr),
+                                           dist(mt) + std::round(rotatedRow + hr) };
 
         // skip sampels outside of canvas
         if ((xy_canvas[1U] < 0) || (xy_canvas[0U] < 0) || (xy_canvas[0U] >= canvas.getPaintLayer().getCols()) ||
@@ -228,8 +235,7 @@ private:
     }
 
     const auto v_canvasIs = canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
-    const auto v_tranferredToCanvas =
-        _transferRatePickupMapToCanvas * footprintHeight * _pickupMapMaxCapacity * timePassed;
+    const auto v_tranferredToCanvas = footprintHeight * _pickupMapMaxCapacity * timePassed;
 
     const auto k =
         blend(v_tranferredToCanvas, k_source, v_canvasIs, canvasLayer.getK_buffer()(xy_canvas[1U], xy_canvas[0U]));
