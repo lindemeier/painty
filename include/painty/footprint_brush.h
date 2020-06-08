@@ -126,8 +126,7 @@ public:
         // TODO
         canvas.checkDry(xy_canvas[0U], xy_canvas[1U], now);
 
-        const auto fp = _footprint(xy_map[1U], xy_map[0U]);
-        if (fp > Eps)
+        const auto footprintHeight = _footprint(xy_map[1U], xy_map[0U]);
         {
           pickupPaint(xy_canvas, xy_map, canvas.getPaintLayer());
 
@@ -168,7 +167,7 @@ private:
     // todo let time pass
     constexpr auto timePassed = 1.0;
 
-    const auto fp = _footprint(xy_map[1U], xy_map[0U]);
+    const auto footprintHeight = _footprint(xy_map[1U], xy_map[0U]);
     const auto V_PickupMap = _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]);
     const auto leftInPickupMap = _pickupMapMaxCapacity - V_PickupMap;
 
@@ -176,7 +175,7 @@ private:
 
     // volume leaving the canvas
     const auto V_CanvasLeaving =
-        std::min(leftInPickupMap, V_CanvasContained * _transferRatePickupFromCanvas * timePassed * fp);
+        std::min(leftInPickupMap, V_CanvasContained * _transferRatePickupFromCanvas * timePassed * footprintHeight);
     const auto V_CanvasRemaining = V_CanvasContained - V_CanvasLeaving;
     // update volume on canvas
     canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]) = V_CanvasRemaining;
@@ -202,20 +201,21 @@ private:
     // todo let time pass
     constexpr auto timePassed = 1.0;
 
-    const auto fp = _footprint(xy_map[1U], xy_map[0U]);
+    const auto footprintHeight = _footprint(xy_map[1U], xy_map[0U]);
 
     const auto V_PickupMapContained = _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]);
 
     // volume leaving the pickup map
-    const auto V_PickupMapLeaving = V_PickupMapContained * _transferRatePickupMapToCanvas * timePassed * fp;
+    const auto V_PickupMapLeaving =
+        V_PickupMapContained * _transferRatePickupMapToCanvas * timePassed * footprintHeight;
     const auto V_PickupMapRemaining = V_PickupMapContained - V_PickupMapLeaving;
     // update volume on pickupmap
     _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]) = V_PickupMapRemaining;
 
     // transfer paint to canvas from brush and pickup color
     const auto V_BrushLeave = _maxBrushVolume * _transferRatePickupMapToCanvas * timePassed *
-                              fp;  // TODO figure out correct brush intrinsic load vloume
-                                   // for mixing source color and blend with canvas
+                              footprintHeight;  // TODO figure out correct brush intrinsic load vloume
+                                                // for mixing source color and blend with canvas
 
     constexpr auto Eps = 0.0000001;
     const auto V_total = V_BrushLeave + V_PickupMapLeaving;
