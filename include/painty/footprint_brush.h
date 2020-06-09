@@ -193,9 +193,16 @@ private:
 
     const auto& layer = canvas.getPaintLayer();
 
-    for (auto row = 0U; row < layer.getRows(); row++)
+    const vec<int32_t, 2UL> topLeftAllowed = { std::max(static_cast<int32_t>(exceptCenter[0U] - wr - _radius), 0),
+                                               std::max(static_cast<int32_t>(exceptCenter[1U] - hr - _radius), 0) };
+    const vec<int32_t, 2UL> bottomRightAllowed = {
+      std::min(static_cast<int32_t>(exceptCenter[0U] + wr + _radius), static_cast<int32_t>(layer.getCols() - 1)),
+      std::min(static_cast<int32_t>(exceptCenter[1U] + hr + _radius), static_cast<int32_t>(layer.getRows() - 1))
+    };
+
+    for (auto row = topLeftAllowed[1U]; row <= bottomRightAllowed[1U]; row++)
     {
-      for (auto col = 0U; col < layer.getCols(); col++)
+      for (auto col = topLeftAllowed[0U]; col <= bottomRightAllowed[0U]; col++)
       {
         if ((row > topLeft[1U]) && (row < bottomRight[1U]) && (col > topLeft[0U]) && (col < bottomRight[0U]))
         {
