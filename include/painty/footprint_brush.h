@@ -33,7 +33,7 @@ public:
 
   // size has to cover all brush transfomations
   // consider padding the pickup map
-  FootprintBrush(const double radius) : _sizeMap(0U), _footprint(0U, 0U), _pickupMap(0U, 0U)
+  FootprintBrush(const double radius) : _sizeMap(0U), _footprint(0U, 0U), _pickupMap(0U, 0U), _snapshotBuffer(0U, 0U)
 
   {
     io::imRead("/home/tsl/development/painty/data/footprint/footprint.png", _footprintFullSize);
@@ -89,6 +89,13 @@ public:
     }
   }
 
+  void updateSnapshot(const Canvas<vector_type>& canvas)
+  {
+    // update the snapshot buffer which is used for paint pickup
+    // the buffer gets resized accordingly in the called function
+    canvas.getPaintLayer().copyTo(_snapshotBuffer);
+  }
+
   void applyTo(const vec2& center, const double theta, Canvas<vector_type>& canvas)
   {
     constexpr auto Eps = 0.0000001;
@@ -97,6 +104,8 @@ public:
     const int32_t w = _footprint.getCols();
     const int32_t hr = (h - 1) / 2;
     const int32_t wr = (w - 1) / 2;
+
+    updateSnapshot(canvas, center);
 
     const auto now = std::chrono::system_clock::now();
 
@@ -134,10 +143,10 @@ public:
         {
           counter++;
 
-          meanVolumes[0U] += canvas.getPaintLayer().getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
+          meanVolumes[0U] += _snapshotBuffer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
 
-          pickupPaint(xy_canvas, xy_map, canvas.getPaintLayer());
-          meanVolumes[1U] += canvas.getPaintLayer().getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
+          pickupPaint(xy_canvas, xy_map, _snapshotBuffer);
+          meanVolumes[1U] += _snapshotBuffer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
 
           depositPaint(xy_canvas, xy_map, canvas.getPaintLayer());
           meanVolumes[2U] += canvas.getPaintLayer().getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
@@ -165,6 +174,39 @@ public:
   }
 
 private:
+  void updateSnapshot(const Canvas<vector_type>& canvas, const vec2 exceptCenter)
+  {
+    // check if snapshot buffer has the correct size
+    if ((canvas.getPaintLayer().getCols() != _snapshotBuffer.getCols()) ||
+        (canvas.getPaintLayer().getRows() != _snapshotBuffer.getRows()))
+    {
+      canvas.getPaintLayer().copyTo(_snapshotBuffer);
+    }
+
+    const int32_t h = _footprint.getRows();
+    const int32_t w = _footprint.getCols();
+    const int32_t hr = (h - 1) / 2;
+    const int32_t wr = (w - 1) / 2;
+
+    const vec<int32_t, 2UL> topLeft = { exceptCenter[0U] - wr, exceptCenter[1U] - hr };
+    const vec<int32_t, 2UL> bottomRight = { exceptCenter[0U] + wr, exceptCenter[1U] + hr };
+
+    const auto& layer = canvas.getPaintLayer();
+
+    for (auto row = 0U; row < layer.getRows(); row++)
+    {
+      for (auto col = 0U; col < layer.getCols(); col++)
+      {
+        if ((row > topLeft[1U]) && (row < bottomRight[1U]) && (col > topLeft[0U]) && (col < bottomRight[0U]))
+        {
+          continue;
+        }
+        _snapshotBuffer.set(row, col, layer.getK_buffer()(row, col), layer.getS_buffer()(row, col),
+                            layer.getV_buffer()(row, col));
+      }
+    }
+  }
+
   template <class Type>
   Type blend(const T v_a, const Type& a, const T v_b, const Type& b) const
   {
@@ -267,7 +309,9 @@ private:
 
   PaintLayer<vector_type> _pickupMap;
 
-  T _pickupMapMaxCapacity = static_cast<T>(2.0);
+  PaintLayer<vector_type> _snapshotBuffer;
+
+  T _pickupMapMaxCapacity = static_cast<T>(1.0);
 
   T _transferRatePickupFromCanvas = static_cast<T>(0.5);
 

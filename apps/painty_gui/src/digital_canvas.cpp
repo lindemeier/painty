@@ -98,7 +98,7 @@ void DigitalCanvas::mousePressEvent(QGraphicsSceneMouseEvent* event)
     _brushStrokePath.push_back(p);
   }
 
-  _brushPtr2->applyTo(p, 3.14 * 0.5, *_canvasPtr);
+  _brushPtr2->applyTo(p, 0.0, *_canvasPtr);
   updateCanvas();
 
   _mousePressed = true;
@@ -119,7 +119,7 @@ void DigitalCanvas::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
   if (_mousePressed)
   {
-    _brushPtr2->applyTo(p, 3.14 * 0.5, *_canvasPtr);
+    _brushPtr2->applyTo(p, 0.0, *_canvasPtr);
     updateCanvas();
   }
 
@@ -150,8 +150,9 @@ void DigitalCanvas::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
   // _brushPtr->applyTo(cubicPoints, *_canvasPtr);
   _mousePressed = false;
 
-  _brushPtr2->applyTo(p, 3.14 * 0.5, *_canvasPtr);
+  _brushPtr2->applyTo(p, 0.0, *_canvasPtr);
   updateCanvas();
+  // _brushPtr2->updateSnapshot(*_canvasPtr);
 
   event->ignore();
 }
