@@ -74,9 +74,33 @@ public:
 
     const auto a = position[0] - static_cast<double>(x);
     const auto c = position[1] - static_cast<double>(y);
-
-    return (this->operator()(y0, x0) * (1.0 - a) + this->operator()(y0, x1) * a) * (1.0 - c) +
-           (this->operator()(y1, x0) * (1.0 - a) + this->operator()(y1, x1) * a) * c;
+    if constexpr (DataType<T>::dim == 1U)
+    {
+      return static_cast<T>((static_cast<double>(this->operator()(y0, x0)) * (1.0 - a) +
+                             static_cast<double>(this->operator()(y0, x1)) * a) *
+                                (1.0 - c) +
+                            (static_cast<double>(this->operator()(y1, x0)) * (1.0 - a) +
+                             static_cast<double>(this->operator()(y1, x1)) * a) *
+                                c);
+    }
+    else
+    {
+      T r;
+      for (auto i = 0U; i < DataType<T>::rows; i++)
+      {
+        for (auto j = 0U; j < DataType<T>::cols; j++)
+        {
+          r(i, j) = static_cast<typename DataType<T>::channel_type>(
+              (static_cast<double>(this->operator()(y0, x0)(i, j)) * (1.0 - a) +
+               static_cast<double>(this->operator()(y0, x1)(i, j)) * a) *
+                  (1.0 - c) +
+              (static_cast<double>(this->operator()(y1, x0)(i, j)) * (1.0 - a) +
+               static_cast<double>(this->operator()(y1, x1)(i, j)) * a) *
+                  c);
+        }
+      }
+      return r;
+    }
   }
 
   const std::vector<T>& getData() const
@@ -99,6 +123,98 @@ public:
     Mat<T> c(_rows, _cols);
     std::copy(_data_ptr->cbegin(), _data_ptr->cend(), c._data_ptr->begin());
     return c;
+  }
+
+  /**
+   * @brief up- or downsample an image using bilinear interpolation.
+   *
+   * @param rows number of rows of the resized image
+   * @param cols number of cols of the resized image
+   *
+   * @return Mat<T>
+   */
+  Mat<T> scaled(const uint32_t rows, const uint32_t cols) const
+  {
+    Mat<T> s(rows, cols);
+    for (auto i = 0U; i < rows; i++)
+    {
+      for (auto j = 0U; j < cols; j++)
+      {
+        vec2 p = { (static_cast<double>(j) / static_cast<double>(cols - 1U)) * static_cast<double>(_cols - 1U),
+                   (static_cast<double>(i) / static_cast<double>(rows - 1U)) * static_cast<double>(_rows - 1U) };
+
+        s(i, j) = (*this)(p);
+      }
+    }
+    return s;
+  }
+
+  /**
+   * @brief Return a padded copy of the mat.
+   *
+   * @param left
+   * @param right
+   * @param up
+   * @param down
+   * @param paddingValue
+   * @return Mat<T>
+   */
+  Mat<T> padded(const uint32_t left, const uint32_t right, const uint32_t up, const uint32_t down,
+                const T& paddingValue) const
+  {
+    Mat<T> s(_rows + up + down, _cols + left + right);
+    // initialize all to default value
+    for (auto& v : s.getData())
+    {
+      v = paddingValue;
+    }
+    for (auto i = 0U; i < _rows; i++)
+    {
+      for (auto j = 0U; j < _cols; j++)
+      {
+        s(i + up, j + left) = (*this)(i, j);
+      }
+    }
+    return s;
+  }
+
+  /**
+   * @brief Rotate a mat around its center.
+   *
+   * @param from
+   * @param to
+   * @param theta angle
+   */
+  static void rotate(const Mat<T>& from, Mat<T>& to, const double theta)
+  {
+    if ((to.getCols() != from.getCols()) || (to.getRows() != from.getRows()))
+    {
+      to = Mat<T>(from._rows, from._cols);
+    }
+    // use the inverse rotation, to -> from
+    const auto cosTheta = std::cos(-theta);
+    const auto sinTheta = std::sin(-theta);
+    const double cRow = to.getRows() * 0.5;
+    const double cCol = to.getCols() * 0.5;
+    for (auto row = 0U; row < to._rows; row++)
+    {
+      for (auto col = 0U; col < to._cols; col++)
+      {
+        // translate center to zero
+        const auto tRow = row - cRow;
+        const auto tCol = col - cCol;
+
+        // rotate around center
+        const auto rotatedCol = tCol * cosTheta - tRow * sinTheta;
+        const auto rotatedRow = tCol * sinTheta + tRow * cosTheta;
+
+        // translate back
+        const double nRow = rotatedRow + cRow;
+        const double nCol = rotatedCol + cCol;
+
+        to(row, col) = from({ nCol, nRow });
+      }
+    }
   }
 
 private:

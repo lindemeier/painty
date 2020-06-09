@@ -58,3 +58,25 @@ TEST(MatTest, BilinearInterpolate)
   EXPECT_NEAR(expected[1], m0(pos)[1], 0.0000001);
   EXPECT_NEAR(expected[2], m0(pos)[2], 0.0000001);
 }
+
+TEST(MatTest, Resize)
+{
+  constexpr auto testColor = 0.5;
+  painty::Mat<double> m0(256U, 256U);
+  for (auto& p : m0.getData())
+  {
+    p = testColor;
+  }
+
+  const auto smaller = m0.scaled(135, 94);
+  for (const auto& p : smaller.getData())
+  {
+    EXPECT_EQ(testColor, p);
+  }
+
+  const auto bigger = m0.scaled(2 * m0.getRows(), 3 * m0.getCols());
+  for (const auto& p : bigger.getData())
+  {
+    EXPECT_EQ(testColor, p);
+  }
+}

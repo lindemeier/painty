@@ -15,7 +15,8 @@ DigitalPaintMainWindow::DigitalPaintMainWindow(QWidget* parent)
   : QMainWindow(parent), ui(new Ui::DigitalPaintMainWindow)
 {
   ui->setupUi(this);
-  m_canvasView = new DigitalCanvasView(1024U, 768U, this);
+  m_canvasView = new DigitalCanvasView(1024U, 768U, this, ui->pickupMapLabel);
+
   this->setCentralWidget(m_canvasView);
 
   KMVisualizeWidget* km = ui->kmWidget;
@@ -71,6 +72,25 @@ DigitalPaintMainWindow::DigitalPaintMainWindow(QWidget* parent)
                        tr("Created by:\t\tThomas "
                           "Lindemeier\nDate:\t\t2017\n\nEmail:\t\tthomas.lindemeier@gmail.com\n\nSimple program "
                           "demonstrating the creation of brush strokes."));
+  });
+
+  ui->spinBoxPickupRate->setValue(m_canvasView->getDigitalCanvas()->getFootprintBrushPtr()->getPickupRate());
+  ui->spinBoxDepositionRate->setValue(m_canvasView->getDigitalCanvas()->getFootprintBrushPtr()->getDepositionRate());
+  connect(ui->spinBoxPickupRate, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          [=](double v) { m_canvasView->getDigitalCanvas()->getFootprintBrushPtr()->setPickupRate(v); });
+  connect(ui->spinBoxDepositionRate, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+          [=](double v) { m_canvasView->getDigitalCanvas()->getFootprintBrushPtr()->setDepositionRate(v); });
+
+  ui->spinBoxDryingTime->setValue(
+      static_cast<double>(m_canvasView->getDigitalCanvas()->getCanvas()->getDryingTime().count()));
+  connect(ui->spinBoxDryingTime, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [=](double v) {
+    m_canvasView->getDigitalCanvas()->getCanvas()->setDryingTime(
+        std::chrono::milliseconds(static_cast<uint32_t>(v * 1000.0)));
+  });
+
+  connect(ui->checkBoxUseSnapshotBuffer, QOverload<int>::of(&QCheckBox::stateChanged), [=](int state) {
+    const auto checked = (state == Qt::Checked);
+    m_canvasView->getDigitalCanvas()->getFootprintBrushPtr()->setUseSnapshotBuffer(checked);
   });
 }
 

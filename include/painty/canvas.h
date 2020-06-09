@@ -32,7 +32,7 @@ public:
     , _R0_buffer(rows, cols)
     , _h_buffer(rows, cols)
     , _timeMap(rows, cols)
-    , _dryingTime(60 * 1000)
+    , _dryingTime(static_cast<uint32_t>(0.25 * 60 * 1000000))
   {
     _backgroundColor.fill(static_cast<T>(1.0));
     clear();
@@ -142,7 +142,7 @@ public:
   void checkDry(uint32_t x, uint32_t y, const std::chrono::system_clock::time_point& timePoint)
   {
     T v = _paintLayer.getV_buffer()(y, x);
-    if ((_dryingTime.count() > 0.0) && (v > 0.0))
+    if ((_dryingTime.count() > 0.0) && (v > 0.001))
     {
       auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(timePoint - _timeMap(y, x));
 
@@ -173,6 +173,11 @@ public:
       }
     }
     _timeMap(y, x) = timePoint;
+  }
+
+  std::chrono::milliseconds getDryingTime()
+  {
+    return _dryingTime;
   }
 
   void setDryingTime(std::chrono::milliseconds msecs)
