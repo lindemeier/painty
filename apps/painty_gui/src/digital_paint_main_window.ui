@@ -66,7 +66,24 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QCheckBox" name="checkBox">
+         <widget class="QRadioButton" name="radioButtonTextureBrush">
+          <property name="text">
+           <string>texture brush</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="radioButtonFootprintBrush">
+          <property name="text">
+           <string>footprint brush</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxUseSnapshotBuffer">
           <property name="text">
            <string>use snapshot buffer</string>
           </property>

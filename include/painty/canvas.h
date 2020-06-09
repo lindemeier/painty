@@ -175,6 +175,11 @@ public:
     _timeMap(y, x) = timePoint;
   }
 
+  std::chrono::milliseconds getDryingTime()
+  {
+    return _dryingTime;
+  }
+
   void setDryingTime(std::chrono::milliseconds msecs)
   {
     _dryingTime = msecs;

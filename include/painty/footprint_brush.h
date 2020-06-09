@@ -177,6 +177,36 @@ public:
     return _footprint;
   }
 
+  void setPickupRate(const T rate)
+  {
+    _pickupRate = rate;
+  }
+
+  void setDepositionRate(const T rate)
+  {
+    _depositionRate = rate;
+  }
+
+  T getPickupRate() const
+  {
+    return _pickupRate;
+  }
+
+  T getDepositionRate() const
+  {
+    return _depositionRate;
+  }
+
+  bool getUseSnapshotBuffer() const
+  {
+    return _useSnapshot;
+  }
+
+  void setUseSnapshotBuffer(const bool use)
+  {
+    _useSnapshot = use;
+  }
+
 private:
   void updateSnapshot(const Canvas<vector_type>& canvas, const vec2 exceptCenter)
   {
@@ -251,7 +281,7 @@ private:
 
       // pickup map
       const auto v_canvasIs = canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
-      const auto v_canvasLeave = std::min(v_pickupFree, _transferRatePickupFromCanvas * footprintHeight * v_canvasIs *
+      const auto v_canvasLeave = std::min(v_pickupFree, _pickupRate * footprintHeight * v_canvasIs *
                                                             timePassed);  // leave should be computed as shoveling
                                                                           // all volume above brush bristle height
 
@@ -295,7 +325,7 @@ private:
       k_source = blend(v_pickupIs, _pickupMap.getK_buffer()(xy_map[1U], xy_map[0U]), v_pickupFree, _paintIntrinsic[0U]);
       s_source = blend(v_pickupIs, _pickupMap.getS_buffer()(xy_map[1U], xy_map[0U]), v_pickupFree, _paintIntrinsic[1U]);
 
-      const auto v_pickupLeave = _transferRatePickupMapToCanvas * footprintHeight * v_pickupIs * timePassed;
+      const auto v_pickupLeave = _depositionRate * footprintHeight * v_pickupIs * timePassed;
       const auto v_pickupRemain = v_pickupIs - v_pickupLeave;
       _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]) = v_pickupRemain;
     }
@@ -326,9 +356,9 @@ private:
 
   T _pickupMapMaxCapacity = static_cast<T>(1.0);
 
-  T _transferRatePickupFromCanvas = static_cast<T>(0.2);
+  T _pickupRate = static_cast<T>(0.2);
 
-  T _transferRatePickupMapToCanvas = static_cast<T>(0.1);
+  T _depositionRate = static_cast<T>(0.1);
 
   double _currentAngle = 0.0;
 

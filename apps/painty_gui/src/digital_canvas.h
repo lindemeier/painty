@@ -38,6 +38,8 @@ public slots:
   void dryCanvas();
   void updateCanvas();
 
+  painty::FootprintBrush<painty::vec3>* getFootprintBrushPtr();
+
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent* event);
   void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
@@ -48,8 +50,8 @@ private:
 
   std::shared_ptr<painty::Canvas<painty::vec3>> _canvasPtr;
 
-  std::unique_ptr<painty::TextureBrush<painty::vec3>> _brushPtr;
-  std::unique_ptr<painty::FootprintBrush<painty::vec3>> _brushPtr2;
+  std::unique_ptr<painty::TextureBrush<painty::vec3>> _brushTexturePtr;
+  std::unique_ptr<painty::FootprintBrush<painty::vec3>> _brushFootprintPtr;
 
   std::vector<painty::vec2> _brushStrokePath;
 

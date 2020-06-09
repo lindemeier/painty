@@ -25,8 +25,8 @@ DigitalCanvas::DigitalCanvas(const uint32_t width, const uint32_t height, QObjec
   , _pixmapItem(nullptr)
   , _canvasPtr(nullptr)
   , _brushStrokePath()
-  , _brushPtr(std::make_unique<painty::TextureBrush<painty::vec3>>("/home/tsl/development/painty/data/sample_0"))
-  , _brushPtr2(std::make_unique<painty::FootprintBrush<painty::vec3>>(256U))
+  , _brushTexturePtr(std::make_unique<painty::TextureBrush<painty::vec3>>("/home/tsl/development/painty/data/sample_0"))
+  , _brushFootprintPtr(std::make_unique<painty::FootprintBrush<painty::vec3>>(256U))
   , _pickupMapLabelPtr(pickupMapLabelPtr)
 {
   this->setBackgroundBrush(QBrush(QColor(128, 128, 128)));
@@ -55,8 +55,8 @@ void DigitalCanvas::setColor(const QColor& Rbc, const QColor& Rwc)
   try
   {
     painty::ComputeScatteringAndAbsorption(Rb, Rw, K, S);
-    _brushPtr->dip({ K, S });
-    _brushPtr2->dip({ K, S });
+    _brushTexturePtr->dip({ K, S });
+    _brushFootprintPtr->dip({ K, S });
   }
   catch (std::invalid_argument)
   {
@@ -67,8 +67,8 @@ void DigitalCanvas::setColor(const QColor& Rbc, const QColor& Rwc)
 void DigitalCanvas::setBrushRadius(int radius)
 {
   _brushRadius = static_cast<double>(radius);
-  _brushPtr->setRadius(_brushRadius);
-  _brushPtr2->setRadius(_brushRadius);
+  _brushTexturePtr->setRadius(_brushRadius);
+  _brushFootprintPtr->setRadius(_brushRadius);
 
   QPixmap cursorMap(2 * radius + 1, 2 * radius + 1);
   cursorMap.fill(QColor(255, 255, 255, 0));
@@ -98,7 +98,7 @@ void DigitalCanvas::mousePressEvent(QGraphicsSceneMouseEvent* event)
     _brushStrokePath.push_back(p);
   }
 
-  _brushPtr2->applyTo(p, 0.0, *_canvasPtr);
+  _brushFootprintPtr->applyTo(p, 0.0, *_canvasPtr);
   updateCanvas();
 
   _mousePressed = true;
@@ -119,7 +119,7 @@ void DigitalCanvas::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
   if (_mousePressed)
   {
-    _brushPtr2->applyTo(p, 0.0, *_canvasPtr);
+    _brushFootprintPtr->applyTo(p, 0.0, *_canvasPtr);
     updateCanvas();
   }
 
@@ -147,12 +147,12 @@ void DigitalCanvas::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
   //   cubicPoints.push_back(spline.cubic(t));
   // }
 
-  // _brushPtr->applyTo(cubicPoints, *_canvasPtr);
+  // _brushTexturePtr->applyTo(cubicPoints, *_canvasPtr);
   _mousePressed = false;
 
-  _brushPtr2->applyTo(p, 0.0, *_canvasPtr);
+  _brushFootprintPtr->applyTo(p, 0.0, *_canvasPtr);
   updateCanvas();
-  // _brushPtr2->updateSnapshot(*_canvasPtr);
+  // _brushFootprintPtr->updateSnapshot(*_canvasPtr);
 
   event->ignore();
 }
@@ -177,12 +177,13 @@ void DigitalCanvas::updateCanvas()
     _pixmapItem->setPixmap(QPixmap::fromImage(qimage));
   }
   {
-    painty::Mat<painty::vec3> white(_brushPtr2->getPickupMap().getRows(), _brushPtr2->getPickupMap().getCols());
+    painty::Mat<painty::vec3> white(_brushFootprintPtr->getPickupMap().getRows(),
+                                    _brushFootprintPtr->getPickupMap().getCols());
     for (auto& p : white.getData())
     {
       p = painty::vec3::Ones();
     }
-    painty::Mat<painty::vec3> rgb = renderer.compose(_brushPtr2->getPickupMap(), white);
+    painty::Mat<painty::vec3> rgb = renderer.compose(_brushFootprintPtr->getPickupMap(), white);
     painty::Mat<painty::vec<uchar, 3UL>> rgb_8(rgb.getRows(), rgb.getCols());
 
     QImage qimage(rgb.getCols(), rgb.getRows(), QImage::Format_RGB32);
@@ -199,7 +200,7 @@ void DigitalCanvas::updateCanvas()
   }
 
   // {
-  //   painty::Mat<double> fp = _brushPtr2->getFootprint();
+  //   painty::Mat<double> fp = _brushFootprintPtr->getFootprint();
 
   //   QImage qimage(fp.getCols(), fp.getRows(), QImage::Format_Grayscale8);
   //   for (auto i = 0U; i < fp.getRows(); i++)
@@ -212,6 +213,11 @@ void DigitalCanvas::updateCanvas()
   //   }
   //   _pickupMapLabelPtr->setPixmap(QPixmap::fromImage(qimage.scaled(256, 256)));
   // }
+}
+
+painty::FootprintBrush<painty::vec3>* DigitalCanvas::getFootprintBrushPtr()
+{
+  return _brushFootprintPtr.get();
 }
 
 DigitalCanvas* DigitalCanvasView::getDigitalCanvas()
