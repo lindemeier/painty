@@ -31,8 +31,6 @@ class FootprintBrush final
 public:
   FootprintBrush() = default;
 
-  // size has to cover all brush transfomations
-  // consider padding the pickup map
   FootprintBrush(const double radius) : _sizeMap(0U), _footprint(0U, 0U), _pickupMap(0U, 0U), _snapshotBuffer(0U, 0U)
 
   {
@@ -43,27 +41,23 @@ public:
 
   ~FootprintBrush() = default;
 
+  /**
+   * @brief Change the radius of the brush.
+   *
+   * @param radius
+   */
   void setRadius(const double radius)
   {
     _radius = radius;
     const auto width = static_cast<uint32_t>(2.0 * std::ceil(radius) + 1.0);
     _sizeMap = static_cast<uint32_t>(std::ceil(std::sqrt(2.0) * width));
 
+    // resize the footprint to the radius and pad to cover all rotations.
     const auto pad = (_sizeMap - width) / 2;
-
     _footprint = _footprintFullSize.scaled(width, width).padded(pad, pad, pad, pad, 0.0);
 
     _pickupMap = PaintLayer<vector_type>(_sizeMap, _sizeMap);
     _pickupMap.clear();
-
-    // PRINT(_radius);
-    // PRINT(width);
-    // PRINT(_sizeMap);
-
-    // const auto fcols = _footprint.getCols();
-    // const auto frows = _footprint.getRows();
-    // PRINT(fcols);
-    // PRINT(frows);
   }
 
   /**
@@ -78,6 +72,10 @@ public:
     _paintIntrinsic = paint;
   }
 
+  /**
+   * @brief Clear the pickup map
+   *
+   */
   void clean()
   {
     for (auto i = 0U; i < _sizeMap; i++)
@@ -96,6 +94,14 @@ public:
     canvas.getPaintLayer().copyTo(_snapshotBuffer);
   }
 
+  /**
+   * @brief Imprints the canvas at a specific location with the currently set paint and state of the pickup map and
+   * footprint.
+   *
+   * @param center anchor point of the brush in canvas coordinates
+   * @param theta yaw angle of the brush
+   * @param canvas the canvas to paint to
+   */
   void applyTo(const vec2& center, const double theta, Canvas<vector_type>& canvas)
   {
     constexpr auto Eps = 0.0000001;
@@ -208,6 +214,13 @@ public:
   }
 
 private:
+  /**
+   * @brief Updates the snapshot buffer to the state of the canvas leaving out the area covered by the pickup map with
+   * respect to the current brush position.
+   *
+   * @param canvas the canvas to copy from.
+   * @param exceptCenter the center point of the brush. Anchor point.
+   */
   void updateSnapshot(const Canvas<vector_type>& canvas, const vec2 exceptCenter)
   {
     // check if snapshot buffer has the correct size
@@ -248,6 +261,16 @@ private:
     }
   }
 
+  /**
+   * @brief Generic linear interpolation function.
+   *
+   * @tparam Type
+   * @param v_a
+   * @param a
+   * @param v_b
+   * @param b
+   * @return Type
+   */
   template <class Type>
   Type blend(const T v_a, const Type& a, const T v_b, const Type& b) const
   {
@@ -262,6 +285,13 @@ private:
     return res;
   }
 
+  /**
+   * @brief Pickup paint at a specific position.
+   *
+   * @param xy_canvas canvas position
+   * @param xy_map corresponding pickup and footprint position
+   * @param canvasLayer the paint layer to pickup from
+   */
   void pickupPaint(const vec<int32_t, 2UL>& xy_canvas, const vec<int32_t, 2UL>& xy_map,
                    PaintLayer<vector_type>& canvasLayer)
   {
@@ -308,6 +338,13 @@ private:
     }
   }
 
+  /**
+   * @brief Distribute paint at a specific position.
+   *
+   * @param xy_canvas canvas position
+   * @param xy_map corresponding pickup and footprint position
+   * @param canvasLayer the canvas to distibute paint to
+   */
   void depositPaint(const vec<int32_t, 2UL>& xy_canvas, const vec<int32_t, 2UL>& xy_map,
                     PaintLayer<vector_type>& canvasLayer)
   {
@@ -340,28 +377,74 @@ private:
     canvasLayer.set(xy_canvas[1U], xy_canvas[0U], k, s, v_tranferredToCanvas + v_canvasIs);
   }
 
+  /**
+   * @brief Radius of the brush.
+   *
+   */
   double _radius;
 
+  /**
+   * @brief Size of footprint and pickup map based on radius. Wide enough to cover all rotations of the footprint.
+   *
+   */
   uint32_t _sizeMap;
 
+  /**
+   * @brief Height map resulting from a 3d brush footprinting.
+   *
+   */
   Mat<double> _footprint;
 
+  /**
+   * @brief Original image of the footprint used for scaling according to radius. ONly used when footprint is derived
+   * from a 2d sample.
+   *
+   */
   Mat<double> _footprintFullSize;
 
+  /**
+   * @brief Paint layer storing paint picked up from the canvas during imprinting.
+   *
+   */
   PaintLayer<vector_type> _pickupMap;
 
+  /**
+   * @brief Buffer for picking up paint. This can be used instead of the canvas directly to avoid oversampling and quick
+   * saturation of the pickup map with recently deposited paint.
+   *
+   * Chu et al. - Detail-Preserving Paint Modeling for 3D Brushes - NPAR 2010
+   *
+   */
   PaintLayer<vector_type> _snapshotBuffer;
 
+  /**
+   * @brief Whether to use the snapshot buffer or directly pickuo from the canvas.
+   *
+   */
   bool _useSnapshot = true;
 
+  /**
+   * @brief Max capacity of the pickup map.
+   *
+   */
   T _pickupMapMaxCapacity = static_cast<T>(1.0);
 
+  /**
+   * @brief Controls how fast/much paint is picked up.
+   *
+   */
   T _pickupRate = static_cast<T>(0.2);
 
+  /**
+   * @brief Controls how fast/much paint is distributed.
+   *
+   */
   T _depositionRate = static_cast<T>(0.1);
 
-  double _currentAngle = 0.0;
-
+  /**
+   * @brief Current brush color. [K, S]
+   *
+   */
   std::array<vector_type, 2UL> _paintIntrinsic;
 };
 }  // namespace painty
