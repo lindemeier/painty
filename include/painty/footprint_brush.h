@@ -91,10 +91,6 @@ public:
 
   void applyTo(const vec2& center, const double theta, Canvas<vector_type>& canvas)
   {
-    static std::random_device rd;
-    static std::mt19937 mt(rd());
-    std::uniform_int_distribution<int32_t> dist(-1, 1);
-
     constexpr auto Eps = 0.0000001;
     constexpr auto time = 1.0;
     const int32_t h = _footprint.getRows();
@@ -104,6 +100,8 @@ public:
 
     const auto now = std::chrono::system_clock::now();
 
+    std::array<double, 3UL> meanVolumes = { 0.0, 0.0, 0.0 };
+    auto counter = 0U;
     for (int32_t row = -hr; row <= hr; row++)
     {
       for (int32_t col = -wr; col <= wr; col++)
@@ -114,8 +112,7 @@ public:
         const auto sinTheta = std::sin(-theta);
         const auto rotatedCol = col * cosTheta - row * sinTheta;
         const auto rotatedRow = col * sinTheta + row * cosTheta;
-        const vec<int32_t, 2UL> xy_map = { dist(mt) + std::round(rotatedCol + wr),
-                                           dist(mt) + std::round(rotatedRow + hr) };
+        const vec<int32_t, 2UL> xy_map = { std::round(rotatedCol + wr), std::round(rotatedRow + hr) };
 
         // skip sampels outside of canvas
         if ((xy_canvas[1U] < 0) || (xy_canvas[0U] < 0) || (xy_canvas[0U] >= canvas.getPaintLayer().getCols()) ||
@@ -135,12 +132,26 @@ public:
 
         const auto footprintHeight = _footprint(xy_map[1U], xy_map[0U]);
         {
+          counter++;
+
+          meanVolumes[0U] += canvas.getPaintLayer().getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
+
           pickupPaint(xy_canvas, xy_map, canvas.getPaintLayer());
+          meanVolumes[1U] += canvas.getPaintLayer().getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
 
           depositPaint(xy_canvas, xy_map, canvas.getPaintLayer());
+          meanVolumes[2U] += canvas.getPaintLayer().getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
         }
       }
     }
+
+    for (auto& v : meanVolumes)
+    {
+      v /= static_cast<double>(counter);
+    }
+    std::cout << "\nmean volume before any interaction: " << meanVolumes[0U] << std::endl;
+    std::cout << "mean volume after after pickup: " << meanVolumes[1U] << std::endl;
+    std::cout << "mean volume after deposit: " << meanVolumes[2U] << std::endl;
   }
 
   const PaintLayer<vector_type>& getPickupMap() const
@@ -177,6 +188,8 @@ private:
     constexpr auto timePassed = 1.0;
 
     const auto footprintHeight = _footprint(xy_map[1U], xy_map[0U]);
+
+    // TODO consider blending only with max volume 1? restrict volume to 1 als on canvas?
 
     if (footprintHeight > 0.0)
     {
@@ -254,7 +267,7 @@ private:
 
   PaintLayer<vector_type> _pickupMap;
 
-  T _pickupMapMaxCapacity = static_cast<T>(1.0);
+  T _pickupMapMaxCapacity = static_cast<T>(2.0);
 
   T _transferRatePickupFromCanvas = static_cast<T>(0.5);
 

@@ -32,7 +32,7 @@ public:
     , _R0_buffer(rows, cols)
     , _h_buffer(rows, cols)
     , _timeMap(rows, cols)
-    , _dryingTime(60 * 100)
+    , _dryingTime(static_cast<uint32_t>(0.25 * 60 * 1000))
   {
     _backgroundColor.fill(static_cast<T>(1.0));
     clear();
