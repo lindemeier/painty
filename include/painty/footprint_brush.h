@@ -105,7 +105,11 @@ public:
     const int32_t hr = (h - 1) / 2;
     const int32_t wr = (w - 1) / 2;
 
-    updateSnapshot(canvas, center);
+    if (_useSnapshot)
+    {
+      updateSnapshot(canvas, center);
+    }
+    auto& pickupSoure = (_useSnapshot) ? _snapshotBuffer : canvas.getPaintLayer();
 
     const auto now = std::chrono::system_clock::now();
 
@@ -143,10 +147,10 @@ public:
         {
           counter++;
 
-          meanVolumes[0U] += _snapshotBuffer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
+          meanVolumes[0U] += pickupSoure.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
 
-          pickupPaint(xy_canvas, xy_map, _snapshotBuffer);
-          meanVolumes[1U] += _snapshotBuffer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
+          pickupPaint(xy_canvas, xy_map, pickupSoure);
+          meanVolumes[1U] += pickupSoure.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
 
           depositPaint(xy_canvas, xy_map, canvas.getPaintLayer());
           meanVolumes[2U] += canvas.getPaintLayer().getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
@@ -318,11 +322,13 @@ private:
 
   PaintLayer<vector_type> _snapshotBuffer;
 
+  bool _useSnapshot = true;
+
   T _pickupMapMaxCapacity = static_cast<T>(1.0);
 
-  T _transferRatePickupFromCanvas = static_cast<T>(0.5);
+  T _transferRatePickupFromCanvas = static_cast<T>(0.2);
 
-  T _transferRatePickupMapToCanvas = static_cast<T>(0.5);
+  T _transferRatePickupMapToCanvas = static_cast<T>(0.1);
 
   double _currentAngle = 0.0;
 
