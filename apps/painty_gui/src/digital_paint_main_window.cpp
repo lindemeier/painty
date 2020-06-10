@@ -88,6 +88,8 @@ DigitalPaintMainWindow::DigitalPaintMainWindow(QWidget* parent)
         std::chrono::milliseconds(static_cast<uint32_t>(v * 1000.0)));
   });
 
+  ui->checkBoxUseSnapshotBuffer->setChecked(
+      m_canvasView->getDigitalCanvas()->getFootprintBrushPtr()->getUseSnapshotBuffer());
   connect(ui->checkBoxUseSnapshotBuffer, QOverload<int>::of(&QCheckBox::stateChanged), [=](int state) {
     const auto checked = (state == Qt::Checked);
     m_canvasView->getDigitalCanvas()->getFootprintBrushPtr()->setUseSnapshotBuffer(checked);
