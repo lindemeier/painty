@@ -212,11 +212,6 @@ public:
     _useSnapshot = use;
   }
 
-  void beginStroke()
-  {
-    _path.clear();
-  }
-
 private:
   /**
    * @brief Updates the snapshot buffer to the state of the canvas leaving out the area covered by the pickup map with
@@ -435,12 +430,6 @@ private:
    *
    */
   std::array<vector_type, 2UL> _paintIntrinsic;
-
-  /**
-   * @brief path of brush stroke movement.
-   *
-   */
-  std::vector<vec2> _path;
 };
 }  // namespace painty
 
