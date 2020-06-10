@@ -61,6 +61,84 @@ public:
   }
 
   /**
+   * @brief Imprints the canvas at a specific location with the currently set paint and state of the pickup map and
+   * footprint.
+   *
+   * @param center anchor point of the brush in canvas coordinates
+   * @param theta yaw angle of the brush
+   * @param canvas the canvas to paint to
+   */
+  void imprint(const vec2& center, const double theta, Canvas<vector_type>& canvas)
+  {
+    constexpr auto Eps = 0.0000001;
+
+    const int32_t h = _footprint.getRows();
+    const int32_t w = _footprint.getCols();
+    const int32_t hr = (h - 1) / 2;
+    const int32_t wr = (w - 1) / 2;
+
+    if (_useSnapshot)
+    {
+      updateSnapshot(canvas, center);
+    }
+    auto& pickupSoure = (_useSnapshot) ? _snapshotBuffer : canvas.getPaintLayer();
+
+    const auto now = std::chrono::system_clock::now();
+
+    std::array<double, 3UL> meanVolumes = { 0.0, 0.0, 0.0 };
+    auto counter = 0U;
+    for (int32_t row = -hr; row <= hr; row++)
+    {
+      for (int32_t col = -wr; col <= wr; col++)
+      {
+        const vec<int32_t, 2UL> xy_canvas = { col + center[0U], row + center[1U] };
+
+        const auto cosTheta = std::cos(-theta);
+        const auto sinTheta = std::sin(-theta);
+        const auto rotatedCol = col * cosTheta - row * sinTheta;
+        const auto rotatedRow = col * sinTheta + row * cosTheta;
+        const vec<int32_t, 2UL> xy_map = { std::round(rotatedCol + wr), std::round(rotatedRow + hr) };
+
+        // skip sampels outside of canvas
+        if ((xy_canvas[1U] < 0) || (xy_canvas[0U] < 0) || (xy_canvas[0U] >= canvas.getPaintLayer().getCols()) ||
+            (xy_canvas[1U] >= canvas.getPaintLayer().getRows()))
+        {
+          continue;
+        }
+
+        // skip samples outside of pickup map
+        if ((xy_map[1U] < 0) || (xy_map[0U] < 0) || (xy_map[0U] >= _sizeMap) || (xy_map[1U] >= _sizeMap))
+        {
+          continue;
+        }
+
+        canvas.checkDry(xy_canvas[0U], xy_canvas[1U], now);
+
+        const auto footprintHeight = _footprint(xy_map[1U], xy_map[0U]);
+        {
+          counter++;
+
+          meanVolumes[0U] += pickupSoure.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
+
+          pickupPaint(xy_canvas, xy_map, pickupSoure);
+          meanVolumes[1U] += pickupSoure.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
+
+          depositPaint(xy_canvas, xy_map, canvas.getPaintLayer());
+          meanVolumes[2U] += canvas.getPaintLayer().getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
+        }
+      }
+    }
+
+    for (auto& v : meanVolumes)
+    {
+      v /= static_cast<double>(counter);
+    }
+    std::cout << "\nmean volume before any interaction: " << meanVolumes[0U] << std::endl;
+    std::cout << "mean volume after after pickup: " << meanVolumes[1U] << std::endl;
+    std::cout << "mean volume after deposit: " << meanVolumes[2U] << std::endl;
+  }
+
+  /**
    * @brief Dip the brush in paint paint.
    *
    * @param paint
@@ -92,33 +170,6 @@ public:
     // update the snapshot buffer which is used for paint pickup
     // the buffer gets resized accordingly in the called function
     canvas.getPaintLayer().copyTo(_snapshotBuffer);
-  }
-
-  void applyTo(const vec2& center, const double theta, Canvas<vector_type>& canvas)
-  {
-    if (_path.empty() || (_path.back() != center))
-    {
-      _path.push_back(center);
-    }
-
-    if (_path.size() == 1U)
-    {
-      applyAtPoint(center, theta, canvas);
-      return;
-    }
-
-    // interpolate positions between last and this point
-    const auto p0 = _path[_path.size() - 2U];
-    const auto p1 = _path.back();
-    const auto dist = (p1 - p0).norm();  // distance in pixel
-    // don't imprint at previous point
-    for (uint32_t p = 1U; p <= static_cast<uint32_t>(dist); p++)
-    {
-      const double t = static_cast<double>(p) / dist;
-
-      const vec2 point = (1.0 - t) * p0 + t * p1;
-      applyAtPoint(point, theta, canvas);
-    }
   }
 
   const PaintLayer<vector_type>& getPickupMap() const
@@ -167,85 +218,6 @@ public:
   }
 
 private:
-  /**
-   * @brief Imprints the canvas at a specific location with the currently set paint and state of the pickup map and
-   * footprint.
-   *
-   * @param center anchor point of the brush in canvas coordinates
-   * @param theta yaw angle of the brush
-   * @param canvas the canvas to paint to
-   */
-  void applyAtPoint(const vec2& center, const double theta, Canvas<vector_type>& canvas)
-  {
-    constexpr auto Eps = 0.0000001;
-
-    const int32_t h = _footprint.getRows();
-    const int32_t w = _footprint.getCols();
-    const int32_t hr = (h - 1) / 2;
-    const int32_t wr = (w - 1) / 2;
-
-    if (_useSnapshot)
-    {
-      updateSnapshot(canvas, center);
-    }
-    auto& pickupSoure = (_useSnapshot) ? _snapshotBuffer : canvas.getPaintLayer();
-
-    const auto now = std::chrono::system_clock::now();
-
-    std::array<double, 3UL> meanVolumes = { 0.0, 0.0, 0.0 };
-    auto counter = 0U;
-    for (int32_t row = -hr; row <= hr; row++)
-    {
-      for (int32_t col = -wr; col <= wr; col++)
-      {
-        const vec<int32_t, 2UL> xy_canvas = { col + center[0U], row + center[1U] };
-
-        const auto cosTheta = std::cos(-theta);
-        const auto sinTheta = std::sin(-theta);
-        const auto rotatedCol = col * cosTheta - row * sinTheta;
-        const auto rotatedRow = col * sinTheta + row * cosTheta;
-        const vec<int32_t, 2UL> xy_map = { std::round(rotatedCol + wr), std::round(rotatedRow + hr) };
-
-        // skip sampels outside of canvas
-        if ((xy_canvas[1U] < 0) || (xy_canvas[0U] < 0) || (xy_canvas[0U] >= canvas.getPaintLayer().getCols()) ||
-            (xy_canvas[1U] >= canvas.getPaintLayer().getRows()))
-        {
-          continue;
-        }
-
-        // skip samples outside of pickup map
-        if ((xy_map[1U] < 0) || (xy_map[0U] < 0) || (xy_map[0U] >= _sizeMap) || (xy_map[1U] >= _sizeMap))
-        {
-          continue;
-        }
-
-        // TODO
-        canvas.checkDry(xy_canvas[0U], xy_canvas[1U], now);
-
-        const auto footprintHeight = _footprint(xy_map[1U], xy_map[0U]);
-        {
-          counter++;
-
-          meanVolumes[0U] += pickupSoure.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
-
-          pickupPaint(xy_canvas, xy_map, pickupSoure);
-          meanVolumes[1U] += pickupSoure.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
-
-          depositPaint(xy_canvas, xy_map, canvas.getPaintLayer());
-          meanVolumes[2U] += canvas.getPaintLayer().getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
-        }
-      }
-    }
-
-    for (auto& v : meanVolumes)
-    {
-      v /= static_cast<double>(counter);
-    }
-    std::cout << "\nmean volume before any interaction: " << meanVolumes[0U] << std::endl;
-    std::cout << "mean volume after after pickup: " << meanVolumes[1U] << std::endl;
-    std::cout << "mean volume after deposit: " << meanVolumes[2U] << std::endl;
-  }
-
   /**
    * @brief Updates the snapshot buffer to the state of the canvas leaving out the area covered by the pickup map with
    * respect to the current brush position.

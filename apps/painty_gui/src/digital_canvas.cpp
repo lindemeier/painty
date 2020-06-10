@@ -98,7 +98,6 @@ void DigitalCanvas::mousePressEvent(QGraphicsSceneMouseEvent* event)
     _brushStrokePath.push_back(p);
   }
   _brushFootprintPtr->beginStroke();
-  _brushFootprintPtr->applyTo(p, 0.0, *_canvasPtr);
   updateCanvas();
 
   _mousePressed = true;
@@ -119,7 +118,18 @@ void DigitalCanvas::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
   if (_mousePressed)
   {
-    _brushFootprintPtr->applyTo(p, 0.0, *_canvasPtr);
+    // interpolate positions between last and this point
+    const auto p0 = _brushStrokePath[_brushStrokePath.size() - 2U];
+    const auto p1 = _brushStrokePath.back();
+    const auto dist = (p1 - p0).norm();  // distance in pixel
+    // don't imprint at previous point
+    for (uint32_t p = 1U; p <= static_cast<uint32_t>(dist); p++)
+    {
+      const double t = static_cast<double>(p) / dist;
+
+      const painty::vec2 point = (1.0 - t) * p0 + t * p1;
+      _brushFootprintPtr->imprint(point, 0.0, *_canvasPtr);
+    }
     updateCanvas();
   }
 
