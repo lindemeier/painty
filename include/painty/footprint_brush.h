@@ -105,7 +105,7 @@ public:
   void applyTo(const vec2& center, const double theta, Canvas<vector_type>& canvas)
   {
     constexpr auto Eps = 0.0000001;
-    constexpr auto time = 1.0;
+
     const int32_t h = _footprint.getRows();
     const int32_t w = _footprint.getCols();
     const int32_t hr = (h - 1) / 2;
@@ -295,11 +295,6 @@ private:
   void pickupPaint(const vec<int32_t, 2UL>& xy_canvas, const vec<int32_t, 2UL>& xy_map,
                    PaintLayer<vector_type>& canvasLayer)
   {
-    constexpr auto Eps = 0.0000001;
-
-    // todo let time pass
-    constexpr auto timePassed = 1.0;
-
     const auto footprintHeight = _footprint(xy_map[1U], xy_map[0U]);
 
     // TODO consider blending only with max volume 1? restrict volume to 1 als on canvas?
@@ -307,33 +302,25 @@ private:
     if (footprintHeight > 0.0)
     {
       const auto v_pickupIs = _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]);
-      const auto v_pickupFree = _pickupMapMaxCapacity - v_pickupIs;
 
       // pickup map
       const auto v_canvasIs = canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
-      const auto v_canvasLeave = std::min(v_pickupFree, _pickupRate * footprintHeight * v_canvasIs *
-                                                            timePassed);  // leave should be computed as shoveling
-                                                                          // all volume above brush bristle height
+      const auto v_canvasLeave = _pickupRate * v_canvasIs;  // leave should be computed as shoveling
+                                                            // all volume above brush bristle height
 
       // transfer paint to pickup map from canvas
-      if (v_canvasLeave > Eps)
+      if (v_canvasLeave > 0.0)
       {
         // update volume on canvas
         const auto v_canvasRemain = v_canvasIs - v_canvasLeave;
         canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]) = v_canvasRemain;
 
-        // update color and voulme in pickup map
+        // update color and volume in pickup map
         const auto k = blend(v_pickupIs, _pickupMap.getK_buffer()(xy_map[1U], xy_map[0U]), v_canvasLeave,
                              canvasLayer.getK_buffer()(xy_canvas[1U], xy_canvas[0U]));
         const auto s = blend(v_pickupIs, _pickupMap.getS_buffer()(xy_map[1U], xy_map[0U]), v_canvasLeave,
                              canvasLayer.getS_buffer()(xy_canvas[1U], xy_canvas[0U]));
         _pickupMap.set(xy_map[1U], xy_map[0U], k, s, v_pickupIs + v_canvasLeave);
-
-        // PRINT(k.transpose());
-        // PRINT(s.transpose());
-        // PRINT(v_pickupIs);
-        // PRINT(v_canvasLeave);
-        // std::cout << std::endl;
       }
     }
   }
@@ -348,33 +335,32 @@ private:
   void depositPaint(const vec<int32_t, 2UL>& xy_canvas, const vec<int32_t, 2UL>& xy_map,
                     PaintLayer<vector_type>& canvasLayer)
   {
-    // todo let time pass
-    constexpr auto timePassed = 1.0;
-
     const auto footprintHeight = _footprint(xy_map[1U], xy_map[0U]);
 
-    // compute blend color from pickup map and brush color
-    vector_type k_source = vector_type::Zero();
-    vector_type s_source = vector_type::Zero();
+    if (footprintHeight > 0.0)
     {
+      // compute blend color from pickup map and brush color
+      vector_type k_source = vector_type::Zero();
+      vector_type s_source = vector_type::Zero();
+
       const auto v_pickupIs = _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]);
-      const auto v_pickupFree = _pickupMapMaxCapacity - v_pickupIs;
+
+      // if the pickup map is quite empty, blend with brush color
+      const auto v_pickupFree = std::max(0.0, _pickupMapMaxCapacity - v_pickupIs);
       k_source = blend(v_pickupIs, _pickupMap.getK_buffer()(xy_map[1U], xy_map[0U]), v_pickupFree, _paintIntrinsic[0U]);
       s_source = blend(v_pickupIs, _pickupMap.getS_buffer()(xy_map[1U], xy_map[0U]), v_pickupFree, _paintIntrinsic[1U]);
 
-      const auto v_pickupLeave = _depositionRate * footprintHeight * v_pickupIs * timePassed;
+      const auto v_pickupLeave = _depositionRate * v_pickupIs;
       const auto v_pickupRemain = v_pickupIs - v_pickupLeave;
       _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]) = v_pickupRemain;
+
+      const auto v_canvasIs = canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
+
+      const auto v_Blend = _pickupMapMaxCapacity;
+      const auto k = blend(v_Blend, k_source, v_canvasIs, canvasLayer.getK_buffer()(xy_canvas[1U], xy_canvas[0U]));
+      const auto s = blend(v_Blend, s_source, v_canvasIs, canvasLayer.getS_buffer()(xy_canvas[1U], xy_canvas[0U]));
+      canvasLayer.set(xy_canvas[1U], xy_canvas[0U], k, s, v_Blend + v_canvasIs);
     }
-
-    const auto v_canvasIs = canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
-    const auto v_tranferredToCanvas = footprintHeight * _pickupMapMaxCapacity * timePassed;
-
-    const auto k =
-        blend(v_tranferredToCanvas, k_source, v_canvasIs, canvasLayer.getK_buffer()(xy_canvas[1U], xy_canvas[0U]));
-    const auto s =
-        blend(v_tranferredToCanvas, s_source, v_canvasIs, canvasLayer.getS_buffer()(xy_canvas[1U], xy_canvas[0U]));
-    canvasLayer.set(xy_canvas[1U], xy_canvas[0U], k, s, v_tranferredToCanvas + v_canvasIs);
   }
 
   /**
@@ -421,7 +407,7 @@ private:
    * @brief Whether to use the snapshot buffer or directly pickuo from the canvas.
    *
    */
-  bool _useSnapshot = true;
+  bool _useSnapshot = false;
 
   /**
    * @brief Max capacity of the pickup map.
@@ -433,13 +419,13 @@ private:
    * @brief Controls how fast/much paint is picked up.
    *
    */
-  T _pickupRate = static_cast<T>(0.2);
+  T _pickupRate = static_cast<T>(0.9);
 
   /**
    * @brief Controls how fast/much paint is distributed.
    *
    */
-  T _depositionRate = static_cast<T>(0.1);
+  T _depositionRate = static_cast<T>(0.05);
 
   /**
    * @brief Current brush color. [K, S]
