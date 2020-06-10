@@ -305,8 +305,7 @@ private:
 
       // pickup map
       const auto v_canvasIs = canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
-      const auto v_canvasLeave = _pickupRate * v_canvasIs;  // leave should be computed as shoveling
-                                                            // all volume above brush bristle height
+      const auto v_canvasLeave = _pickupRate * v_canvasIs * footprintHeight;
 
       // transfer paint to pickup map from canvas
       if (v_canvasLeave > 0.0)
@@ -350,13 +349,13 @@ private:
       k_source = blend(v_pickupIs, _pickupMap.getK_buffer()(xy_map[1U], xy_map[0U]), v_pickupFree, _paintIntrinsic[0U]);
       s_source = blend(v_pickupIs, _pickupMap.getS_buffer()(xy_map[1U], xy_map[0U]), v_pickupFree, _paintIntrinsic[1U]);
 
-      const auto v_pickupLeave = _depositionRate * v_pickupIs;
+      const auto v_pickupLeave = _depositionRate * v_pickupIs * footprintHeight;
       const auto v_pickupRemain = v_pickupIs - v_pickupLeave;
       _pickupMap.getV_buffer()(xy_map[1U], xy_map[0U]) = v_pickupRemain;
 
       const auto v_canvasIs = canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]);
 
-      const auto v_Blend = _pickupMapMaxCapacity;
+      const auto v_Blend = _pickupMapMaxCapacity * footprintHeight;
       const auto k = blend(v_Blend, k_source, v_canvasIs, canvasLayer.getK_buffer()(xy_canvas[1U], xy_canvas[0U]));
       const auto s = blend(v_Blend, s_source, v_canvasIs, canvasLayer.getS_buffer()(xy_canvas[1U], xy_canvas[0U]));
       canvasLayer.set(xy_canvas[1U], xy_canvas[0U], k, s, v_Blend + v_canvasIs);
