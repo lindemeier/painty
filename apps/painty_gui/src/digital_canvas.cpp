@@ -97,7 +97,7 @@ void DigitalCanvas::mousePressEvent(QGraphicsSceneMouseEvent* event)
   {
     _brushStrokePath.push_back(p);
   }
-
+  _brushFootprintPtr->beginStroke();
   _brushFootprintPtr->applyTo(p, 0.0, *_canvasPtr);
   updateCanvas();
 
@@ -150,8 +150,8 @@ void DigitalCanvas::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
   // _brushTexturePtr->applyTo(cubicPoints, *_canvasPtr);
   _mousePressed = false;
 
-  _brushFootprintPtr->applyTo(p, 0.0, *_canvasPtr);
-  updateCanvas();
+  // _brushFootprintPtr->applyTo(p, 0.0, *_canvasPtr);
+  // updateCanvas();
   // _brushFootprintPtr->updateSnapshot(*_canvasPtr);
 
   event->ignore();

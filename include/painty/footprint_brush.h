@@ -94,6 +94,79 @@ public:
     canvas.getPaintLayer().copyTo(_snapshotBuffer);
   }
 
+  void applyTo(const vec2& center, const double theta, Canvas<vector_type>& canvas)
+  {
+    if (_path.empty() || (_path.back() != center))
+    {
+      _path.push_back(center);
+    }
+
+    if (_path.size() == 1U)
+    {
+      applyAtPoint(center, theta, canvas);
+      return;
+    }
+
+    // interpolate positions between last and this point
+    const auto p0 = _path[_path.size() - 2U];
+    const auto p1 = _path.back();
+    const auto dist = (p1 - p0).norm();  // distance in pixel
+    // don't imprint at previous point
+    for (uint32_t p = 1U; p <= static_cast<uint32_t>(dist); p++)
+    {
+      const double t = static_cast<double>(p) / dist;
+
+      const vec2 point = (1.0 - t) * p0 + t * p1;
+      applyAtPoint(point, theta, canvas);
+    }
+  }
+
+  const PaintLayer<vector_type>& getPickupMap() const
+  {
+    return _pickupMap;
+  }
+
+  const Mat<double>& getFootprint() const
+  {
+    return _footprint;
+  }
+
+  void setPickupRate(const T rate)
+  {
+    _pickupRate = rate;
+  }
+
+  void setDepositionRate(const T rate)
+  {
+    _depositionRate = rate;
+  }
+
+  T getPickupRate() const
+  {
+    return _pickupRate;
+  }
+
+  T getDepositionRate() const
+  {
+    return _depositionRate;
+  }
+
+  bool getUseSnapshotBuffer() const
+  {
+    return _useSnapshot;
+  }
+
+  void setUseSnapshotBuffer(const bool use)
+  {
+    _useSnapshot = use;
+  }
+
+  void beginStroke()
+  {
+    _path.clear();
+  }
+
+private:
   /**
    * @brief Imprints the canvas at a specific location with the currently set paint and state of the pickup map and
    * footprint.
@@ -102,7 +175,7 @@ public:
    * @param theta yaw angle of the brush
    * @param canvas the canvas to paint to
    */
-  void applyTo(const vec2& center, const double theta, Canvas<vector_type>& canvas)
+  void applyAtPoint(const vec2& center, const double theta, Canvas<vector_type>& canvas)
   {
     constexpr auto Eps = 0.0000001;
 
@@ -173,47 +246,6 @@ public:
     std::cout << "mean volume after deposit: " << meanVolumes[2U] << std::endl;
   }
 
-  const PaintLayer<vector_type>& getPickupMap() const
-  {
-    return _pickupMap;
-  }
-
-  const Mat<double>& getFootprint() const
-  {
-    return _footprint;
-  }
-
-  void setPickupRate(const T rate)
-  {
-    _pickupRate = rate;
-  }
-
-  void setDepositionRate(const T rate)
-  {
-    _depositionRate = rate;
-  }
-
-  T getPickupRate() const
-  {
-    return _pickupRate;
-  }
-
-  T getDepositionRate() const
-  {
-    return _depositionRate;
-  }
-
-  bool getUseSnapshotBuffer() const
-  {
-    return _useSnapshot;
-  }
-
-  void setUseSnapshotBuffer(const bool use)
-  {
-    _useSnapshot = use;
-  }
-
-private:
   /**
    * @brief Updates the snapshot buffer to the state of the canvas leaving out the area covered by the pickup map with
    * respect to the current brush position.
@@ -431,6 +463,12 @@ private:
    *
    */
   std::array<vector_type, 2UL> _paintIntrinsic;
+
+  /**
+   * @brief path of brush stroke movement.
+   *
+   */
+  std::vector<vec2> _path;
 };
 }  // namespace painty
 
