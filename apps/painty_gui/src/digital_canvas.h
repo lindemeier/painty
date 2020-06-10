@@ -37,6 +37,7 @@ public slots:
 
   void dryCanvas();
   void updateCanvas();
+  void setUseFootprintBrush(bool);
 
   painty::FootprintBrush<painty::vec3>* getFootprintBrushPtr();
 
@@ -52,6 +53,8 @@ private:
 
   std::unique_ptr<painty::TextureBrush<painty::vec3>> _brushTexturePtr;
   std::unique_ptr<painty::FootprintBrush<painty::vec3>> _brushFootprintPtr;
+
+  bool _useFootprintBrush = true;
 
   std::vector<painty::vec2> _brushStrokePath;
 

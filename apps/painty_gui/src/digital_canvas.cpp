@@ -97,7 +97,6 @@ void DigitalCanvas::mousePressEvent(QGraphicsSceneMouseEvent* event)
   {
     _brushStrokePath.push_back(p);
   }
-  updateCanvas();
 
   _mousePressed = true;
 
@@ -115,7 +114,7 @@ void DigitalCanvas::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
     _brushStrokePath.push_back(p);
   }
 
-  if (_mousePressed && (_brushStrokePath.size() >= 2))
+  if (_useFootprintBrush && _mousePressed && (_brushStrokePath.size() >= 2))
   {
     // interpolate positions between last and this point
     const auto p0 = _brushStrokePath[std::max(0, static_cast<int32_t>(_brushStrokePath.size()) - 3)];
@@ -146,23 +145,24 @@ void DigitalCanvas::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
     _brushStrokePath.push_back(p);
   }
 
-  // // spline
-  // painty::SplineEval<std::vector<painty::vec2>::const_iterator> spline(_brushStrokePath.cbegin(),
-  //                                                                      _brushStrokePath.cend());
-  // // sample in radius steps
-  // std::vector<painty::vec2> cubicPoints;
-  // const auto radiusStep = 1.0 / (_brushRadius * 2.0);
-  // for (auto t = 0.0; t <= 1.0; t += radiusStep)
-  // {
-  //   cubicPoints.push_back(spline.cubic(t));
-  // }
-
-  // _brushTexturePtr->applyTo(cubicPoints, *_canvasPtr);
   _mousePressed = false;
 
-  // _brushFootprintPtr->applyTo(p, 0.0, *_canvasPtr);
-  // updateCanvas();
-  // _brushFootprintPtr->updateSnapshot(*_canvasPtr);
+  if (!_useFootprintBrush)
+  {
+    // spline
+    painty::SplineEval<std::vector<painty::vec2>::const_iterator> spline(_brushStrokePath.cbegin(),
+                                                                         _brushStrokePath.cend());
+    // sample in radius steps
+    std::vector<painty::vec2> cubicPoints;
+    const auto radiusStep = 1.0 / (_brushRadius * 2.0);
+    for (auto t = 0.0; t <= 1.0; t += radiusStep)
+    {
+      cubicPoints.push_back(spline.cubic(t));
+    }
+
+    _brushTexturePtr->applyTo(cubicPoints, *_canvasPtr);
+    updateCanvas();
+  }
 
   event->ignore();
 }
@@ -223,6 +223,11 @@ void DigitalCanvas::updateCanvas()
   //   }
   //   _pickupMapLabelPtr->setPixmap(QPixmap::fromImage(qimage.scaled(256, 256)));
   // }
+}
+
+void DigitalCanvas::setUseFootprintBrush(bool use)
+{
+  _useFootprintBrush = use;
 }
 
 painty::FootprintBrush<painty::vec3>* DigitalCanvas::getFootprintBrushPtr()

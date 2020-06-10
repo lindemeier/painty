@@ -94,6 +94,11 @@ DigitalPaintMainWindow::DigitalPaintMainWindow(QWidget* parent)
     const auto checked = (state == Qt::Checked);
     m_canvasView->getDigitalCanvas()->getFootprintBrushPtr()->setUseSnapshotBuffer(checked);
   });
+
+  connect(ui->radioButtonFootprintBrush, QOverload<bool>::of(&QRadioButton::clicked),
+          [=](bool clicked) { m_canvasView->getDigitalCanvas()->setUseFootprintBrush(clicked); });
+  connect(ui->radioButtonTextureBrush, QOverload<bool>::of(&QRadioButton::clicked),
+          [=](bool clicked) { m_canvasView->getDigitalCanvas()->setUseFootprintBrush(!clicked); });
 }
 
 DigitalPaintMainWindow::~DigitalPaintMainWindow()
