@@ -1,9 +1,9 @@
 #include "digital_canvas.h"
 
-#include <painty/canvas.h>
-#include <painty/kubelka_munk.h>
-#include <painty/renderer.h>
-#include <painty/spline.h>
+#include <painty/core/kubelka_munk.h>
+#include <painty/core/spline.h>
+#include <painty/renderer/canvas.h>
+#include <painty/renderer/renderer.h>
 
 #include <QGraphicsPixmapItem>
 #include <QGraphicsSceneMouseEvent>

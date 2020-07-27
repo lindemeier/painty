@@ -1,7 +1,7 @@
 #include "digital_paint_main_window.h"
 
-#include <painty/image_io.h>
-#include <painty/renderer.h>
+#include <painty/io/image_io.h>
+#include <painty/renderer/renderer.h>
 
 #include <QFileDialog>
 #include <QMainWindow>
