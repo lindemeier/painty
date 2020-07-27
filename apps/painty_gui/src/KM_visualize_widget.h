@@ -3,27 +3,26 @@
 
 #include <QWidget>
 
-class KMVisualizeWidget : public QWidget
-{
+class KMVisualizeWidget : public QWidget {
   Q_OBJECT
 
   QColor Rb;
   QColor Rw;
 
-public:
+ public:
   explicit KMVisualizeWidget(QWidget* parent = nullptr);
 
   QColor getRb() const;
 
   QColor getRw() const;
 
-signals:
+ signals:
 
-public slots:
+ public slots:
   void setRw(const QColor&);
   void setRb(const QColor&);
 
-protected:
+ protected:
   void paintEvent(QPaintEvent* event);
 };
 

@@ -30,12 +30,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD_REQUIRED ON)
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d")
 
 target_link_libraries(${PROJECT_NAME}
-    painty
+    paintyRenderer
     Qt5::Core
     Qt5::Widgets
     )
 add_dependencies(${PROJECT_NAME}
-    painty
+    paintyRenderer
     Qt5::Core
     Qt5::Widgets
     )
