@@ -9,11 +9,9 @@
  */
 
 #include <gtest/gtest.h>
-
 #include <painty/canvas.h>
 
-TEST(CanvasTest, Construct)
-{
+TEST(CanvasTest, Construct) {
   auto layer = painty::Canvas<painty::vec3>(800, 600);
 
   layer.clear();

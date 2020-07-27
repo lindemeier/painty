@@ -1,36 +1,38 @@
 #include "digital_canvas.h"
 
-#include <QGraphicsPixmapItem>
-#include <QWheelEvent>
-#include <QKeyEvent>
-#include <QGraphicsSceneMouseEvent>
-
 #include <painty/canvas.h>
 #include <painty/kubelka_munk.h>
 #include <painty/renderer.h>
 #include <painty/spline.h>
 
+#include <QGraphicsPixmapItem>
+#include <QGraphicsSceneMouseEvent>
+#include <QKeyEvent>
+#include <QWheelEvent>
+#include <iostream>
+
 #include "digital_paint_main_window.h"
 #include "ui_digital_paint_main_window.h"
 
-#include <iostream>
-
-std::shared_ptr<painty::Canvas<painty::vec3>> DigitalCanvas::getCanvas() const
-{
+std::shared_ptr<painty::Canvas<painty::vec3>> DigitalCanvas::getCanvas() const {
   return _canvasPtr;
 }
 
-DigitalCanvas::DigitalCanvas(const uint32_t width, const uint32_t height, QObject* parent, QLabel* pickupMapLabelPtr)
-  : QGraphicsScene(0., 0., static_cast<double>(width), static_cast<double>(height), parent)
-  , _pixmapItem(nullptr)
-  , _canvasPtr(nullptr)
-  , _brushStrokePath()
-  , _brushTexturePtr(std::make_unique<painty::TextureBrush<painty::vec3>>("/home/tsl/development/painty/data/sample_0"))
-  , _brushFootprintPtr(std::make_unique<painty::FootprintBrush<painty::vec3>>(256U))
-  , _pickupMapLabelPtr(pickupMapLabelPtr)
-{
+DigitalCanvas::DigitalCanvas(const uint32_t width, const uint32_t height,
+                             QObject* parent, QLabel* pickupMapLabelPtr)
+    : QGraphicsScene(0., 0., static_cast<double>(width),
+                     static_cast<double>(height), parent),
+      _pixmapItem(nullptr),
+      _canvasPtr(nullptr),
+      _brushStrokePath(),
+      _brushTexturePtr(std::make_unique<painty::TextureBrush<painty::vec3>>(
+        "/home/tsl/development/painty/data/sample_0")),
+      _brushFootprintPtr(
+        std::make_unique<painty::FootprintBrush<painty::vec3>>(256U)),
+      _pickupMapLabelPtr(pickupMapLabelPtr) {
   this->setBackgroundBrush(QBrush(QColor(128, 128, 128)));
-  _pixmapItem = this->addPixmap(QPixmap(static_cast<int32_t>(width), static_cast<int32_t>(height)));
+  _pixmapItem = this->addPixmap(
+    QPixmap(static_cast<int32_t>(width), static_cast<int32_t>(height)));
   _pixmapItem->setFlag(QGraphicsItem::ItemIsMovable);
 
   _canvasPtr = std::make_shared<painty::Canvas<painty::vec3>>(height, width);
@@ -38,34 +40,26 @@ DigitalCanvas::DigitalCanvas(const uint32_t width, const uint32_t height, QObjec
   updateCanvas();
 }
 
-DigitalCanvas::~DigitalCanvas()
-{
-}
+DigitalCanvas::~DigitalCanvas() {}
 
-void DigitalCanvas::setPickupMapLabelPtr(QLabel* labelPtr)
-{
+void DigitalCanvas::setPickupMapLabelPtr(QLabel* labelPtr) {
   _pickupMapLabelPtr = labelPtr;
 }
 
-void DigitalCanvas::setColor(const QColor& Rbc, const QColor& Rwc)
-{
+void DigitalCanvas::setColor(const QColor& Rbc, const QColor& Rwc) {
   painty::vec3 Rw(Rwc.redF(), Rwc.greenF(), Rwc.blueF());
   painty::vec3 Rb(Rbc.redF(), Rbc.greenF(), Rbc.blueF());
   painty::vec3 K, S;
-  try
-  {
+  try {
     painty::ComputeScatteringAndAbsorption(Rb, Rw, K, S);
-    _brushTexturePtr->dip({ K, S });
-    _brushFootprintPtr->dip({ K, S });
-  }
-  catch (std::invalid_argument)
-  {
+    _brushTexturePtr->dip({K, S});
+    _brushFootprintPtr->dip({K, S});
+  } catch (std::invalid_argument) {
     std::cerr << "invalid color" << std::endl;
   }
 }
 
-void DigitalCanvas::setBrushRadius(int radius)
-{
+void DigitalCanvas::setBrushRadius(int radius) {
   _brushRadius = static_cast<double>(radius);
   _brushTexturePtr->setRadius(_brushRadius);
   _brushFootprintPtr->setRadius(_brushRadius);
@@ -75,26 +69,24 @@ void DigitalCanvas::setBrushRadius(int radius)
   QPainter p(&cursorMap);
 
   p.setPen(QPen(2));
-  p.drawEllipse(QPointF(cursorMap.width() / 2, cursorMap.height() / 2), radius, radius);
+  p.drawEllipse(QPointF(cursorMap.width() / 2, cursorMap.height() / 2), radius,
+                radius);
   _pixmapItem->setCursor(QCursor(cursorMap));
 }
 
-void DigitalCanvas::dryCanvas()
-{
+void DigitalCanvas::dryCanvas() {
   _canvasPtr->dryCanvas();
 
   updateCanvas();
 }
 
-void DigitalCanvas::mousePressEvent(QGraphicsSceneMouseEvent* event)
-{
+void DigitalCanvas::mousePressEvent(QGraphicsSceneMouseEvent* event) {
   _brushStrokePath.clear();
   QPointF qp = event->scenePos();
 
   painty::vec2 p(qp.x(), qp.y());
 
-  if (_brushStrokePath.empty() || (_brushStrokePath.back() != p))
-  {
+  if (_brushStrokePath.empty() || (_brushStrokePath.back() != p)) {
     _brushStrokePath.push_back(p);
   }
 
@@ -103,27 +95,26 @@ void DigitalCanvas::mousePressEvent(QGraphicsSceneMouseEvent* event)
   event->ignore();
 }
 
-void DigitalCanvas::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
-{
+void DigitalCanvas::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
   QPointF qp = event->scenePos();
 
   painty::vec2 p(qp.x(), qp.y());
 
-  if (_brushStrokePath.empty() || (_brushStrokePath.back() != p))
-  {
+  if (_brushStrokePath.empty() || (_brushStrokePath.back() != p)) {
     _brushStrokePath.push_back(p);
   }
 
-  if (_useFootprintBrush && _mousePressed && (_brushStrokePath.size() >= 2))
-  {
+  if (_useFootprintBrush && _mousePressed && (_brushStrokePath.size() >= 2)) {
     // interpolate positions between last and this point
-    const auto p0 = _brushStrokePath[std::max(0, static_cast<int32_t>(_brushStrokePath.size()) - 3)];
-    const auto p1 = _brushStrokePath[std::max(0, static_cast<int32_t>(_brushStrokePath.size()) - 2)];
-    const auto p2 = _brushStrokePath[std::max(0, static_cast<int32_t>(_brushStrokePath.size()) - 1)];
+    const auto p0   = _brushStrokePath[std::max(
+      0, static_cast<int32_t>(_brushStrokePath.size()) - 3)];
+    const auto p1   = _brushStrokePath[std::max(
+      0, static_cast<int32_t>(_brushStrokePath.size()) - 2)];
+    const auto p2   = _brushStrokePath[std::max(
+      0, static_cast<int32_t>(_brushStrokePath.size()) - 1)];
     const auto dist = (p2 - p1).norm();  // distance in pixel
     // don't imprint at previous point
-    for (uint32_t p = 1U; p <= static_cast<uint32_t>(dist); p++)
-    {
+    for (uint32_t p = 1U; p <= static_cast<uint32_t>(dist); p++) {
       const double t = static_cast<double>(p) / dist;
 
       const auto point = painty::CatmullRom(p0, p1, p2, p2, t);
@@ -135,28 +126,24 @@ void DigitalCanvas::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
   event->accept();
 }
 
-void DigitalCanvas::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
-{
+void DigitalCanvas::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
   QPointF qp = event->scenePos();
   painty::vec2 p(qp.x(), qp.y());
 
-  if (_brushStrokePath.empty() || (_brushStrokePath.back() != p))
-  {
+  if (_brushStrokePath.empty() || (_brushStrokePath.back() != p)) {
     _brushStrokePath.push_back(p);
   }
 
   _mousePressed = false;
 
-  if (!_useFootprintBrush)
-  {
+  if (!_useFootprintBrush) {
     // spline
-    painty::SplineEval<std::vector<painty::vec2>::const_iterator> spline(_brushStrokePath.cbegin(),
-                                                                         _brushStrokePath.cend());
+    painty::SplineEval<std::vector<painty::vec2>::const_iterator> spline(
+      _brushStrokePath.cbegin(), _brushStrokePath.cend());
     // sample in radius steps
     std::vector<painty::vec2> cubicPoints;
     const auto radiusStep = 1.0 / (_brushRadius * 2.0);
-    for (auto t = 0.0; t <= 1.0; t += radiusStep)
-    {
+    for (auto t = 0.0; t <= 1.0; t += radiusStep) {
       cubicPoints.push_back(spline.cubic(t));
     }
 
@@ -167,42 +154,40 @@ void DigitalCanvas::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
   event->ignore();
 }
 
-void DigitalCanvas::updateCanvas()
-{
+void DigitalCanvas::updateCanvas() {
   painty::Renderer<painty::vec3> renderer;
   {
     painty::Mat<painty::vec3> rgb = renderer.compose(*_canvasPtr);
     painty::Mat<painty::vec<uchar, 3UL>> rgb_8(rgb.getRows(), rgb.getCols());
 
     QImage qimage(rgb.getCols(), rgb.getRows(), QImage::Format_RGB32);
-    for (auto i = 0U; i < rgb.getRows(); i++)
-    {
-      for (auto j = 0U; j < rgb.getCols(); j++)
-      {
+    for (auto i = 0U; i < rgb.getRows(); i++) {
+      for (auto j = 0U; j < rgb.getCols(); j++) {
         qimage.setPixel(j, i,
-                        qRgb(static_cast<uint8_t>(rgb(i, j)[0U] * 255.0), static_cast<uint8_t>(rgb(i, j)[1U] * 255.0),
+                        qRgb(static_cast<uint8_t>(rgb(i, j)[0U] * 255.0),
+                             static_cast<uint8_t>(rgb(i, j)[1U] * 255.0),
                              static_cast<uint8_t>(rgb(i, j)[2U] * 255.0)));
       }
     }
     _pixmapItem->setPixmap(QPixmap::fromImage(qimage));
   }
   {
-    painty::Mat<painty::vec3> white(_brushFootprintPtr->getPickupMap().getRows(),
-                                    _brushFootprintPtr->getPickupMap().getCols());
-    for (auto& p : white.getData())
-    {
+    painty::Mat<painty::vec3> white(
+      _brushFootprintPtr->getPickupMap().getRows(),
+      _brushFootprintPtr->getPickupMap().getCols());
+    for (auto& p : white.getData()) {
       p = painty::vec3::Ones();
     }
-    painty::Mat<painty::vec3> rgb = renderer.compose(_brushFootprintPtr->getPickupMap(), white);
+    painty::Mat<painty::vec3> rgb =
+      renderer.compose(_brushFootprintPtr->getPickupMap(), white);
     painty::Mat<painty::vec<uchar, 3UL>> rgb_8(rgb.getRows(), rgb.getCols());
 
     QImage qimage(rgb.getCols(), rgb.getRows(), QImage::Format_RGB32);
-    for (auto i = 0U; i < rgb.getRows(); i++)
-    {
-      for (auto j = 0U; j < rgb.getCols(); j++)
-      {
+    for (auto i = 0U; i < rgb.getRows(); i++) {
+      for (auto j = 0U; j < rgb.getCols(); j++) {
         qimage.setPixel(j, i,
-                        qRgb(static_cast<uint8_t>(rgb(i, j)[0U] * 255.0), static_cast<uint8_t>(rgb(i, j)[1U] * 255.0),
+                        qRgb(static_cast<uint8_t>(rgb(i, j)[0U] * 255.0),
+                             static_cast<uint8_t>(rgb(i, j)[1U] * 255.0),
                              static_cast<uint8_t>(rgb(i, j)[2U] * 255.0)));
       }
     }
@@ -225,71 +210,60 @@ void DigitalCanvas::updateCanvas()
   // }
 }
 
-void DigitalCanvas::setUseFootprintBrush(bool use)
-{
+void DigitalCanvas::setUseFootprintBrush(bool use) {
   _useFootprintBrush = use;
 }
 
-painty::FootprintBrush<painty::vec3>* DigitalCanvas::getFootprintBrushPtr()
-{
+painty::FootprintBrush<painty::vec3>* DigitalCanvas::getFootprintBrushPtr() {
   return _brushFootprintPtr.get();
 }
 
-DigitalCanvas* DigitalCanvasView::getDigitalCanvas()
-{
+DigitalCanvas* DigitalCanvasView::getDigitalCanvas() {
   return _digitalCanvas.get();
 }
 
-DigitalCanvasView::DigitalCanvasView(const uint32_t width, const uint32_t height, QWidget* parent,
+DigitalCanvasView::DigitalCanvasView(const uint32_t width,
+                                     const uint32_t height, QWidget* parent,
                                      QLabel* pickupMapLabelPtr)
-  : QGraphicsView(parent)
-{
-  _digitalCanvas = std::make_unique<DigitalCanvas>(width, height, this, pickupMapLabelPtr);
+    : QGraphicsView(parent) {
+  _digitalCanvas =
+    std::make_unique<DigitalCanvas>(width, height, this, pickupMapLabelPtr);
   this->setScene(_digitalCanvas.get());
 }
 
-DigitalCanvasView::DigitalCanvasView(QWidget* parent, QLabel* pickupMapLabelPtr) : QGraphicsView(parent)
-{
-  _digitalCanvas = std::make_unique<DigitalCanvas>(1024U, 768U, this, pickupMapLabelPtr);
+DigitalCanvasView::DigitalCanvasView(QWidget* parent, QLabel* pickupMapLabelPtr)
+    : QGraphicsView(parent) {
+  _digitalCanvas =
+    std::make_unique<DigitalCanvas>(1024U, 768U, this, pickupMapLabelPtr);
   this->setScene(_digitalCanvas.get());
 }
 
-DigitalCanvasView::~DigitalCanvasView()
-{
-}
+DigitalCanvasView::~DigitalCanvasView() {}
 
-void DigitalCanvasView::wheelEvent(QWheelEvent* event)
-{
-  if (_currentKey == 0)
-  {
+void DigitalCanvasView::wheelEvent(QWheelEvent* event) {
+  if (_currentKey == 0) {
     event->ignore();
     return;
   }
 
-  if (_currentKey == Qt::Key_Control)
-  {
+  if (_currentKey == Qt::Key_Control) {
     double numDegrees = event->angleDelta().ry();
-    if (numDegrees > 0.)
-    {
+    if (numDegrees > 0.) {
       this->scale(1.1, 1.1);
-    }
-    else if (numDegrees < 0.)
-    {
+    } else if (numDegrees < 0.) {
       this->scale(0.9, 0.9);
     }
   }
   event->accept();
 }
 
-void DigitalCanvasView::keyPressEvent(QKeyEvent* e)
-{
+void DigitalCanvasView::keyPressEvent(QKeyEvent* e) {
   _currentKey = e->key();
 
   e->ignore();
 }
 
-void DigitalCanvasView::keyReleaseEvent(QKeyEvent* e)
-{
+void DigitalCanvasView::keyReleaseEvent(QKeyEvent* e) {
   _currentKey = Qt::NoButton;
 
   e->ignore();

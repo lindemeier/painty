@@ -1,37 +1,34 @@
 #ifndef EDAVID_DIGITAL_canvasPtr_H
 #define EDAVID_DIGITAL_canvasPtr_H
 
+#include <painty/canvas.h>
+#include <painty/footprint_brush.h>
+#include <painty/texture_brush.h>
+
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QLabel>
-
 #include <memory>
 
-#include <painty/canvas.h>
-#include <painty/texture_brush.h>
-#include <painty/footprint_brush.h>
-
-namespace edavid
-{
-namespace renderer
-{
+namespace edavid {
+namespace renderer {
 class RenderCanvas;
 }
 }  // namespace edavid
 
-class DigitalCanvas : public QGraphicsScene
-{
+class DigitalCanvas : public QGraphicsScene {
   Q_OBJECT
 
-public:
-  DigitalCanvas(const uint32_t width, const uint32_t height, QObject* parent, QLabel* pickupMapLabelPtr);
+ public:
+  DigitalCanvas(const uint32_t width, const uint32_t height, QObject* parent,
+                QLabel* pickupMapLabelPtr);
   virtual ~DigitalCanvas();
 
   std::shared_ptr<painty::Canvas<painty::vec3>> getCanvas() const;
 
   void setPickupMapLabelPtr(QLabel* labelPtr);
 
-public slots:
+ public slots:
   void setColor(const QColor& Rbc, const QColor& Rwc);
   void setBrushRadius(int radius);
 
@@ -41,12 +38,12 @@ public slots:
 
   painty::FootprintBrush<painty::vec3>* getFootprintBrushPtr();
 
-protected:
+ protected:
   void mousePressEvent(QGraphicsSceneMouseEvent* event);
   void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
   void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
 
-private:
+ private:
   QGraphicsPixmapItem* _pixmapItem;
 
   std::shared_ptr<painty::Canvas<painty::vec3>> _canvasPtr;
@@ -65,19 +62,19 @@ private:
   QLabel* _pickupMapLabelPtr = nullptr;
 };
 
-class DigitalCanvasView : public QGraphicsView
-{
+class DigitalCanvasView : public QGraphicsView {
   std::unique_ptr<DigitalCanvas> _digitalCanvas;
   int32_t _currentKey;
 
-public:
-  DigitalCanvasView(const uint32_t width, const uint32_t height, QWidget* parent, QLabel* pickupMapLabelPtr);
+ public:
+  DigitalCanvasView(const uint32_t width, const uint32_t height,
+                    QWidget* parent, QLabel* pickupMapLabelPtr);
   DigitalCanvasView(QWidget* parent, QLabel* pickupMapLabelPtr);
   virtual ~DigitalCanvasView();
 
   DigitalCanvas* getDigitalCanvas();
 
-protected:
+ protected:
   void wheelEvent(QWheelEvent* event);
   void keyPressEvent(QKeyEvent* e);
   void keyReleaseEvent(QKeyEvent* e);

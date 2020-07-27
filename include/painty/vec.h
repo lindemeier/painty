@@ -10,17 +10,15 @@
 #ifndef PAINTY_VEC_H
 #define PAINTY_VEC_H
 
+#include <painty/types.h>
+
 #include <array>
 #include <cmath>
+#include <eigen3/Eigen/Dense>
 #include <ostream>
 #include <type_traits>
 
-#include <eigen3/Eigen/Dense>
-
-#include <painty/types.h>
-
-namespace painty
-{
+namespace painty {
 /**
  * @brief
  *
@@ -36,13 +34,12 @@ using vec3 = vec<double, static_cast<int32_t>(3)>;
 using vec4 = vec<double, static_cast<int32_t>(4)>;
 
 template <typename T, int32_t N>
-class DataType<vec<T, N> >
-{
-public:
-  using channel_type = T;
+class DataType<vec<T, N> > {
+ public:
+  using channel_type            = T;
   static constexpr int32_t rows = N;
   static constexpr int32_t cols = 1;
-  static constexpr int32_t dim = rows * cols;
+  static constexpr int32_t dim  = rows * cols;
 };
 
 }  // namespace painty

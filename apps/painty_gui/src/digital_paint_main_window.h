@@ -3,27 +3,25 @@
 
 #include <QMainWindow>
 
-namespace Ui
-{
+namespace Ui {
 class DigitalPaintMainWindow;
 }
 
 class DigitalCanvasView;
 
-class DigitalPaintMainWindow : public QMainWindow
-{
+class DigitalPaintMainWindow : public QMainWindow {
   Q_OBJECT
 
-public:
+ public:
   explicit DigitalPaintMainWindow(QWidget* parent = 0);
   ~DigitalPaintMainWindow();
 
   Ui::DigitalPaintMainWindow* ui;
 
-private:
+ private:
   DigitalCanvasView* m_canvasView;
 
-public slots:
+ public slots:
   void setPaintingColorRw();
 };
 

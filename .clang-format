@@ -1,0 +1,35 @@
+﻿---
+Language: Cpp
+
+BasedOnStyle: Google
+AlignAfterOpenBracket: Align
+AlignConsecutiveMacros: 'false'
+AlignConsecutiveAssignments: 'true'
+AlignConsecutiveDeclarations: 'false'
+AlignEscapedNewlines: Left
+AlignOperands: 'true'
+AlignTrailingComments: 'true'
+AllowAllConstructorInitializersOnNextLine: 'false'
+AllowShortBlocksOnASingleLine: 'false'
+AllowShortCaseLabelsOnASingleLine: 'false'
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: Empty
+AllowShortLoopsOnASingleLine: 'false'
+BinPackArguments: 'true'
+ContinuationIndentWidth: '2'
+Cpp11BracedListStyle: 'true'
+DerivePointerAlignment: 'false'
+FixNamespaceComments: 'true'
+IndentWidth: '2'
+PointerAlignment: Left
+ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
+
+SortIncludes: 'true'
+SortUsingDeclarations: 'true'
+
+UseTab: Never
+
+ReflowComments: false
+
+...

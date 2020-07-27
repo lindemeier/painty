@@ -7,43 +7,36 @@
  * @date 2020-05-01
  */
 #include <painty/brush_stroke_sample.h>
+#include <painty/image_io.h>
 
 #include <fstream>
 #include <iostream>
 
-#include <painty/brush_stroke_sample.h>
-#include <painty/image_io.h>
-
-painty::BrushStrokeSample::BrushStrokeSample(const std::string& sampleDir)
-{
+painty::BrushStrokeSample::BrushStrokeSample(const std::string& sampleDir) {
   loadSample(sampleDir);
 }
 
-void painty::BrushStrokeSample::addCorr_l(const vec2& texPos, const vec2& uv)
-{
+void painty::BrushStrokeSample::addCorr_l(const vec2& texPos, const vec2& uv) {
   _txy_l.push_back(texPos);
   _puv_l.push_back(uv);
 }
 
-void painty::BrushStrokeSample::addCorr_c(const vec2& texPos, const vec2& uv)
-{
+void painty::BrushStrokeSample::addCorr_c(const vec2& texPos, const vec2& uv) {
   _txy_c.push_back(texPos);
   _puv_c.push_back(uv);
 }
 
-void painty::BrushStrokeSample::addCorr_r(const vec2& texPos, const vec2& uv)
-{
+void painty::BrushStrokeSample::addCorr_r(const vec2& texPos, const vec2& uv) {
   _txy_r.push_back(texPos);
   _puv_r.push_back(uv);
 }
 
-const painty::Mat<double>& painty::BrushStrokeSample::getThicknessMap() const
-{
+const painty::Mat<double>& painty::BrushStrokeSample::getThicknessMap() const {
   return _thickness_map;
 }
 
-void painty::BrushStrokeSample::setThicknessMap(const Mat<double>& thicknessMap)
-{
+void painty::BrushStrokeSample::setThicknessMap(
+  const Mat<double>& thicknessMap) {
   _thickness_map = thicknessMap;
 }
 
@@ -54,11 +47,10 @@ void painty::BrushStrokeSample::setThicknessMap(const Mat<double>& thicknessMap)
  *
  * @return double 0.0 if xy outside of texture
  */
-double painty::BrushStrokeSample::getSampleAt(const vec2& xy) const
-{
+double painty::BrushStrokeSample::getSampleAt(const vec2& xy) const {
   // outside of texture
-  if (xy[0] < 0.0 || xy[1] < 0.0 || xy[0] >= _thickness_map.getCols() || xy[1] >= _thickness_map.getRows())
-  {
+  if (xy[0] < 0.0 || xy[1] < 0.0 || xy[0] >= _thickness_map.getCols() ||
+      xy[1] >= _thickness_map.getRows()) {
     return 0.0;
   }
 
@@ -74,8 +66,7 @@ double painty::BrushStrokeSample::getSampleAt(const vec2& xy) const
  *
  * @return double 0.0 if xy outside of texture
  */
-double painty::BrushStrokeSample::getSampleAtUV(const vec2& uv) const
-{
+double painty::BrushStrokeSample::getSampleAtUV(const vec2& uv) const {
   return getSampleAt(_warper.warp(uv));
 }
 
@@ -84,8 +75,7 @@ double painty::BrushStrokeSample::getSampleAtUV(const vec2& uv) const
  *
  * @return double
  */
-double painty::BrushStrokeSample::getWidth() const
-{
+double painty::BrushStrokeSample::getWidth() const {
   return _widthMax;
 }
 
@@ -94,8 +84,7 @@ double painty::BrushStrokeSample::getWidth() const
  *
  * @return double
  */
-double painty::BrushStrokeSample::getLength() const
-{
+double painty::BrushStrokeSample::getLength() const {
   return _length;
 }
 
@@ -104,8 +93,7 @@ double painty::BrushStrokeSample::getLength() const
  *
  * @param sampleDir
  */
-void painty::BrushStrokeSample::loadSample(const std::string& sampleDir)
-{
+void painty::BrushStrokeSample::loadSample(const std::string& sampleDir) {
   _txy_l.clear();
   _txy_c.clear();
   _txy_r.clear();
@@ -119,45 +107,29 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir)
   std::string line;
 
   auto* points = &_txy_l;
-  while (std::getline(ifile, line))
-  {
-    if (line == "txy_l")
-    {
+  while (std::getline(ifile, line)) {
+    if (line == "txy_l") {
       points = &_txy_l;
-    }
-    else if (line == "txy_c")
-    {
+    } else if (line == "txy_c") {
       points = &_txy_c;
-    }
-    else if (line == "txy_r")
-    {
+    } else if (line == "txy_r") {
       points = &_txy_r;
-    }
-    else if (line == "puv_l")
-    {
+    } else if (line == "puv_l") {
       points = &_puv_l;
-    }
-    else if (line == "puv_c")
-    {
+    } else if (line == "puv_c") {
       points = &_puv_c;
-    }
-    else if (line == "puv_r")
-    {
+    } else if (line == "puv_r") {
       points = &_puv_r;
-    }
-    else if (line.empty())
-    {
+    } else if (line.empty()) {
       continue;
-    }
-    else
-    {
-      const auto e = line.find_first_of(' ');
+    } else {
+      const auto e     = line.find_first_of(' ');
       const auto x_str = line.substr(0U, e);
       const auto y_str = line.substr(e + 1U, line.size());
-      const auto x = static_cast<double>(std::stod(x_str));
-      const auto y = static_cast<double>(std::stod(y_str));
+      const auto x     = static_cast<double>(std::stod(x_str));
+      const auto y     = static_cast<double>(std::stod(y_str));
 
-      points->push_back({ x, y });
+      points->push_back({x, y});
     }
   }
   ifile.close();
@@ -165,14 +137,12 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir)
   // create texture warper from spine
   {
     std::vector<vec2> uv;
-    for (auto p : _puv_l)
-    {
+    for (auto p : _puv_l) {
       uv.push_back(p);
     }
     uv.insert(uv.end(), _puv_r.rbegin(), _puv_r.rend());
     std::vector<vec2> t;
-    for (auto p : _txy_l)
-    {
+    for (auto p : _txy_l) {
       t.push_back(p);
     }
     t.insert(t.end(), _txy_r.rbegin(), _txy_r.rend());
@@ -184,8 +154,8 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir)
 
   // scan through points and find the maximum width
   _widthMax = 0.0;
-  for (auto l = _txy_l.cbegin(), r = _txy_r.cbegin(); (r != _txy_r.cend()) && (l != _txy_l.cend()); l++, r++)
-  {
+  for (auto l = _txy_l.cbegin(), r = _txy_r.cbegin();
+       (r != _txy_r.cend()) && (l != _txy_l.cend()); l++, r++) {
     _widthMax = std::max(_widthMax, ((*l) - (*r)).squaredNorm());
   }
   _widthMax = std::sqrt(_widthMax);

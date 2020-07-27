@@ -6,17 +6,14 @@
  *
  * @date 2020-05-01
  */
+#include <painty/math.h>
 #include <painty/texture_warp.h>
 
-#include <painty/math.h>
+painty::TextureWarp::TextureWarp() : _in(), _out() {}
 
-painty::TextureWarp::TextureWarp() : _in(), _out()
-{
-}
-
-void painty::TextureWarp::init(const std::vector<painty::vec2>& in, const std::vector<painty::vec2>& out)
-{
-  _in = in;
+void painty::TextureWarp::init(const std::vector<painty::vec2>& in,
+                               const std::vector<painty::vec2>& out) {
+  _in  = in;
   _out = out;
 }
 
@@ -26,7 +23,6 @@ void painty::TextureWarp::init(const std::vector<painty::vec2>& in, const std::v
  * @param p
  * @return painty::vec2
  */
-painty::vec2 painty::TextureWarp::warp(const painty::vec2& p) const
-{
+painty::vec2 painty::TextureWarp::warp(const painty::vec2& p) const {
   return generalizedBarycentricCoordinatesInterpolate(_in, p, _out);
 }

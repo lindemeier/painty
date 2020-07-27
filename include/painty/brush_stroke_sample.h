@@ -10,17 +10,15 @@
 #ifndef PAINTY_BRUSH_STROKE_SAMPLE_H
 #define PAINTY_BRUSH_STROKE_SAMPLE_H
 
+#include <painty/mat.h>
+#include <painty/texture_warp.h>
+#include <painty/vec.h>
+
 #include <vector>
 
-#include <painty/mat.h>
-#include <painty/vec.h>
-#include <painty/texture_warp.h>
-
-namespace painty
-{
-class BrushStrokeSample final
-{
-public:
+namespace painty {
+class BrushStrokeSample final {
+ public:
   BrushStrokeSample(const std::string& sampleDir);
 
   void addCorr_l(const vec2& texPos, const vec2& uv);
@@ -38,7 +36,7 @@ public:
   double getWidth() const;
   double getLength() const;
 
-private:
+ private:
   Mat<double> _thickness_map;
 
   // texture coordinates
@@ -57,7 +55,7 @@ private:
   TextureWarp _warper;
 
   double _widthMax = 0.0;
-  double _length = 0.0;
+  double _length   = 0.0;
 };
 
 }  // namespace painty
