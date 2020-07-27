@@ -137,11 +137,11 @@ class FootprintBrush final {
     for (auto& v : meanVolumes) {
       v /= static_cast<double>(counter);
     }
-    std::cout << "\nmean volume before any interaction: " << meanVolumes[0U]
-              << std::endl;
-    std::cout << "mean volume after after pickup: " << meanVolumes[1U]
-              << std::endl;
-    std::cout << "mean volume after deposit: " << meanVolumes[2U] << std::endl;
+    // std::cout << "\nmean volume before any interaction: " << meanVolumes[0U]
+    //           << std::endl;
+    // std::cout << "mean volume after after pickup: " << meanVolumes[1U]
+    //           << std::endl;
+    // std::cout << "mean volume after deposit: " << meanVolumes[2U] << std::endl;
   }
 
   /**
