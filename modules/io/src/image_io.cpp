@@ -1,187 +1,127 @@
 #include "painty/io/image_io.h"
 
-#include <png.h>
-
 #include <algorithm>
 #include <cstring>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <string>
 
-bool painty::io::imRead(const std::string& filename, Mat<vec3>& linear_rgb) {
-  png_image png_image;
-
-  std::memset(&png_image, 0, (sizeof png_image));
-  png_image.version = PNG_IMAGE_VERSION;
-
-  linear_rgb = Mat<vec3>();
-
-  auto success = false;
-
-  if (png_image_begin_read_from_file(&png_image, filename.c_str()) != 0) {
-    png_bytep buffer = nullptr;
-
-    // PNG_FORMAT_FLAG_LINEAR | PNG_FORMAT_FLAG_COLOR
-    // 3 channel 16bit depth
-    png_image.format = PNG_FORMAT_LINEAR_RGB;
-    png_image.flags  = PNG_IMAGE_FLAG_COLORSPACE_NOT_sRGB;
-
-    buffer = static_cast<png_bytep>(std::malloc(PNG_IMAGE_SIZE(png_image)));
-
-    if (buffer != nullptr &&
-        png_image_finish_read(&png_image, nullptr, buffer, 0, nullptr) != 0) {
-      // process
-      linear_rgb = painty::Mat<vec3>(png_image.height, png_image.width);
-
-      constexpr auto scale = 1.0 / static_cast<double>(0xFFFF);
-      auto& data           = linear_rgb.getData();
-      for (auto i = 0U; i < data.size(); i++) {
-        auto px_ptr = reinterpret_cast<png_uint_16p>(&(buffer[i * 3U * 2U]));
-
-        data[i][0] = static_cast<double>(px_ptr[0]) * scale;
-        data[i][1] = static_cast<double>(px_ptr[1]) * scale;
-        data[i][2] = static_cast<double>(px_ptr[2]) * scale;
-      }
-      success = true;
-    }
-
-    png_image_free(&png_image);
-    if (buffer) {
-      free(buffer);
-    }
-  }
-  return success;
+static std::string extractFiletype(const std::string& filename) {
+  std::string res(filename);
+  size_t ls = res.find_last_of(".");
+  res       = res.substr(ls + 1, res.size() - ls - 1);
+  return res;
 }
 
-bool painty::io::imRead(const std::string& filename, Mat<double>& gray) {
-  png_image png_image;
+void painty::io::imRead(const std::string& filenameOriginal,
+                        Mat<vec3>& linear_rgb) {
+  std::string filename = filenameOriginal;
+  std::replace(filename.begin(), filename.end(), '\\', '/');
 
-  std::memset(&png_image, 0, (sizeof png_image));
-  png_image.version = PNG_IMAGE_VERSION;
+  cv::Mat cv_mat = cv::imread(filename, cv::IMREAD_ANYDEPTH | cv::IMREAD_COLOR);
 
-  gray = Mat<double>();
-
-  auto success = false;
-
-  if (png_image_begin_read_from_file(&png_image, filename.c_str()) != 0) {
-    png_bytep buffer = nullptr;
-
-    // 1 channel 16bit depth
-    png_image.format = PNG_FORMAT_LINEAR_Y;
-    png_image.flags  = PNG_IMAGE_FLAG_COLORSPACE_NOT_sRGB;
-
-    buffer = static_cast<png_bytep>(std::malloc(PNG_IMAGE_SIZE(png_image)));
-
-    if (buffer != nullptr &&
-        png_image_finish_read(&png_image, nullptr, buffer, 0, nullptr) != 0) {
-      // process
-      gray = painty::Mat<double>(png_image.height, png_image.width);
-
-      constexpr auto scale = 1.0 / static_cast<double>(0xFFFF);
-      auto& data           = gray.getData();
-      for (auto i = 0U; i < data.size(); i++) {
-        auto px_ptr = reinterpret_cast<png_uint_16p>(&(buffer[i * 2U]));
-
-        data[i] = static_cast<double>(px_ptr[0]) * scale;
-      }
-      success = true;
-    }
-
-    png_image_free(&png_image);
-    if (buffer) {
-      free(buffer);
-    }
+  // if not loaded succesfully
+  if (!cv_mat.data) {
+    throw std::ios_base::failure(filenameOriginal);
   }
-  return success;
+
+  if (cv_mat.channels() == 1) {
+    cv::Mat in[] = {cv_mat, cv_mat, cv_mat};
+    cv::merge(in, 3, cv_mat);
+  } else if (cv_mat.channels() == 4) {
+    cv::cvtColor(cv_mat, cv_mat, cv::COLOR_BGRA2BGR);
+  }
+
+  // data scale
+  double scale = 1.0;
+  if (cv_mat.depth() == CV_16U)
+    scale = 1.0 / (0xffff);
+  else if (cv_mat.depth() == CV_32F)
+    scale = 1.0;
+  else if (cv_mat.depth() == CV_8U)
+    scale = 1.0 / (0xff);
+  else if (cv_mat.depth() == CV_64F)
+    scale = 1.0 / (0xffffffff);
+
+  // convert to right type
+  cv_mat.convertTo(cv_mat, CV_64FC3, scale);
+
+  // OpenCV has BGR
+  cv::cvtColor(cv_mat, linear_rgb, cv::COLOR_BGR2RGB);
 }
 
-bool painty::io::imSave(const std::string& filename,
-                        const Mat<vec3>& linear_rgb,
-                        const ChannelDepth bit_depth) {
-  auto success = false;
+void painty::io::imRead(const std::string& filenameOriginal,
+                        Mat<double>& gray) {
+  std::string filename = filenameOriginal;
+  std::replace(filename.begin(), filename.end(), '\\', '/');
 
-  png_image png_image;
-  memset(&png_image, 0, sizeof(png_image));
-  png_image.version = PNG_IMAGE_VERSION;
+  cv::Mat cv_mat =
+    cv::imread(filename, cv::IMREAD_ANYDEPTH | cv::IMREAD_GRAYSCALE);
 
-  png_image.width  = linear_rgb.getCols();
-  png_image.height = linear_rgb.getRows();
-  png_image.format = (bit_depth == ChannelDepth::BITS_16)
-                       ? PNG_FORMAT_LINEAR_RGB
-                       : PNG_FORMAT_RGB;
-  png_image.flags = PNG_IMAGE_FLAG_COLORSPACE_NOT_sRGB;
+  // if not loaded succesfully
+  if (!cv_mat.data) {
+    throw std::ios_base::failure(filenameOriginal);
+  }
 
-  const auto& image_data = linear_rgb.getData();
+  // data scale
+  double scale = 1.0;
+  if (cv_mat.depth() == CV_16U)
+    scale = 1.0 / 0xffff;
+  else if (cv_mat.depth() == CV_32F)
+    scale = 1.0;
+  else if (cv_mat.depth() == CV_8U)
+    scale = 1.0 / 0xff;
+  else if (cv_mat.depth() == CV_64F)
+    scale = 1.0;
 
-  if (bit_depth == ChannelDepth::BITS_16) {
-    std::vector<png_uint_16> bit16_data(image_data.size() * 3U);
-    constexpr auto scale = static_cast<double>(0xFFFF);
-    for (auto i = 0U; i < image_data.size(); i++) {
-      auto px_ptr = reinterpret_cast<png_uint_16p>(&(bit16_data[i * 3U]));
+  // convert to right type
+  cv_mat.convertTo(gray, CV_64FC1, scale);
+}
 
-      px_ptr[0] = static_cast<png_uint_16>(
-        std::clamp(image_data[i][0] * scale, 0.0, scale));
-      px_ptr[1] = static_cast<png_uint_16>(
-        std::clamp(image_data[i][1] * scale, 0.0, scale));
-      px_ptr[2] = static_cast<png_uint_16>(
-        std::clamp(image_data[i][2] * scale, 0.0, scale));
-    }
+bool painty::io::imSave(const std::string& filenameOriginal,
+                        const Mat<vec3>& linear_rgb) {
+  std::string filename = filenameOriginal;
+  std::replace(filename.begin(), filename.end(), '\\', '/');
 
-    success = png_image_write_to_file(&png_image, filename.c_str(), 0,
-                                      bit16_data.data(), 0, nullptr);
+  std::string filetype = extractFiletype(filename);
+
+  cv::Mat m;
+  if (filetype == "png") {
+    const auto scale = static_cast<double>(0xffff);
+    linear_rgb.convertTo(m, CV_MAKETYPE(CV_16U, 3), scale);
   } else {
-    throw std::runtime_error("8bit saving currently not supported");
-
-    // std::vector<png_byte> bit8_data(image_data.size() * 3U);
-    // constexpr auto scale = static_cast<double>(0xFF);
-    // for (auto i = 0U; i < image_data.size(); i++)
-    // {
-    //   auto px_ptr = reinterpret_cast<png_bytep>(&(bit8_data[i * 3U]));
-
-    //   px_ptr[0] = static_cast<png_byte>(std::clamp(image_data[i][0] * scale, 0.0, scale));
-    //   px_ptr[1] = static_cast<png_byte>(std::clamp(image_data[i][1] * scale, 0.0, scale));
-    //   px_ptr[2] = static_cast<png_byte>(std::clamp(image_data[i][2] * scale, 0.0, scale));
-    // }
-    // success = png_image_write_to_file(&png_image, filename.c_str(), 0, bit8_data.data(), 0, nullptr);
+    const auto scale = static_cast<double>(0xff);
+    linear_rgb.convertTo(m, CV_MAKETYPE(CV_8U, 3), scale);
   }
-
-  return success;
+  cv::cvtColor(m, m, cv::COLOR_RGB2BGR);
+  std::vector<int32_t> params;
+  params.push_back(cv::IMWRITE_JPEG_QUALITY);
+  params.push_back(100);
+  params.push_back(cv::IMWRITE_PNG_COMPRESSION);
+  params.push_back(0);
+  return cv::imwrite(filename, m, params);
 }
 
-bool painty::io::imSave(const std::string& filename, const Mat<double>& gray,
-                        const ChannelDepth bit_depth) {
-  auto success = false;
+bool painty::io::imSave(const std::string& filenameOriginal,
+                        const Mat<double>& gray) {
+  std::string filename = filenameOriginal;
+  std::replace(filename.begin(), filename.end(), '\\', '/');
 
-  png_image png_image;
-  memset(&png_image, 0, sizeof(png_image));
-  png_image.version = PNG_IMAGE_VERSION;
+  std::string filetype = extractFiletype(filename);
 
-  png_image.width  = gray.getCols();
-  png_image.height = gray.getRows();
-  png_image.format = (bit_depth == ChannelDepth::BITS_16) ? PNG_FORMAT_LINEAR_Y
-                                                          : PNG_FORMAT_GRAY;
-  png_image.flags = PNG_IMAGE_FLAG_COLORSPACE_NOT_sRGB;
-
-  const auto& image_data = gray.getData();
-  if (bit_depth == ChannelDepth::BITS_16) {
-    std::vector<png_uint_16> bit16_data(image_data.size());
-    constexpr auto scale = static_cast<double>(0xFFFF);
-    for (auto i = 0U; i < image_data.size(); i++) {
-      auto px_ptr = reinterpret_cast<png_uint_16p>(&(bit16_data[i]));
-      px_ptr[0] =
-        static_cast<png_uint_16>(std::clamp(image_data[i] * scale, 0.0, scale));
-    }
-    success = png_image_write_to_file(&png_image, filename.c_str(), 0,
-                                      bit16_data.data(), 0, nullptr);
+  cv::Mat m;
+  if (filetype == "png") {
+    const auto scale = static_cast<double>(0xffff);
+    gray.convertTo(m, CV_MAKETYPE(CV_16U, 1), scale);
   } else {
-    std::vector<png_byte> bit8_data(image_data.size());
-    constexpr auto scale = static_cast<double>(0xFF);
-    for (auto i = 0U; i < image_data.size(); i++) {
-      auto px_ptr = reinterpret_cast<png_bytep>(&(bit8_data[i]));
-      px_ptr[0] =
-        static_cast<png_byte>(std::clamp(image_data[i] * scale, 0.0, scale));
-    }
-    success = png_image_write_to_file(&png_image, filename.c_str(), 0,
-                                      bit8_data.data(), 0, nullptr);
+    const auto scale = static_cast<double>(0xff);
+    gray.convertTo(m, CV_MAKETYPE(CV_8U, 1), scale);
   }
-
-  return success;
+  cv::cvtColor(m, m, cv::COLOR_RGB2BGR);
+  std::vector<int32_t> params;
+  params.push_back(cv::IMWRITE_JPEG_QUALITY);
+  params.push_back(100);
+  params.push_back(cv::IMWRITE_PNG_COMPRESSION);
+  params.push_back(0);
+  return cv::imwrite(filename, m, params);
 }

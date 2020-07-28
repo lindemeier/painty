@@ -23,7 +23,7 @@ class Canvas final {
   static constexpr auto N = DataType<vector_type>::dim;
 
  public:
-  Canvas(const uint32_t rows, const uint32_t cols)
+  Canvas(const int32_t rows, const int32_t cols)
       : _paintLayer(rows, cols),
         _backgroundColor(),
         _R0_buffer(rows, cols),
@@ -44,15 +44,15 @@ class Canvas final {
 
     _timeMap = Mat<std::chrono::system_clock::time_point>(rows, cols);
     auto now = std::chrono::system_clock::now();
-    for (auto& t : _timeMap.getData()) {
+    for (auto& t : _timeMap) {
       t = now;
     }
 
-    auto& r0 = _R0_buffer.getData();
-    auto& h  = _h_buffer.getData();
-    for (size_t i = 0U; i < r0.size(); i++) {
-      r0[i] = _backgroundColor;
-      h[i]  = static_cast<T>(0.0);
+    auto& r0 = _R0_buffer;
+    auto& h  = _h_buffer;
+    for (auto i = 0; i < static_cast<int32_t>(r0.total()); i++) {
+      r0(i) = _backgroundColor;
+      h(i)  = static_cast<T>(0.0);
     }
   }
 
@@ -78,10 +78,10 @@ class Canvas final {
 
   void setBackground(const Mat<vector_type>& background) {
     clear();
-    auto& r0_data      = _R0_buffer.getData();
-    const auto& b_data = background.getData();
-    for (size_t i = 0; i < r0_data.size(); i++) {
-      r0_data[i] = b_data[i];
+    auto& r0_data      = _R0_buffer;
+    const auto& b_data = background;
+    for (auto i = 0; i < static_cast<int32_t>(r0_data.total()); i++) {
+      r0_data(i) = b_data(i);
     }
   }
 
@@ -119,7 +119,7 @@ class Canvas final {
     }
   }
 
-  void checkDry(uint32_t x, uint32_t y,
+  void checkDry(int32_t x, int32_t y,
                 const std::chrono::system_clock::time_point& timePoint) {
     T v = _paintLayer.getV_buffer()(y, x);
     if ((_dryingTime.count() > 0.0) && (v > 0.001)) {

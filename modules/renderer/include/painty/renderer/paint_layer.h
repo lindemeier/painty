@@ -24,7 +24,7 @@ class PaintLayer final {
   static constexpr auto N = DataType<vector_type>::dim;
 
  public:
-  PaintLayer(uint32_t rows, uint32_t cols)
+  PaintLayer(int32_t rows, int32_t cols)
       : _K_buffer(rows, cols),
         _S_buffer(rows, cols),
         _V_buffer(rows, cols) {}
@@ -53,12 +53,12 @@ class PaintLayer final {
     return _V_buffer;
   }
 
-  uint32_t getCols() const {
-    return _K_buffer.getCols();
+  int32_t getCols() const {
+    return _K_buffer.cols;
   }
 
-  uint32_t getRows() const {
-    return _K_buffer.getRows();
+  int32_t getRows() const {
+    return _K_buffer.rows;
   }
 
   /**
@@ -66,13 +66,10 @@ class PaintLayer final {
    *
    */
   void clear() {
-    auto& K = _K_buffer.getData();
-    auto& S = _S_buffer.getData();
-    auto& V = _V_buffer.getData();
-    for (size_t i = 0; i < K.size(); i++) {
-      K[i].fill(static_cast<T>(0.0));
-      S[i].fill(static_cast<T>(0.0));
-      V[i] = static_cast<T>(0.0);
+    for (size_t i = 0; i < _K_buffer.total(); i++) {
+      _K_buffer(static_cast<int32_t>(i)).fill(static_cast<T>(0.0));
+      _S_buffer(static_cast<int32_t>(i)).fill(static_cast<T>(0.0));
+      _V_buffer(static_cast<int32_t>(i)) = static_cast<T>(0.0);
     }
   }
 
@@ -82,20 +79,19 @@ class PaintLayer final {
    * @param R0 the substrate
    */
   void composeOnto(Mat<vector_type>& R0) const {
-    if ((R0.getRows() != _K_buffer.getRows()) ||
-        (R0.getCols() != _K_buffer.getCols())) {
-      R0 = Mat<vector_type>(_K_buffer.getRows(), _K_buffer.getCols());
-      for (auto& v : R0.getData()) {
+    if ((R0.rows != _K_buffer.rows) || (R0.cols != _K_buffer.cols)) {
+      R0 = Mat<vector_type>(_K_buffer.rows, _K_buffer.cols);
+      for (auto& v : R0) {
         v.fill(1.0);
       }
     }
 
-    auto& K       = _K_buffer.getData();
-    auto& S       = _S_buffer.getData();
-    auto& V       = _V_buffer.getData();
-    auto& R0_data = R0.getData();
-    for (size_t i = 0UL; i < K.size(); i++) {
-      R0_data[i] = ComputeReflectance(K[i], S[i], R0_data[i], V[i]);
+    auto& K       = _K_buffer;
+    auto& S       = _S_buffer;
+    auto& V       = _V_buffer;
+    auto& R0_data = R0;
+    for (auto i = 0; i < static_cast<int32_t>(K.total()); i++) {
+      R0_data(i) = ComputeReflectance(K(i), S(i), R0_data(i), V(i));
     }
   }
 
@@ -105,16 +101,13 @@ class PaintLayer final {
    * @param other
    */
   void copyTo(PaintLayer& other) const {
-    if ((other.getRows() != _K_buffer.getRows()) ||
-        (other.getCols() != _K_buffer.getCols())) {
+    if ((other.getRows() != _K_buffer.rows) ||
+        (other.getCols() != _K_buffer.cols)) {
       other = PaintLayer<vector_type>(getRows(), getCols());
     }
-    std::copy(_K_buffer.getData().cbegin(), _K_buffer.getData().cend(),
-              other._K_buffer.getData().begin());
-    std::copy(_S_buffer.getData().cbegin(), _S_buffer.getData().cend(),
-              other._S_buffer.getData().begin());
-    std::copy(_V_buffer.getData().cbegin(), _V_buffer.getData().cend(),
-              other._V_buffer.getData().begin());
+    std::copy(_K_buffer.begin(), _K_buffer.end(), other._K_buffer.begin());
+    std::copy(_S_buffer.begin(), _S_buffer.end(), other._S_buffer.begin());
+    std::copy(_V_buffer.begin(), _V_buffer.end(), other._V_buffer.begin());
   }
 
   /**
