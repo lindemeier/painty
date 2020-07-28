@@ -7,8 +7,7 @@
  * @date 2020-05-29
  *
  */
-#ifndef PAINTY_FOOTPRINT_BRUSH_H
-#define PAINTY_FOOTPRINT_BRUSH_H
+#pragma once
 
 #include <painty/io/image_io.h>
 #include <painty/renderer/canvas.h>
@@ -440,5 +439,3 @@ class FootprintBrush final {
   std::array<vector_type, 2UL> _paintIntrinsic;
 };
 }  // namespace painty
-
-#endif  // PAINTY_FOOTPRINT_BRUSH_H

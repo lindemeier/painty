@@ -7,8 +7,7 @@
  * @date 2020-04-22
  *
  */
-#ifndef PAINTY_IMAGE_IO_H
-#define PAINTY_IMAGE_IO_H
+#pragma once
 
 #include <painty/core/vec.h>
 #include <painty/image/mat.h>
@@ -29,5 +28,3 @@ bool imSave(const std::string& filename, const Mat<double>& gray,
 }  // namespace io
 
 }  // namespace painty
-
-#endif  // PAINTY_IMAGE_IO_H

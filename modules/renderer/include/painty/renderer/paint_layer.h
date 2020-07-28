@@ -7,8 +7,7 @@
  * @date 2020-05-14
  *
  */
-#ifndef PAINTY_PAINT_LAYER_H
-#define PAINTY_PAINT_LAYER_H
+#pragma once
 
 #include <painty/core/kubelka_munk.h>
 #include <painty/image/mat.h>
@@ -152,5 +151,3 @@ class PaintLayer final {
   Mat<T> _V_buffer;
 };
 }  // namespace painty
-
-#endif  // PAINTY_PAINT_LAYER_H

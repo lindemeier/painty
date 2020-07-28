@@ -7,8 +7,7 @@
  * @date 2020-05-28
  *
  */
-#ifndef PAINTY_SMUDGE_H
-#define PAINTY_SMUDGE_H
+#pragma once
 
 #include <painty/core/spline.h>
 #include <painty/renderer/paint_layer.h>
@@ -259,5 +258,3 @@ class Smudge final {
   }
 };
 }  // namespace painty
-
-#endif  // PAINTY_SMUDGE_H

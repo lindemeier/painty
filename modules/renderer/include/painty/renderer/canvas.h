@@ -5,8 +5,7 @@
  * @date 2020-05-15
  *
  */
-#ifndef PAINTY_CANVAS_H
-#define PAINTY_CANVAS_H
+#pragma once
 
 #include <painty/core/kubelka_munk.h>
 #include <painty/core/vec.h>
@@ -197,5 +196,3 @@ class Canvas final {
   std::chrono::milliseconds _dryingTime;
 };
 }  // namespace painty
-
-#endif  // PAINTY_CANVAS_H

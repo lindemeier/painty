@@ -5,8 +5,7 @@
  * @date 2020-05-15
  *
  */
-#ifndef PAINTY_RENDERER_H
-#define PAINTY_RENDERER_H
+#pragma once
 
 #include <painty/image/mat.h>
 #include <painty/renderer/canvas.h>
@@ -152,5 +151,3 @@ class Renderer final {
   }
 };
 }  // namespace painty
-
-#endif  // PAINTY_CANVAS_H

@@ -7,8 +7,7 @@
  * @date 2020-05-19
  *
  */
-#ifndef PAINTY_TEXTURE_BRUSH_H
-#define PAINTY_TEXTURE_BRUSH_H
+#pragma once
 
 #include <painty/core/spline.h>
 #include <painty/renderer/brush_stroke_sample.h>
@@ -214,5 +213,3 @@ class TextureBrush final {
   Smudge<vector_type> _smudge;
 };
 }  // namespace painty
-
-#endif  // PAINTY_TEXTURE_BRUSH_H

@@ -7,8 +7,7 @@
  * @date 2020-04-22
  *
  */
-#ifndef PAINTY_MAT_H
-#define PAINTY_MAT_H
+#pragma once
 
 #include <painty/core/vec.h>
 
@@ -218,5 +217,3 @@ class Mat {
 };
 
 }  // namespace painty
-
-#endif  // PAINTY_MAT_H
