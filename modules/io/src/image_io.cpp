@@ -1,5 +1,6 @@
 #include "painty/io/image_io.h"
 
+#include <ColorConverter/ColorConverter.hxx>
 #include <algorithm>
 #include <cstring>
 #include <opencv2/highgui/highgui.hpp>
@@ -43,11 +44,17 @@ void painty::io::imRead(const std::string& filenameOriginal,
   else if (cv_mat.depth() == CV_64F)
     scale = 1.0 / (0xffffffff);
 
-  // convert to right type
-  cv_mat.convertTo(cv_mat, CV_64FC3, scale);
-
   // OpenCV has BGR
-  cv::cvtColor(cv_mat, linear_rgb, cv::COLOR_BGR2RGB);
+  cv::cvtColor(cv_mat, cv_mat, cv::COLOR_BGR2RGB);
+
+  // convert to right type
+  cv_mat.convertTo(linear_rgb, CV_64FC3, scale);
+
+  // convert from sRGB to linear rgb
+  color::ColorConverter<double, vec3> converter;
+  for (auto v : linear_rgb) {
+    converter.srgb2rgb(v, v);
+  }
 }
 
 void painty::io::imRead(const std::string& filenameOriginal,
@@ -85,13 +92,20 @@ bool painty::io::imSave(const std::string& filenameOriginal,
 
   std::string filetype = extractFiletype(filename);
 
+  // convert from linear rgb to srgb
+  color::ColorConverter<double, vec3> converter;
+  Mat<vec3> srgb(linear_rgb.size());
+  for (int32_t i = 0; i < static_cast<int32_t>(linear_rgb.total()); i++) {
+    converter.rgb2srgb(linear_rgb(i), srgb(i));
+  }
+
   cv::Mat m;
   if (filetype == "png") {
     const auto scale = static_cast<double>(0xffff);
-    linear_rgb.convertTo(m, CV_MAKETYPE(CV_16U, 3), scale);
+    srgb.convertTo(m, CV_MAKETYPE(CV_16U, 3), scale);
   } else {
     const auto scale = static_cast<double>(0xff);
-    linear_rgb.convertTo(m, CV_MAKETYPE(CV_8U, 3), scale);
+    srgb.convertTo(m, CV_MAKETYPE(CV_8U, 3), scale);
   }
   cv::cvtColor(m, m, cv::COLOR_RGB2BGR);
   std::vector<int32_t> params;
