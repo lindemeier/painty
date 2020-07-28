@@ -137,12 +137,12 @@ Mat<T> PaddedMat(const Mat<T>& input, const uint32_t left, const uint32_t right,
  * @return Mat<T>
  */
 template <class T>
-Mat<T> ScaledMat(const Mat<T>& input, const uint32_t rows,
-                 const uint32_t cols) {
+Mat<T> ScaledMat(const Mat<T>& input, const uint32_t rows, const uint32_t cols,
+                 cv::InterpolationFlags flag = cv::INTER_LANCZOS4) {
   Mat<T> resized;
   cv::resize(input, resized,
              cv::Size(static_cast<int32_t>(cols), static_cast<int32_t>(rows)),
-             0.0, 0.0, cv::INTER_LANCZOS4);
+             0.0, 0.0, flag);
   return resized;
 }
 

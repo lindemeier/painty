@@ -64,12 +64,12 @@ TEST(MatTest, Resize) {
 
   const auto smaller = painty::ScaledMat(m0, 135, 94);
   for (const auto& p : smaller) {
-    EXPECT_EQ(testColor, p);
+    EXPECT_NEAR(testColor, p, 0.0001);
   }
 
   const auto bigger = painty::ScaledMat(m0, 2U * static_cast<uint32_t>(m0.rows),
                                         3U * static_cast<uint32_t>(m0.cols));
   for (const auto& p : bigger) {
-    EXPECT_EQ(testColor, p);
+    EXPECT_NEAR(testColor, p, 0.0001);
   }
 }
