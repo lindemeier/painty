@@ -150,7 +150,7 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir) {
   }
 
   // load thickness map
-  io::imRead(sampleDir + "/thickness_map.png", _thickness_map);
+  io::imRead(sampleDir + "/thickness_map.png", _thickness_map, true);
 
   // scan through points and find the maximum width
   _widthMax = 0.0;

@@ -179,22 +179,32 @@ class ColorConverter {
   }
 
   // make linear rgb, no chromatic adaption
+  void srgb2rgb(const Scalar s, Scalar& l) const {
+    if (s <= 0.04045)
+      l = s / 12.92;
+    else
+      l = std::pow(((s + 0.055) / 1.055), 2.4);
+  }
+
+  // make sRGB, with gamma
+  void rgb2srgb(const Scalar l, Scalar& s) const {
+    if (l <= 0.0031308)
+      s = l * 12.92;
+    else
+      s = 1.055 * std::pow(l, 1. / 2.4) - 0.055;
+  }
+
+  // make linear rgb, no chromatic adaption
   void srgb2rgb(const vec<Scalar, N>& srgb, vec<Scalar, N>& rgb) const {
     for (auto i = 0U; i < 3U; i++) {
-      if (srgb[i] <= 0.04045)
-        rgb[i] = srgb[i] / 12.92;
-      else
-        rgb[i] = std::pow(((srgb[i] + 0.055) / 1.055), 2.4);
+      srgb2rgb(srgb[i], rgb[i]);
     }
   }
 
   // make sRGB, with gamma
   void rgb2srgb(const vec<Scalar, N>& rgb, vec<Scalar, N>& srgb) const {
     for (auto i = 0U; i < 3U; ++i) {
-      if (rgb[i] <= 0.0031308)
-        srgb[i] = rgb[i] * 12.92;
-      else
-        srgb[i] = 1.055 * std::pow(rgb[i], 1. / 2.4) - 0.055;
+      rgb2srgb(rgb[i], srgb[i]);
     }
   }
 
@@ -421,16 +431,19 @@ class ColorConverter {
     srgb2lab(srgb, v);
     lab2LCHab(v, CIELCHab);
   }
+
   void rgb2CIELCHab(const vec<Scalar, N>& rgb, vec<Scalar, N>& CIELCHab) const {
     vec<Scalar, N> v;
     rgb2lab(rgb, v);
     lab2LCHab(v, CIELCHab);
   }
+
   void CIELCHab2srgb(const vec<Scalar, N>& LCHab, vec<Scalar, N>& srgb) const {
     vec<Scalar, N> v;
     LCHab2lab(LCHab, v);
     lab2srgb(v, srgb);
   }
+
   void CIELCHab2rgb(const vec<Scalar, N>& CIELCHab, vec<Scalar, N>& rgb) const {
     vec<Scalar, N> v;
     LCHab2lab(CIELCHab, v);

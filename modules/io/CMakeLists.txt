@@ -17,12 +17,10 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   paintyImage
   ${OpenCV_LIBS}
-  ColorConverter
 )
 
 add_dependencies(${PROJECT_NAME}
   paintyImage
-  ColorConverter
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)

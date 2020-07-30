@@ -1,6 +1,7 @@
 #include "painty/io/image_io.h"
 
-#include <ColorConverter/ColorConverter.hxx>
+#include <painty/core/color.h>
+
 #include <algorithm>
 #include <cstring>
 #include <opencv2/highgui/highgui.hpp>
@@ -14,8 +15,15 @@ static std::string extractFiletype(const std::string& filename) {
   return res;
 }
 
+/**
+ * @brief Reads images from files.
+ *
+ * @param filenameOriginal
+ * @param linear_rgb
+ * @param convertFrom_sRGB linearize rgb values if true
+ */
 void painty::io::imRead(const std::string& filenameOriginal,
-                        Mat<vec3>& linear_rgb) {
+                        Mat<vec3>& linear_rgb, const bool convertFrom_sRGB) {
   std::string filename = filenameOriginal;
   std::replace(filename.begin(), filename.end(), '\\', '/');
 
@@ -50,15 +58,24 @@ void painty::io::imRead(const std::string& filenameOriginal,
   // convert to right type
   cv_mat.convertTo(linear_rgb, CV_64FC3, scale);
 
-  // convert from sRGB to linear rgb
-  color::ColorConverter<double, vec3> converter;
-  for (auto v : linear_rgb) {
-    converter.srgb2rgb(v, v);
+  if (convertFrom_sRGB) {
+    // convert from sRGB to linear rgb
+    ColorConverter<double> converter;
+    for (auto& v : linear_rgb) {
+      converter.srgb2rgb(v, v);
+    }
   }
 }
 
-void painty::io::imRead(const std::string& filenameOriginal,
-                        Mat<double>& gray) {
+/**
+ * @brief Reads grayscale images from file.
+ *
+ * @param filenameOriginal
+ * @param gray
+ * @param convertFrom_sRGB linearize values if true
+ */
+void painty::io::imRead(const std::string& filenameOriginal, Mat<double>& gray,
+                        const bool convertFrom_sRGB) {
   std::string filename = filenameOriginal;
   std::replace(filename.begin(), filename.end(), '\\', '/');
 
@@ -83,29 +100,51 @@ void painty::io::imRead(const std::string& filenameOriginal,
 
   // convert to right type
   cv_mat.convertTo(gray, CV_64FC1, scale);
+
+  if (convertFrom_sRGB) {
+    // convert from sRGB to linear rgb
+    ColorConverter<double> converter;
+    for (auto& v : gray) {
+      converter.srgb2rgb(v, v);
+    }
+  }
 }
 
+/**
+ * @brief Write images to file.
+ *
+ * @param filenameOriginal
+ * @param linear_rgb
+ * @param convertTo_sRGB convert image to sRGB when saving.
+ * @return true
+ * @return false
+ */
 bool painty::io::imSave(const std::string& filenameOriginal,
-                        const Mat<vec3>& linear_rgb) {
+                        const Mat<vec3>& linear_rgb,
+                        const bool convertTo_sRGB) {
   std::string filename = filenameOriginal;
   std::replace(filename.begin(), filename.end(), '\\', '/');
 
   std::string filetype = extractFiletype(filename);
 
   // convert from linear rgb to srgb
-  color::ColorConverter<double, vec3> converter;
-  Mat<vec3> srgb(linear_rgb.size());
-  for (int32_t i = 0; i < static_cast<int32_t>(linear_rgb.total()); i++) {
-    converter.rgb2srgb(linear_rgb(i), srgb(i));
+  ColorConverter<double> converter;
+  Mat<vec3> out(linear_rgb.size());
+  if (convertTo_sRGB) {
+    for (int32_t i = 0; i < static_cast<int32_t>(linear_rgb.total()); i++) {
+      converter.rgb2srgb(linear_rgb(i), out(i));
+    }
+  } else {
+    out = linear_rgb;
   }
 
   cv::Mat m;
   if (filetype == "png") {
     const auto scale = static_cast<double>(0xffff);
-    srgb.convertTo(m, CV_MAKETYPE(CV_16U, 3), scale);
+    out.convertTo(m, CV_MAKETYPE(CV_16U, 3), scale);
   } else {
     const auto scale = static_cast<double>(0xff);
-    srgb.convertTo(m, CV_MAKETYPE(CV_8U, 3), scale);
+    out.convertTo(m, CV_MAKETYPE(CV_8U, 3), scale);
   }
   cv::cvtColor(m, m, cv::COLOR_RGB2BGR);
   std::vector<int32_t> params;
@@ -116,22 +155,40 @@ bool painty::io::imSave(const std::string& filenameOriginal,
   return cv::imwrite(filename, m, params);
 }
 
+/**
+ * @brief Save images to a file.
+ *
+ * @param filenameOriginal
+ * @param gray
+ * @param convertTo_sRGB whether to convert to sRGB.
+ * @return true
+ * @return false
+ */
 bool painty::io::imSave(const std::string& filenameOriginal,
-                        const Mat<double>& gray) {
+                        const Mat<double>& gray, const bool convertTo_sRGB) {
   std::string filename = filenameOriginal;
   std::replace(filename.begin(), filename.end(), '\\', '/');
 
   std::string filetype = extractFiletype(filename);
 
+  ColorConverter<double> converter;
+  Mat<double> out(gray.size());
+  if (convertTo_sRGB) {
+    for (int32_t i = 0; i < static_cast<int32_t>(gray.total()); i++) {
+      converter.rgb2srgb(gray(i), out(i));
+    }
+  } else {
+    out = gray;
+  }
+
   cv::Mat m;
   if (filetype == "png") {
     const auto scale = static_cast<double>(0xffff);
-    gray.convertTo(m, CV_MAKETYPE(CV_16U, 1), scale);
+    out.convertTo(m, CV_MAKETYPE(CV_16U, 1), scale);
   } else {
     const auto scale = static_cast<double>(0xff);
-    gray.convertTo(m, CV_MAKETYPE(CV_8U, 1), scale);
+    out.convertTo(m, CV_MAKETYPE(CV_8U, 1), scale);
   }
-  cv::cvtColor(m, m, cv::COLOR_RGB2BGR);
   std::vector<int32_t> params;
   params.push_back(cv::IMWRITE_JPEG_QUALITY);
   params.push_back(100);
