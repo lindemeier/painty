@@ -1,5 +1,6 @@
 #include "digital_canvas.h"
 
+#include <painty/core/color.h>
 #include <painty/core/kubelka_munk.h>
 #include <painty/core/spline.h>
 #include <painty/renderer/canvas.h>
@@ -156,13 +157,18 @@ void DigitalCanvas::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
 
 void DigitalCanvas::updateCanvas() {
   painty::Renderer<painty::vec3> renderer;
+  painty::ColorConverter<double> converter;
+
   {
     painty::Mat<painty::vec3> rgb = renderer.compose(*_canvasPtr);
-    painty::Mat<painty::vec<uchar, 3UL>> rgb_8(rgb.getRows(), rgb.getCols());
+    // convert to srgb for display
+    for (auto& v : rgb) {
+      converter.rgb2srgb(v, v);
+    }
 
-    QImage qimage(rgb.getCols(), rgb.getRows(), QImage::Format_RGB32);
-    for (auto i = 0U; i < rgb.getRows(); i++) {
-      for (auto j = 0U; j < rgb.getCols(); j++) {
+    QImage qimage(rgb.cols, rgb.rows, QImage::Format_RGB32);
+    for (auto i = 0U; i < rgb.rows; i++) {
+      for (auto j = 0U; j < rgb.cols; j++) {
         qimage.setPixel(j, i,
                         qRgb(static_cast<uint8_t>(rgb(i, j)[0U] * 255.0),
                              static_cast<uint8_t>(rgb(i, j)[1U] * 255.0),
@@ -175,16 +181,20 @@ void DigitalCanvas::updateCanvas() {
     painty::Mat<painty::vec3> white(
       _brushFootprintPtr->getPickupMap().getRows(),
       _brushFootprintPtr->getPickupMap().getCols());
-    for (auto& p : white.getData()) {
+    for (auto& p : white) {
       p = painty::vec3::Ones();
     }
     painty::Mat<painty::vec3> rgb =
       renderer.compose(_brushFootprintPtr->getPickupMap(), white);
-    painty::Mat<painty::vec<uchar, 3UL>> rgb_8(rgb.getRows(), rgb.getCols());
 
-    QImage qimage(rgb.getCols(), rgb.getRows(), QImage::Format_RGB32);
-    for (auto i = 0U; i < rgb.getRows(); i++) {
-      for (auto j = 0U; j < rgb.getCols(); j++) {
+    // convert to srgb for display
+    for (auto& v : rgb) {
+      converter.rgb2srgb(v, v);
+    }
+
+    QImage qimage(rgb.cols, rgb.rows, QImage::Format_RGB32);
+    for (auto i = 0U; i < rgb.rows; i++) {
+      for (auto j = 0U; j < rgb.cols; j++) {
         qimage.setPixel(j, i,
                         qRgb(static_cast<uint8_t>(rgb(i, j)[0U] * 255.0),
                              static_cast<uint8_t>(rgb(i, j)[1U] * 255.0),
@@ -197,10 +207,10 @@ void DigitalCanvas::updateCanvas() {
   // {
   //   painty::Mat<double> fp = _brushFootprintPtr->getFootprint();
 
-  //   QImage qimage(fp.getCols(), fp.getRows(), QImage::Format_Grayscale8);
-  //   for (auto i = 0U; i < fp.getRows(); i++)
+  //   QImage qimage(fp.cols, fp.rows, QImage::Format_Grayscale8);
+  //   for (auto i = 0U; i < fp.rows; i++)
   //   {
-  //     for (auto j = 0U; j < fp.getCols(); j++)
+  //     for (auto j = 0U; j < fp.cols; j++)
   //     {
   //       const auto g = static_cast<uint8_t>(fp(i, j) * 255.0);
   //       qimage.setPixel(j, i, qRgb(g, g, g));

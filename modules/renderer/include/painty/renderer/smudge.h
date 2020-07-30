@@ -7,8 +7,7 @@
  * @date 2020-05-28
  *
  */
-#ifndef PAINTY_SMUDGE_H
-#define PAINTY_SMUDGE_H
+#pragma once
 
 #include <painty/core/spline.h>
 #include <painty/renderer/paint_layer.h>
@@ -20,7 +19,7 @@ class Smudge final {
   static constexpr auto N = DataType<vector_type>::dim;
 
  public:
-  Smudge(const uint32_t size)
+  Smudge(const int32_t size)
       : _maxSize(size),
         _pickupMapSrc(_maxSize, _maxSize),
         _pickupMapDst(_maxSize, _maxSize) {
@@ -50,7 +49,7 @@ class Smudge final {
     }
 
     auto maxD = 0.0;
-    for (const auto& m : thicknessMap.getData()) {
+    for (const auto& m : thicknessMap) {
       maxD = std::max(m, maxD);
     }
     if (maxD <= 0.) {
@@ -71,9 +70,9 @@ class Smudge final {
       const auto roi_x = center[0] - _pickupMapDst.getCols() / 2.0;
       const auto roi_y = center[1] - _pickupMapDst.getRows() / 2.0;
 
-      for (auto x = 0U; x < _pickupMapDst.getCols(); x++) {
-        for (auto y = 0U; y < _pickupMapDst.getRows(); y++) {
-          if (x < 0U || x >= _pickupMapDst.getCols() || y < 0U ||
+      for (auto x = 0; x < _pickupMapDst.getCols(); x++) {
+        for (auto y = 0; y < _pickupMapDst.getRows(); y++) {
+          if (x < 0 || x >= _pickupMapDst.getCols() || y < 0 ||
               y >= _pickupMapDst.getRows())
             continue;
           vec<int32_t, 2> sp(x, y);
@@ -85,16 +84,14 @@ class Smudge final {
           if (dist > radius)
             continue;
 
-          const auto D = thicknessMap(static_cast<uint32_t>(tp[1]),
-                                      static_cast<uint32_t>(tp[0]));
+          const auto D = thicknessMap(static_cast<int32_t>(tp[1]),
+                                      static_cast<int32_t>(tp[0]));
           if (D <= 0.0) {
             continue;
           }
 
-          const auto cV = canvas.getPaintLayer().getV_buffer()(
-            static_cast<uint32_t>(cp[1]), static_cast<uint32_t>(cp[0]));
-          const auto pV = _pickupMapDst.getV_buffer()(
-            static_cast<uint32_t>(sp[1]), static_cast<uint32_t>(sp[0]));
+          const auto cV = canvas.getPaintLayer().getV_buffer()(cp[1], cp[0]);
+          const auto pV = _pickupMapDst.getV_buffer()(sp[1], sp[0]);
 
           // paint pickup from canvas
           const auto cVl = cV * _ratePickup * D / maxD;
@@ -104,43 +101,34 @@ class Smudge final {
           const auto pVl = pV * _rateRelease * D / maxD;
           const auto pVr = pV - pVl;
 
-          const auto canvasK = canvas.getPaintLayer().getK_buffer()(
-            static_cast<uint32_t>(cp[1]), static_cast<uint32_t>(cp[0]));
-          const auto canvasS = canvas.getPaintLayer().getS_buffer()(
-            static_cast<uint32_t>(cp[1]), static_cast<uint32_t>(cp[0]));
+          const auto canvasK =
+            canvas.getPaintLayer().getK_buffer()(cp[1], cp[0]);
+          const auto canvasS =
+            canvas.getPaintLayer().getS_buffer()(cp[1], cp[0]);
 
-          const auto pickK = _pickupMapDst.getK_buffer()(
-            static_cast<uint32_t>(sp[1]), static_cast<uint32_t>(sp[0]));
-          const auto pickS = _pickupMapDst.getS_buffer()(
-            static_cast<uint32_t>(sp[1]), static_cast<uint32_t>(sp[0]));
+          const auto pickK = _pickupMapDst.getK_buffer()(sp[1], sp[0]);
+          const auto pickS = _pickupMapDst.getS_buffer()(sp[1], sp[0]);
 
           // pickup from canvas
           const auto pVnew = pVr + cVl;
           if (pVnew > 0.0) {
             const auto pVnew_ = 1. / pVnew;
-            _pickupMapDst.getK_buffer()(static_cast<uint32_t>(sp[1]),
-                                        static_cast<uint32_t>(sp[0])) =
+            _pickupMapDst.getK_buffer()(sp[1], sp[0]) =
               pVnew_ * (pVr * pickK + cVl * canvasK);
-            _pickupMapDst.getS_buffer()(static_cast<uint32_t>(sp[1]),
-                                        static_cast<uint32_t>(sp[0])) =
+            _pickupMapDst.getS_buffer()(sp[1], sp[0]) =
               pVnew_ * (pVr * pickS + cVl * canvasS);
-            _pickupMapDst.getV_buffer()(static_cast<uint32_t>(sp[1]),
-                                        static_cast<uint32_t>(sp[0])) =
-              std::max(pVnew, 0.0);
+            _pickupMapDst.getV_buffer()(sp[1], sp[0]) = std::max(pVnew, 0.0);
           }
 
           // deposition of paint
           const auto cVnew = cVr + pVl;
           if (cVnew > 0.0) {
             const auto cVnew_ = 1. / cVnew;
-            canvas.getPaintLayer().getK_buffer()(static_cast<uint32_t>(cp[1]),
-                                                 static_cast<uint32_t>(cp[0])) =
+            canvas.getPaintLayer().getK_buffer()(cp[1], cp[0]) =
               cVnew_ * (cVr * canvasK + pVl * pickK);
-            canvas.getPaintLayer().getS_buffer()(static_cast<uint32_t>(cp[1]),
-                                                 static_cast<uint32_t>(cp[0])) =
+            canvas.getPaintLayer().getS_buffer()(cp[1], cp[0]) =
               cVnew_ * (cVr * canvasS + pVl * pickS);
-            canvas.getPaintLayer().getV_buffer()(static_cast<uint32_t>(cp[1]),
-                                                 static_cast<uint32_t>(cp[0])) =
+            canvas.getPaintLayer().getV_buffer()(cp[1], cp[0]) =
               std::max(cVnew, 0.0);
           }
         }
@@ -149,7 +137,7 @@ class Smudge final {
   }
 
  private:
-  uint32_t _maxSize = 0;
+  int32_t _maxSize = 0;
 
   PaintLayer<vector_type> _pickupMapSrc;
 
@@ -173,9 +161,9 @@ class Smudge final {
     vec2 center = {_maxSize / 2.f, _maxSize / 2.f};
 
     // update pickupmap
-    for (auto x = 0U; x < _maxSize; x++) {
-      for (auto y = 0U; y < _maxSize; y++) {
-        vec<uint32_t, 2UL> destCoords(x, y);
+    for (auto x = 0; x < _maxSize; x++) {
+      for (auto y = 0; y < _maxSize; y++) {
+        vec<int32_t, 2UL> destCoords(x, y);
         vec2 pickupPos = rotate(destCoords, dtheta, center);
         if (pickupPos[0] < 0 || pickupPos[1] < 0 || pickupPos[0] >= _maxSize ||
             pickupPos[1] >= _maxSize) {
@@ -186,9 +174,12 @@ class Smudge final {
           _pickupMapDst.getV_buffer()(destCoords[1], destCoords[0]) =
             _pickupMapSrc.getV_buffer()(destCoords[1], destCoords[0]);
         } else {
-          const auto pickupV = _pickupMapSrc.getV_buffer()(pickupPos);
-          const auto pickupK = _pickupMapSrc.getK_buffer()(pickupPos);
-          const auto pickupS = _pickupMapSrc.getS_buffer()(pickupPos);
+          const auto pickupV =
+            Interpolate(_pickupMapSrc.getV_buffer(), pickupPos);
+          const auto pickupK =
+            Interpolate(_pickupMapSrc.getK_buffer(), pickupPos);
+          const auto pickupS =
+            Interpolate(_pickupMapSrc.getS_buffer(), pickupPos);
 
           _pickupMapDst.getV_buffer()(destCoords[1], destCoords[0]) = pickupV;
           _pickupMapDst.getK_buffer()(destCoords[1], destCoords[0]) = pickupK;
@@ -210,7 +201,7 @@ class Smudge final {
     return newAngle;
   }
 
-  vec2 rotate(const vec<uint32_t, 2UL>& p, T a, const vec2& center) {
+  vec2 rotate(const vec<int32_t, 2UL>& p, T a, const vec2& center) {
     vec2 p_;
 
     auto s = std::sin(a);
@@ -259,5 +250,3 @@ class Smudge final {
   }
 };
 }  // namespace painty
-
-#endif  // PAINTY_SMUDGE_H

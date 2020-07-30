@@ -7,8 +7,7 @@
  * @date 2020-05-29
  *
  */
-#ifndef PAINTY_FOOTPRINT_BRUSH_H
-#define PAINTY_FOOTPRINT_BRUSH_H
+#pragma once
 
 #include <painty/io/image_io.h>
 #include <painty/renderer/canvas.h>
@@ -29,14 +28,14 @@ class FootprintBrush final {
   FootprintBrush() = default;
 
   FootprintBrush(const double radius)
-      : _sizeMap(0U),
-        _footprint(0U, 0U),
-        _pickupMap(0U, 0U),
-        _snapshotBuffer(0U, 0U)
+      : _sizeMap(0),
+        _footprint(0, 0),
+        _pickupMap(0, 0),
+        _snapshotBuffer(0, 0)
 
   {
     io::imRead("/home/tsl/development/painty/data/footprint/footprint.png",
-               _footprintFullSize);
+               _footprintFullSize, true);
 
     setRadius(radius);
   }
@@ -55,8 +54,8 @@ class FootprintBrush final {
 
     // resize the footprint to the radius and pad to cover all rotations.
     const auto pad = (_sizeMap - width) / 2;
-    _footprint =
-      _footprintFullSize.scaled(width, width).padded(pad, pad, pad, pad, 0.0);
+    _footprint     = PaddedMat(ScaledMat(_footprintFullSize, width, width), pad,
+                           pad, pad, pad, 0.0);
 
     _pickupMap = PaintLayer<vector_type>(_sizeMap, _sizeMap);
     _pickupMap.clear();
@@ -74,8 +73,8 @@ class FootprintBrush final {
                Canvas<vector_type>& canvas) {
     constexpr auto Eps = 0.0000001;
 
-    const int32_t h  = _footprint.getRows();
-    const int32_t w  = _footprint.getCols();
+    const int32_t h  = _footprint.rows;
+    const int32_t w  = _footprint.cols;
     const int32_t hr = (h - 1) / 2;
     const int32_t wr = (w - 1) / 2;
 
@@ -221,8 +220,8 @@ class FootprintBrush final {
       canvas.getPaintLayer().copyTo(_snapshotBuffer);
     }
 
-    const int32_t h  = _footprint.getRows();
-    const int32_t w  = _footprint.getCols();
+    const int32_t h  = _footprint.rows;
+    const int32_t w  = _footprint.cols;
     const int32_t hr = (h - 1) / 2;
     const int32_t wr = (w - 1) / 2;
 
@@ -440,5 +439,3 @@ class FootprintBrush final {
   std::array<vector_type, 2UL> _paintIntrinsic;
 };
 }  // namespace painty
-
-#endif  // PAINTY_FOOTPRINT_BRUSH_H

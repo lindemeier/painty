@@ -7,8 +7,7 @@
  * @date 2020-05-01
  *
  */
-#ifndef PAINTY_BRUSH_STROKE_SAMPLE_H
-#define PAINTY_BRUSH_STROKE_SAMPLE_H
+#pragma once
 
 #include <painty/core/vec.h>
 #include <painty/image/mat.h>
@@ -59,5 +58,3 @@ class BrushStrokeSample final {
 };
 
 }  // namespace painty
-
-#endif  // PAINTY_BRUSH_STROKE_SAMPLE_H

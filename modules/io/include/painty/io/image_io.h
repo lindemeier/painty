@@ -7,27 +7,24 @@
  * @date 2020-04-22
  *
  */
-#ifndef PAINTY_IMAGE_IO_H
-#define PAINTY_IMAGE_IO_H
+#pragma once
 
 #include <painty/core/vec.h>
 #include <painty/image/mat.h>
 
 namespace painty {
 namespace io {
-enum class ChannelDepth : uint8_t { BITS_8 = 0U, BITS_16 = 1U };
+void imRead(const std::string& filename, Mat<vec3>& linear_rgb,
+            const bool convertFrom_sRGB);
 
-bool imRead(const std::string& filename, Mat<vec3>& linear_rgb);
-
-bool imRead(const std::string& filename, Mat<double>& gray);
+void imRead(const std::string& filename, Mat<double>& gray,
+            const bool convertFrom_sRGB);
 
 bool imSave(const std::string& filename, const Mat<vec3>& linear_rgb,
-            const ChannelDepth bit_depth = ChannelDepth::BITS_16);
+            const bool convertTo_sRGB);
 
 bool imSave(const std::string& filename, const Mat<double>& gray,
-            const ChannelDepth bit_depth = ChannelDepth::BITS_16);
+            const bool convertTo_sRGB);
 }  // namespace io
 
 }  // namespace painty
-
-#endif  // PAINTY_IMAGE_IO_H

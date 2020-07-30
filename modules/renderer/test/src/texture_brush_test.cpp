@@ -33,6 +33,7 @@ TEST(TextureBrushTest, Construct) {
 
   painty::Renderer<painty::vec3> renderer;
 
-  painty::io::imSave("/tmp/canvasComposed.png", renderer.compose(canvas));
-  painty::io::imSave("/tmp/getLightedRendering.png", renderer.render(canvas));
+  painty::io::imSave("/tmp/canvasComposed.png", renderer.compose(canvas), true);
+  painty::io::imSave("/tmp/getLightedRendering.png", renderer.render(canvas),
+                     true);
 }

@@ -7,8 +7,7 @@
  * @date 2020-05-01
  *
  */
-#ifndef PAINTY_TEXTURE_WARP_H
-#define PAINTY_TEXTURE_WARP_H
+#pragma once
 
 #include <painty/core/vec.h>
 
@@ -28,5 +27,3 @@ class TextureWarp final {
   std::vector<vec2> _out;
 };
 }  // namespace painty
-
-#endif  // PAINTY_TEXTURE_WARP_H

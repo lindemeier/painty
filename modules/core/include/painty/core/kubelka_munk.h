@@ -7,8 +7,7 @@
  * @date 2020-04-22
  *
  */
-#ifndef PAINTY_KUBELKA_MUNK_H
-#define PAINTY_KUBELKA_MUNK_H
+#pragma once
 
 #include <painty/core/math.h>
 
@@ -125,5 +124,3 @@ void ComputeScatteringAndAbsorption(const vec<Float, N>& Rb,
 }
 
 }  // namespace painty
-
-#endif  // PAINTY_KUBELKA_MUNK_H

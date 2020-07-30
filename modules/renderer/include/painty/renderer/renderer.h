@@ -5,8 +5,7 @@
  * @date 2020-05-15
  *
  */
-#ifndef PAINTY_RENDERER_H
-#define PAINTY_RENDERER_H
+#pragma once
 
 #include <painty/image/mat.h>
 #include <painty/renderer/canvas.h>
@@ -26,17 +25,17 @@ class Renderer final {
    */
   Mat<vector_type> compose(const PaintLayer<vector_type>& paintLayer,
                            const Mat<vector_type>& R0_buffer) const {
-    Mat<vector_type> R1(R0_buffer.getRows(), R0_buffer.getCols());
+    Mat<vector_type> R1(R0_buffer.rows, R0_buffer.cols);
 
-    auto& r1_data       = R1.getData();
-    const auto& r0_data = R0_buffer.getData();
+    auto& r1_data       = R1;
+    const auto& r0_data = R0_buffer;
 
-    const auto& K = paintLayer.getK_buffer().getData();
-    const auto& S = paintLayer.getS_buffer().getData();
-    const auto& V = paintLayer.getV_buffer().getData();
+    const auto& K = paintLayer.getK_buffer();
+    const auto& S = paintLayer.getS_buffer();
+    const auto& V = paintLayer.getV_buffer();
 
-    for (size_t i = 0U; i < r0_data.size(); i++) {
-      r1_data[i] = ComputeReflectance(K[i], S[i], r0_data[i], V[i]);
+    for (auto i = 0; i < static_cast<int32_t>(r0_data.total()); i++) {
+      r1_data(i) = ComputeReflectance(K(i), S(i), r0_data(i), V(i));
     }
     return R1;
   }
@@ -81,8 +80,8 @@ class Renderer final {
     const vector_type lightPos = {-200, -1500, -2000.};
 
     const vec2 size   = {2.0, 0.0};
-    const auto width  = compR.getCols();
-    const auto height = compR.getRows();
+    const auto width  = compR.cols;
+    const auto height = compR.rows;
 
     const vec3 eyePos = {width / 2.0, height / 2.0, -100.};
 
@@ -98,14 +97,18 @@ class Renderer final {
 
     Mat<vector_type> rgb(height, width);
 
-    for (auto i = 0U; i < height; ++i) {
-      for (auto j = 0U; j < width; ++j) {
+    for (auto i = 0; i < height; ++i) {
+      for (auto j = 0; j < width; ++j) {
         // compute normal
         const T s11 = heightMap(i, j);
-        const T s01 = heightMap({static_cast<T>(j) - 1.0, static_cast<T>(i)});
-        const T s21 = heightMap({static_cast<T>(j) + 1.0, static_cast<T>(i)});
-        const T s10 = heightMap({static_cast<T>(j), static_cast<T>(i) - 1.0});
-        const T s12 = heightMap({static_cast<T>(j), static_cast<T>(i) + 1.0});
+        const T s01 =
+          Interpolate(heightMap, {static_cast<T>(j) - 1.0, static_cast<T>(i)});
+        const T s21 =
+          Interpolate(heightMap, {static_cast<T>(j) + 1.0, static_cast<T>(i)});
+        const T s10 =
+          Interpolate(heightMap, {static_cast<T>(j), static_cast<T>(i) - 1.0});
+        const T s12 =
+          Interpolate(heightMap, {static_cast<T>(j), static_cast<T>(i) + 1.0});
         vector_type va = {size[0], size[1], s21 - s01};
         va             = va.normalized();
         vector_type vb = {size[1], size[0], s12 - s10};
@@ -152,5 +155,3 @@ class Renderer final {
   }
 };
 }  // namespace painty
-
-#endif  // PAINTY_CANVAS_H

@@ -7,8 +7,7 @@
  * @date 2020-05-19
  *
  */
-#ifndef PAINTY_TEXTURE_BRUSH_H
-#define PAINTY_TEXTURE_BRUSH_H
+#pragma once
 
 #include <painty/core/spline.h>
 #include <painty/renderer/brush_stroke_sample.h>
@@ -27,7 +26,7 @@ class TextureBrush final {
  public:
   TextureBrush(const std::string& sampleDir)
       : _brushStrokeSample(sampleDir),
-        _smudge(static_cast<uint32_t>(2.0 * _radius)) {
+        _smudge(static_cast<int32_t>(2.0 * _radius)) {
     for (auto& c : _paintStored) {
       c.fill(static_cast<T>(0.1));
     }
@@ -65,11 +64,11 @@ class TextureBrush final {
     boundMin[0U] = std::max(boundMin[0U] - _radius, 0.0);
     boundMax[0U] =
       std::min(boundMax[0U] + _radius,
-               static_cast<T>(canvas.getPaintLayer().getCols() - 1U));
+               static_cast<T>(canvas.getPaintLayer().getCols() - 1));
     boundMin[1U] = std::max(boundMin[1U] - _radius, 0.0);
     boundMax[1U] =
       std::min(boundMax[1U] + _radius,
-               static_cast<T>(canvas.getPaintLayer().getRows() - 1U));
+               static_cast<T>(canvas.getPaintLayer().getRows() - 1));
 
     auto length = 0.0;
     for (auto i = 1UL; i < vertices.size(); ++i) {
@@ -124,16 +123,16 @@ class TextureBrush final {
 
     const auto now = std::chrono::system_clock::now();
 
-    Mat<T> thicknessMap(static_cast<uint32_t>(boundMax[1] - boundMin[1] + 1U),
-                        static_cast<uint32_t>(boundMax[0] - boundMin[0] + 1U));
-    for (auto& p : thicknessMap.getData()) {
+    Mat<T> thicknessMap(static_cast<int32_t>(boundMax[1] - boundMin[1] + 1),
+                        static_cast<int32_t>(boundMax[0] - boundMin[0] + 1));
+    for (auto& p : thicknessMap) {
       p = static_cast<T>(0.0);
     }
-    std::vector<vec<uint32_t, 2U>> pixels;
-    for (auto x = static_cast<uint32_t>(boundMin[0U]);
-         x <= static_cast<uint32_t>(boundMax[0U]); x++) {
-      for (auto y = static_cast<uint32_t>(boundMin[1U]);
-           y <= static_cast<uint32_t>(boundMax[1U]); y++) {
+    std::vector<vec<int32_t, 2U>> pixels;
+    for (auto x = static_cast<int32_t>(boundMin[0U]);
+         x <= static_cast<int32_t>(boundMax[0U]); x++) {
+      for (auto y = static_cast<int32_t>(boundMin[1U]);
+           y <= static_cast<int32_t>(boundMax[1U]); y++) {
         if ((x < 0) || (x >= canvas.getPaintLayer().getCols()) || (y < 0) ||
             (y >= canvas.getPaintLayer().getRows())) {
           continue;
@@ -157,8 +156,8 @@ class TextureBrush final {
         const auto Vtex = _brushStrokeSample.getSampleAtUV(canvasUV);
         if (Vtex > 0.0) {
           canvas.checkDry(x, y, now);
-          thicknessMap(y - static_cast<uint32_t>(boundMin[1U]),
-                       x - static_cast<uint32_t>(boundMin[0U])) = Vtex;
+          thicknessMap(y - static_cast<int32_t>(boundMin[1U]),
+                       x - static_cast<int32_t>(boundMin[0U])) = Vtex;
           pixels.emplace_back(x, y);
         }
       }
@@ -169,8 +168,8 @@ class TextureBrush final {
     for (const auto& p : pixels) {
       const auto x    = p[0U];
       const auto y    = p[1U];
-      const auto Vtex = thicknessMap(y - static_cast<uint32_t>(boundMin[1U]),
-                                     x - static_cast<uint32_t>(boundMin[0U]));
+      const auto Vtex = thicknessMap(y - static_cast<int32_t>(boundMin[1U]),
+                                     x - static_cast<int32_t>(boundMin[0U]));
       const auto Vcan = canvas.getPaintLayer().getV_buffer()(y, x);
 
       const auto Vsum = Vcan + Vtex;
@@ -214,5 +213,3 @@ class TextureBrush final {
   Smudge<vector_type> _smudge;
 };
 }  // namespace painty
-
-#endif  // PAINTY_TEXTURE_BRUSH_H

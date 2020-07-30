@@ -9,83 +9,78 @@
  */
 
 #include <gtest/gtest.h>
+#include <painty/core/color.h>
 #include <painty/io/image_io.h>
 
-TEST(ImageIoTest, ReadWriteRGB) {
-  painty::Mat<painty::vec3> linear_rgb(256, 1024);
+#include <opencv2/highgui.hpp>
 
-  for (uint32_t i = 0; i < linear_rgb.getRows(); i++) {
-    for (uint32_t j = 0; j < linear_rgb.getCols(); j++) {
-      const double p = j / static_cast<double>(linear_rgb.getCols() - 1U);
+TEST(ImageIoTest, ReadWriteRGB) {
+  painty::Mat<painty::vec3> linear_rgb(1, 0xFF);
+
+  for (int32_t i = 0; i < linear_rgb.rows; i++) {
+    for (int32_t j = 0; j < linear_rgb.cols; j++) {
+      const double p = j / static_cast<double>(linear_rgb.cols - 1);
 
       linear_rgb(i, j) = {p, p, p};
     }
   }
 
-  const auto testReadSaveRead = [&](const painty::io::ChannelDepth depth) {
+  const auto testReadSaveRead = [&](const std::string& fileType,
+                                    const double eps) {
     std::stringstream ss;
-    ss << "linear_rgb"
-       << ((depth == painty::io::ChannelDepth::BITS_16) ? "_16" : "_8")
-       << ".png";
-    const auto name = ss.str();
-    painty::io::imSave(name, linear_rgb, depth);
+    ss << "/tmp/test_rgb." << fileType;
+    const auto& compare_img = linear_rgb;
+    const auto name         = ss.str();
+    painty::io::imSave(name, linear_rgb, false);
 
-    painty::Mat<painty::vec3> linear_rgb_read;
-    painty::io::imRead(name, linear_rgb_read);
-    painty::io::imSave("hugo.png", linear_rgb_read, depth);
+    painty::Mat<painty::vec3> read_image;
+    painty::io::imRead(name, read_image, false);
 
-    EXPECT_EQ(linear_rgb_read.getCols(), linear_rgb.getCols());
-    EXPECT_EQ(linear_rgb_read.getRows(), linear_rgb.getRows());
+    EXPECT_EQ(read_image.cols, compare_img.cols);
+    EXPECT_EQ(read_image.rows, compare_img.rows);
 
-    const double eps =
-      ((depth == painty::io::ChannelDepth::BITS_16) ? (1. / 0xFFFF)
-                                                    : (1. / 0xFF));
-    for (uint32_t i = 0; i < linear_rgb.getRows(); i++) {
-      for (uint32_t j = 0; j < linear_rgb.getCols(); j++) {
-        EXPECT_NEAR(linear_rgb(i, j)[0], linear_rgb_read(i, j)[0], eps);
-        EXPECT_NEAR(linear_rgb(i, j)[1], linear_rgb_read(i, j)[1], eps);
-        EXPECT_NEAR(linear_rgb(i, j)[2], linear_rgb_read(i, j)[2], eps);
+    for (int32_t i = 0; i < compare_img.rows; i++) {
+      for (int32_t j = 0; j < compare_img.cols; j++) {
+        EXPECT_NEAR(compare_img(i, j)[0], read_image(i, j)[0], eps);
+        EXPECT_NEAR(compare_img(i, j)[1], read_image(i, j)[1], eps);
+        EXPECT_NEAR(compare_img(i, j)[2], read_image(i, j)[2], eps);
       }
     }
   };
 
-  testReadSaveRead(painty::io::ChannelDepth::BITS_16);
-  // testReadSaveRead(painty::io::ChannelDepth::BITS_8);
+  testReadSaveRead("png", 1. / 0xFFFF);
+  testReadSaveRead("jpg", 1. / 0xFF);
 }
 
 TEST(ImageIoTest, ReadWriteSingle) {
-  painty::Mat<double> luminance(256, 1024);
+  painty::Mat<double> lum(1, 0xFF);
 
-  for (uint32_t i = 0; i < luminance.getRows(); i++) {
-    for (uint32_t j = 0; j < luminance.getCols(); j++) {
-      luminance(i, j) = j / static_cast<double>(luminance.getCols() - 1U);
+  for (int32_t i = 0; i < lum.rows; i++) {
+    for (int32_t j = 0; j < lum.cols; j++) {
+      lum(i, j) = j / static_cast<double>(lum.cols - 1);
     }
   }
-  const auto testReadSaveRead = [&](const painty::io::ChannelDepth depth) {
+  const auto testReadSaveRead = [&](const std::string& fileType,
+                                    const double eps) {
     std::stringstream ss;
-    ss << "luminance"
-       << ((depth == painty::io::ChannelDepth::BITS_16) ? "_16" : "_8")
-       << ".png";
-    const auto name = ss.str();
-    painty::io::imSave(name, luminance, depth);
+    ss << "/tmp/test_lum." << fileType;
+    const auto& compare_img = lum;
+    const auto name         = ss.str();
+    painty::io::imSave(name, lum, false);
 
-    painty::Mat<double> luminance_read;
-    painty::io::imRead(name, luminance_read);
+    painty::Mat<double> lum_read;
+    painty::io::imRead(name, lum_read, false);
 
-    EXPECT_EQ(luminance_read.getCols(), luminance.getCols());
-    EXPECT_EQ(luminance_read.getRows(), luminance.getRows());
+    EXPECT_EQ(lum_read.cols, compare_img.cols);
+    EXPECT_EQ(lum_read.rows, compare_img.rows);
 
-    const double eps =
-      ((depth == painty::io::ChannelDepth::BITS_16) ? (1. / 0xFFFF)
-                                                    : (1. / 0xFF));
-
-    for (uint32_t i = 0; i < luminance.getRows(); i++) {
-      for (uint32_t j = 0; j < luminance.getCols(); j++) {
-        EXPECT_NEAR(luminance(i, j), luminance_read(i, j), eps);
+    for (int32_t i = 0; i < compare_img.rows; i++) {
+      for (int32_t j = 0; j < compare_img.cols; j++) {
+        EXPECT_NEAR(compare_img(i, j), lum_read(i, j), eps);
       }
     }
   };
 
-  testReadSaveRead(painty::io::ChannelDepth::BITS_16);
-  // testReadSaveRead(painty::io::ChannelDepth::BITS_8);
+  testReadSaveRead("png", 1. / 0xFFFF);
+  testReadSaveRead("jpg", 1. / 0xFF);
 }

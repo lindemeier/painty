@@ -65,7 +65,7 @@ DigitalPaintMainWindow::DigitalPaintMainWindow(QWidget* parent)
     painty::Renderer<painty::vec3> renderer;
     const auto image =
       renderer.compose(*m_canvasView->getDigitalCanvas()->getCanvas());
-    painty::io::imSave(fileName.toStdString(), image);
+    painty::io::imSave(fileName.toStdString(), image, true);
   });
 
   QAction* aboutAct = new QAction(tr("&about"), this);

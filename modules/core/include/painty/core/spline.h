@@ -7,8 +7,7 @@
  * @date 2020-05-04
  *
  */
-#ifndef PAINTY_SPLINE_H
-#define PAINTY_SPLINE_H
+#pragma once
 
 #include <painty/core/math.h>
 
@@ -180,5 +179,3 @@ class SplineEval {
   }
 };
 }  // namespace painty
-
-#endif  // PAINTY_SPLINE_H

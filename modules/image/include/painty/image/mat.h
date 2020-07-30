@@ -7,216 +7,143 @@
  * @date 2020-04-22
  *
  */
-#ifndef PAINTY_MAT_H
-#define PAINTY_MAT_H
+#pragma once
 
 #include <painty/core/vec.h>
 
 #include <memory>
+#include <opencv2/imgproc.hpp>
 #include <vector>
 
-namespace painty {
-template <class T>
-class Mat {
+namespace cv {  // opencv access data traits
+template <typename T, int32_t R, int32_t C>
+class DataType<Eigen::Matrix<T, R, C>> {
  public:
-  explicit Mat() : _rows(0U), _cols(0U), _data_ptr(nullptr) {}
-
-  explicit Mat(uint32_t rows, uint32_t cols)
-      : _rows(rows),
-        _cols(cols),
-        _data_ptr(std::make_shared<std::vector<T>>(rows * cols)) {}
-
-  uint32_t getCols() const {
-    return _cols;
-  }
-
-  uint32_t getRows() const {
-    return _rows;
-  }
-
-  bool isEmpty() const {
-    return !_data_ptr;
-  }
-
-  const T& operator()(uint32_t i, uint32_t j) const {
-    return (*_data_ptr)[one_d(i, j)];
-  }
-
-  T& operator()(uint32_t i, uint32_t j) {
-    return (*_data_ptr)[one_d(i, j)];
-  }
-
-  /**
-   * @brief Access data bilinearly interpolated.
-   *
-   * @param position
-   *
-   * @return T bilinearly interpolated value at position.
-   */
-  T operator()(const vec2& position) const {
-    const auto x = static_cast<int32_t>(std::floor(position[0]));
-    const auto y = static_cast<int32_t>(std::floor(position[1]));
-
-    const auto x0 = BorderHandle(x, _cols);
-    const auto x1 = BorderHandle(x + 1, _cols);
-    const auto y0 = BorderHandle(y, _rows);
-    const auto y1 = BorderHandle(y + 1, _rows);
-
-    const auto a = position[0] - static_cast<double>(x);
-    const auto c = position[1] - static_cast<double>(y);
-    if constexpr (DataType<T>::dim == 1U) {
-      return static_cast<T>(
-        (static_cast<double>(this->operator()(y0, x0)) * (1.0 - a) +
-         static_cast<double>(this->operator()(y0, x1)) * a) *
-          (1.0 - c) +
-        (static_cast<double>(this->operator()(y1, x0)) * (1.0 - a) +
-         static_cast<double>(this->operator()(y1, x1)) * a) *
-          c);
-    } else {
-      T r;
-      for (auto i = 0U; i < DataType<T>::rows; i++) {
-        for (auto j = 0U; j < DataType<T>::cols; j++) {
-          r(i, j) = static_cast<typename DataType<T>::channel_type>(
-            (static_cast<double>(this->operator()(y0, x0)(i, j)) * (1.0 - a) +
-             static_cast<double>(this->operator()(y0, x1)(i, j)) * a) *
-              (1.0 - c) +
-            (static_cast<double>(this->operator()(y1, x0)(i, j)) * (1.0 - a) +
-             static_cast<double>(this->operator()(y1, x1)(i, j)) * a) *
-              c);
-        }
-      }
-      return r;
-    }
-  }
-
-  const std::vector<T>& getData() const {
-    return *_data_ptr;
-  }
-
-  std::vector<T>& getData() {
-    return *_data_ptr;
-  }
-
-  /**
-   * @brief Deep copy.
-   *
-   * @return Mat<T>
-   */
-  Mat<T> clone() const {
-    Mat<T> c(_rows, _cols);
-    std::copy(_data_ptr->cbegin(), _data_ptr->cend(), c._data_ptr->begin());
-    return c;
-  }
-
-  /**
-   * @brief up- or downsample an image using bilinear interpolation.
-   *
-   * @param rows number of rows of the resized image
-   * @param cols number of cols of the resized image
-   *
-   * @return Mat<T>
-   */
-  Mat<T> scaled(const uint32_t rows, const uint32_t cols) const {
-    Mat<T> s(rows, cols);
-    for (auto i = 0U; i < rows; i++) {
-      for (auto j = 0U; j < cols; j++) {
-        vec2 p = {(static_cast<double>(j) / static_cast<double>(cols - 1U)) *
-                    static_cast<double>(_cols - 1U),
-                  (static_cast<double>(i) / static_cast<double>(rows - 1U)) *
-                    static_cast<double>(_rows - 1U)};
-
-        s(i, j) = (*this)(p);
-      }
-    }
-    return s;
-  }
-
-  /**
-   * @brief Return a padded copy of the mat.
-   *
-   * @param left
-   * @param right
-   * @param up
-   * @param down
-   * @param paddingValue
-   * @return Mat<T>
-   */
-  Mat<T> padded(const uint32_t left, const uint32_t right, const uint32_t up,
-                const uint32_t down, const T& paddingValue) const {
-    Mat<T> s(_rows + up + down, _cols + left + right);
-    // initialize all to default value
-    for (auto& v : s.getData()) {
-      v = paddingValue;
-    }
-    for (auto i = 0U; i < _rows; i++) {
-      for (auto j = 0U; j < _cols; j++) {
-        s(i + up, j + left) = (*this)(i, j);
-      }
-    }
-    return s;
-  }
-
-  /**
-   * @brief Rotate a mat around its center.
-   *
-   * @param from
-   * @param to
-   * @param theta angle
-   */
-  static void rotate(const Mat<T>& from, Mat<T>& to, const double theta) {
-    if ((to.getCols() != from.getCols()) || (to.getRows() != from.getRows())) {
-      to = Mat<T>(from._rows, from._cols);
-    }
-    // use the inverse rotation, to -> from
-    const auto cosTheta = std::cos(-theta);
-    const auto sinTheta = std::sin(-theta);
-    const double cRow   = to.getRows() * 0.5;
-    const double cCol   = to.getCols() * 0.5;
-    for (auto row = 0U; row < to._rows; row++) {
-      for (auto col = 0U; col < to._cols; col++) {
-        // translate center to zero
-        const auto tRow = row - cRow;
-        const auto tCol = col - cCol;
-
-        // rotate around center
-        const auto rotatedCol = tCol * cosTheta - tRow * sinTheta;
-        const auto rotatedRow = tCol * sinTheta + tRow * cosTheta;
-
-        // translate back
-        const double nRow = rotatedRow + cRow;
-        const double nCol = rotatedCol + cCol;
-
-        to(row, col) = from({nCol, nRow});
-      }
-    }
-  }
-
- private:
-  inline size_t one_d(uint32_t i, uint32_t j) const {
-    return i * _cols + j;
-  }
-
-  static uint32_t BorderHandle(int32_t pos, uint32_t axisLength) {
-    if (axisLength == 1U) {
-      return 0U;
-    }
-    do {
-      if (pos < 0) {
-        pos = -pos - 1;
-      } else {
-        pos = static_cast<int32_t>(axisLength) - 1 -
-              (pos - static_cast<int32_t>(axisLength));
-      }
-    } while (static_cast<uint32_t>(pos) >= axisLength);
-    return static_cast<uint32_t>(pos);
-  }
-
-  uint32_t _rows = 0U;
-  uint32_t _cols = 0U;
-
-  std::shared_ptr<std::vector<T>> _data_ptr = nullptr;
+  typedef Eigen::Matrix<T, R, C> value_type;
+  typedef Eigen::Matrix<T, R, C> work_type;
+  typedef T channel_type;
+  typedef value_type vec_type;
+  enum {
+    generic_type = 0,
+    depth        = DataDepth<channel_type>::value,
+    channels     = R * C,
+    fmt          = ((channels - 1) << 8) + DataDepth<channel_type>::fmt,
+    type         = CV_MAKETYPE(depth, channels)
+  };
 };
 
-}  // namespace painty
+}  // namespace cv
 
-#endif  // PAINTY_MAT_H
+namespace painty {
+
+template <class T>
+using Mat = cv::Mat_<T>;
+
+// predefines of often used mat
+// dynamic matrix
+using Mat1u  = Mat<uint8_t>;
+using Mat1i  = Mat<int32_t>;
+using Mat1ui = Mat<uint32_t>;
+using Mat1f  = Mat<float>;
+using Mat1d  = Mat<double>;
+using Mat2u  = Mat<vec2u>;
+using Mat2i  = Mat<vec2i>;
+using Mat2f  = Mat<vec2f>;
+using Mat2d  = Mat<vec2>;
+using Mat3u  = Mat<vec3u>;
+using Mat3i  = Mat<vec3i>;
+using Mat3f  = Mat<vec3f>;
+using Mat3d  = Mat<vec3>;
+using Mat4f  = Mat<vec4f>;
+using Mat4d  = Mat<vec4>;
+
+/**
+ * @brief Access data bilinearly interpolated.
+ *
+ * @param position
+ *
+ * @return T bilinearly interpolated value at position.
+ */
+template <class T>
+T Interpolate(const Mat<T>& input, const vec2& position) {
+  const auto x = static_cast<int32_t>(std::floor(position[0]));
+  const auto y = static_cast<int32_t>(std::floor(position[1]));
+
+  const auto x0 = cv::borderInterpolate(x, input.cols, cv::BORDER_REFLECT);
+  const auto x1 = cv::borderInterpolate(x + 1, input.cols, cv::BORDER_REFLECT);
+  const auto y0 = cv::borderInterpolate(y, input.rows, cv::BORDER_REFLECT);
+  const auto y1 = cv::borderInterpolate(y + 1, input.rows, cv::BORDER_REFLECT);
+
+  const auto a = position[0] - static_cast<double>(x);
+  const auto c = position[1] - static_cast<double>(y);
+  if constexpr (DataType<T>::dim == 1U) {
+    return static_cast<T>((static_cast<double>(input(y0, x0)) * (1.0 - a) +
+                           static_cast<double>(input(y0, x1)) * a) *
+                            (1.0 - c) +
+                          (static_cast<double>(input(y1, x0)) * (1.0 - a) +
+                           static_cast<double>(input(y1, x1)) * a) *
+                            c);
+  } else {
+    T r;
+    for (auto i = 0U; i < DataType<T>::rows; i++) {
+      for (auto j = 0U; j < DataType<T>::cols; j++) {
+        r(i, j) = static_cast<typename DataType<T>::channel_type>(
+          (static_cast<double>(input(y0, x0)(i, j)) * (1.0 - a) +
+           static_cast<double>(input(y0, x1)(i, j)) * a) *
+            (1.0 - c) +
+          (static_cast<double>(input(y1, x0)(i, j)) * (1.0 - a) +
+           static_cast<double>(input(y1, x1)(i, j)) * a) *
+            c);
+      }
+    }
+    return r;
+  }
+}
+
+/**
+  * @brief Return a padded copy of the mat.
+  *
+  * @param left
+  * @param right
+  * @param up
+  * @param down
+  * @param paddingValue
+  * @return Mat<T>
+  */
+template <class T>
+Mat<T> PaddedMat(const Mat<T>& input, const uint32_t left, const uint32_t right,
+                 const uint32_t up, const uint32_t down,
+                 const T& paddingValue) {
+  Mat<T> s(input.rows + up + down, input.cols + left + right);
+  // initialize all to default value
+  for (auto& v : s) {
+    v = paddingValue;
+  }
+  for (auto i = 0U; i < input.rows; i++) {
+    for (auto j = 0U; j < input.cols; j++) {
+      s(i + up, j + left) = input(i, j);
+    }
+  }
+  return s;
+}
+
+/**
+ * @brief Resizes an image.
+ *
+ * @tparam T
+ * @param input
+ * @param rows
+ * @param cols
+ * @return Mat<T>
+ */
+template <class T>
+Mat<T> ScaledMat(const Mat<T>& input, const uint32_t rows, const uint32_t cols,
+                 cv::InterpolationFlags flag = cv::INTER_LANCZOS4) {
+  Mat<T> resized;
+  cv::resize(input, resized,
+             cv::Size(static_cast<int32_t>(cols), static_cast<int32_t>(rows)),
+             0.0, 0.0, flag);
+  return resized;
+}
+
+}  // namespace painty

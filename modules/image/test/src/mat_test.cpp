@@ -13,23 +13,23 @@
 TEST(MatTest, Construct) {
   painty::Mat<double> m0;
 
-  EXPECT_TRUE(m0.isEmpty());
+  EXPECT_TRUE(m0.empty());
 
-  EXPECT_EQ(0U, m0.getCols());
-  EXPECT_EQ(0U, m0.getRows());
+  EXPECT_EQ(0U, m0.cols);
+  EXPECT_EQ(0U, m0.rows);
 
   m0 = painty::Mat<double>(2U, 4U);
-  EXPECT_FALSE(m0.isEmpty());
-  EXPECT_EQ(4U, m0.getCols());
-  EXPECT_EQ(2U, m0.getRows());
+  EXPECT_FALSE(m0.empty());
+  EXPECT_EQ(4U, m0.cols);
+  EXPECT_EQ(2U, m0.rows);
 }
 
 TEST(MatTest, Assign) {
   painty::Mat<double> m0 = painty::Mat<double>(2U, 4U);
 
-  EXPECT_FALSE(m0.isEmpty());
-  EXPECT_EQ(4U, m0.getCols());
-  EXPECT_EQ(2U, m0.getRows());
+  EXPECT_FALSE(m0.empty());
+  EXPECT_EQ(4U, m0.cols);
+  EXPECT_EQ(2U, m0.rows);
 
   constexpr auto v = 1.444412315;
   m0(0U, 0U)       = v;
@@ -50,25 +50,26 @@ TEST(MatTest, BilinearInterpolate) {
 
   const painty::vec2 pos = {0.5, 0.5};
 
-  EXPECT_NEAR(expected[0], m0(pos)[0], 0.0000001);
-  EXPECT_NEAR(expected[1], m0(pos)[1], 0.0000001);
-  EXPECT_NEAR(expected[2], m0(pos)[2], 0.0000001);
+  EXPECT_NEAR(expected[0], painty::Interpolate(m0, pos)[0], 0.0000001);
+  EXPECT_NEAR(expected[1], painty::Interpolate(m0, pos)[1], 0.0000001);
+  EXPECT_NEAR(expected[2], painty::Interpolate(m0, pos)[2], 0.0000001);
 }
 
 TEST(MatTest, Resize) {
   constexpr auto testColor = 0.5;
   painty::Mat<double> m0(256U, 256U);
-  for (auto& p : m0.getData()) {
+  for (auto& p : m0) {
     p = testColor;
   }
 
-  const auto smaller = m0.scaled(135, 94);
-  for (const auto& p : smaller.getData()) {
-    EXPECT_EQ(testColor, p);
+  const auto smaller = painty::ScaledMat(m0, 135, 94);
+  for (const auto& p : smaller) {
+    EXPECT_NEAR(testColor, p, 0.0001);
   }
 
-  const auto bigger = m0.scaled(2 * m0.getRows(), 3 * m0.getCols());
-  for (const auto& p : bigger.getData()) {
-    EXPECT_EQ(testColor, p);
+  const auto bigger = painty::ScaledMat(m0, 2U * static_cast<uint32_t>(m0.rows),
+                                        3U * static_cast<uint32_t>(m0.cols));
+  for (const auto& p : bigger) {
+    EXPECT_NEAR(testColor, p, 0.0001);
   }
 }

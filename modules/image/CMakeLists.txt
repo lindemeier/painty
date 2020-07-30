@@ -2,17 +2,21 @@ cmake_minimum_required(VERSION 3.10.2)
 
 project(paintyImage)
 
+find_package(OpenCV REQUIRED core imgproc)
+
 add_library(${PROJECT_NAME} STATIC
   ${PROJECT_SOURCE_DIR}/src/texture_warp.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>
+  PUBLIC ${OpenCV_INCLUDE_DIRS}
   PUBLIC $<INSTALL_INTERFACE:include/>
 )
 
 target_link_libraries(${PROJECT_NAME}
   paintyCore
+  ${OpenCV_LIBS}
 )
 
 add_dependencies(${PROJECT_NAME}

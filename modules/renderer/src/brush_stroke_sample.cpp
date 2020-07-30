@@ -49,13 +49,13 @@ void painty::BrushStrokeSample::setThicknessMap(
  */
 double painty::BrushStrokeSample::getSampleAt(const vec2& xy) const {
   // outside of texture
-  if (xy[0] < 0.0 || xy[1] < 0.0 || xy[0] >= _thickness_map.getCols() ||
-      xy[1] >= _thickness_map.getRows()) {
+  if (xy[0] < 0.0 || xy[1] < 0.0 || xy[0] >= _thickness_map.cols ||
+      xy[1] >= _thickness_map.rows) {
     return 0.0;
   }
 
   // get texture value using bilinear interpolation
-  return _thickness_map(xy);
+  return Interpolate(_thickness_map, xy);
 }
 
 /**
@@ -150,7 +150,7 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir) {
   }
 
   // load thickness map
-  io::imRead(sampleDir + "/thickness_map.png", _thickness_map);
+  io::imRead(sampleDir + "/thickness_map.png", _thickness_map, true);
 
   // scan through points and find the maximum width
   _widthMax = 0.0;
