@@ -9,6 +9,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <painty/core/color.h>
 #include <painty/io/image_io.h>
 
 #include <opencv2/highgui.hpp>
@@ -25,31 +26,30 @@ TEST(ImageIoTest, ReadWriteRGB) {
   }
 
   const auto testReadSaveRead = [&](const std::string& fileType,
-                                    const double eps, bool convert_sRGB) {
+                                    const double eps) {
     std::stringstream ss;
-    ss << ((convert_sRGB) ? "srgb." : "linear_rgb.") << fileType;
-    const auto name = ss.str();
-    painty::io::imSave(name, linear_rgb, convert_sRGB);
+    ss << "/tmp/test_rgb." << fileType;
+    const auto& compare_img = linear_rgb;
+    const auto name         = ss.str();
+    painty::io::imSave(name, linear_rgb, false);
 
-    painty::Mat<painty::vec3> linear_rgb_read;
-    painty::io::imRead(name, linear_rgb_read, convert_sRGB);
+    painty::Mat<painty::vec3> read_image;
+    painty::io::imRead(name, read_image, false);
 
-    EXPECT_EQ(linear_rgb_read.cols, linear_rgb.cols);
-    EXPECT_EQ(linear_rgb_read.rows, linear_rgb.rows);
+    EXPECT_EQ(read_image.cols, compare_img.cols);
+    EXPECT_EQ(read_image.rows, compare_img.rows);
 
-    for (int32_t i = 0; i < linear_rgb.rows; i++) {
-      for (int32_t j = 0; j < linear_rgb.cols; j++) {
-        EXPECT_NEAR(linear_rgb(i, j)[0], linear_rgb_read(i, j)[0], eps);
-        EXPECT_NEAR(linear_rgb(i, j)[1], linear_rgb_read(i, j)[1], eps);
-        EXPECT_NEAR(linear_rgb(i, j)[2], linear_rgb_read(i, j)[2], eps);
+    for (int32_t i = 0; i < compare_img.rows; i++) {
+      for (int32_t j = 0; j < compare_img.cols; j++) {
+        EXPECT_NEAR(compare_img(i, j)[0], read_image(i, j)[0], eps);
+        EXPECT_NEAR(compare_img(i, j)[1], read_image(i, j)[1], eps);
+        EXPECT_NEAR(compare_img(i, j)[2], read_image(i, j)[2], eps);
       }
     }
   };
 
-  testReadSaveRead("png", 1. / 0xFFFF, true);
-  testReadSaveRead("png", 1. / 0xFFFF, false);
-  testReadSaveRead("jpg", 1. / 0xFF, true);
-  testReadSaveRead("jpg", 1. / 0xFF, false);
+  testReadSaveRead("png", 1. / 0xFFFF);
+  testReadSaveRead("jpg", 1. / 0xFF);
 }
 
 TEST(ImageIoTest, ReadWriteSingle) {
@@ -60,31 +60,27 @@ TEST(ImageIoTest, ReadWriteSingle) {
       lum(i, j) = j / static_cast<double>(lum.cols - 1);
     }
   }
-
   const auto testReadSaveRead = [&](const std::string& fileType,
-                                    const double eps, bool convert_sRGB) {
+                                    const double eps) {
     std::stringstream ss;
-    ss << ((convert_sRGB) ? "s_lum." : "linear_lum.") << fileType;
-    const auto name = ss.str();
-    painty::io::imSave(name, lum, convert_sRGB);
+    ss << "/tmp/test_lum." << fileType;
+    const auto& compare_img = lum;
+    const auto name         = ss.str();
+    painty::io::imSave(name, lum, false);
 
     painty::Mat<double> lum_read;
-    painty::io::imRead(name, lum_read, convert_sRGB);
+    painty::io::imRead(name, lum_read, false);
 
-    EXPECT_EQ(lum_read.cols, lum.cols);
-    EXPECT_EQ(lum_read.rows, lum.rows);
+    EXPECT_EQ(lum_read.cols, compare_img.cols);
+    EXPECT_EQ(lum_read.rows, compare_img.rows);
 
-    for (int32_t i = 0; i < lum.rows; i++) {
-      for (int32_t j = 0; j < lum.cols; j++) {
-        EXPECT_NEAR(lum(i, j), lum_read(i, j), eps);
-        EXPECT_NEAR(lum(i, j), lum_read(i, j), eps);
-        EXPECT_NEAR(lum(i, j), lum_read(i, j), eps);
+    for (int32_t i = 0; i < compare_img.rows; i++) {
+      for (int32_t j = 0; j < compare_img.cols; j++) {
+        EXPECT_NEAR(compare_img(i, j), lum_read(i, j), eps);
       }
     }
   };
 
-  testReadSaveRead("png", 1. / 0xFFFF, true);
-  testReadSaveRead("png", 1. / 0xFFFF, false);
-  testReadSaveRead("jpg", 1. / 0xFF, true);
-  testReadSaveRead("jpg", 1. / 0xFF, false);
+  testReadSaveRead("png", 1. / 0xFFFF);
+  testReadSaveRead("jpg", 1. / 0xFF);
 }
