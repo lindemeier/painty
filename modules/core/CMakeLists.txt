@@ -7,6 +7,7 @@ find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME}
+  INTERFACE ${PROJECT_SOURCE_DIR}/include/painty/core/color.h
   INTERFACE ${PROJECT_SOURCE_DIR}/include/painty/core/math.h
   INTERFACE ${PROJECT_SOURCE_DIR}/include/painty/core/kubelka_munk.h
   INTERFACE ${PROJECT_SOURCE_DIR}/include/painty/core/spline.h

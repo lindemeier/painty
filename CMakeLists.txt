@@ -16,14 +16,6 @@ if(RUN_TESTS)
     enable_testing()
 endif()
 
-# Color conversion lib
-FetchContent_Declare(
-  ColorConverter
-  GIT_REPOSITORY https://github.com/lindemeier/ColorConverter.git
-  GIT_TAG        master
-)
-FetchContent_MakeAvailable(ColorConverter)
-
 # modules
 add_subdirectory(modules/core)
 add_subdirectory(modules/image)
