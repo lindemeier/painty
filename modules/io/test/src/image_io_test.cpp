@@ -14,7 +14,7 @@
 #include <opencv2/highgui.hpp>
 
 TEST(ImageIoTest, ReadWriteRGB) {
-  painty::Mat<painty::vec3> linear_rgb(256, 1024);
+  painty::Mat<painty::vec3> linear_rgb(1, 0xFF);
 
   for (int32_t i = 0; i < linear_rgb.rows; i++) {
     for (int32_t j = 0; j < linear_rgb.cols; j++) {
@@ -52,34 +52,39 @@ TEST(ImageIoTest, ReadWriteRGB) {
   testReadSaveRead("jpg", 1. / 0xFF, false);
 }
 
-// TEST(ImageIoTest, ReadWriteSingle) {
-//   painty::Mat<double> luminance(256, 1024);
+TEST(ImageIoTest, ReadWriteSingle) {
+  painty::Mat<double> lum(1, 0xFF);
 
-//   for (int32_t i = 0; i < luminance.rows; i++) {
-//     for (int32_t j = 0; j < luminance.cols; j++) {
-//       luminance(i, j) = j / static_cast<double>(luminance.cols - 1);
-//     }
-//   }
-//   const auto testReadSaveRead = [&]() {
-//     std::stringstream ss;
-//     ss << "luminance.png";
-//     const auto name = ss.str();
-//     painty::io::imSave(name, luminance);
+  for (int32_t i = 0; i < lum.rows; i++) {
+    for (int32_t j = 0; j < lum.cols; j++) {
+      lum(i, j) = j / static_cast<double>(lum.cols - 1);
+    }
+  }
 
-//     painty::Mat<double> luminance_read;
-//     painty::io::imRead(name, luminance_read);
+  const auto testReadSaveRead = [&](const std::string& fileType,
+                                    const double eps, bool convert_sRGB) {
+    std::stringstream ss;
+    ss << ((convert_sRGB) ? "s_lum." : "linear_lum.") << fileType;
+    const auto name = ss.str();
+    painty::io::imSave(name, lum, convert_sRGB);
 
-//     EXPECT_EQ(luminance_read.cols, luminance.cols);
-//     EXPECT_EQ(luminance_read.rows, luminance.rows);
+    painty::Mat<double> lum_read;
+    painty::io::imRead(name, lum_read, convert_sRGB);
 
-//     const double eps = 1. / 0xFFFF;
+    EXPECT_EQ(lum_read.cols, lum.cols);
+    EXPECT_EQ(lum_read.rows, lum.rows);
 
-//     for (int32_t i = 0; i < luminance.rows; i++) {
-//       for (int32_t j = 0; j < luminance.cols; j++) {
-//         EXPECT_NEAR(luminance(i, j), luminance_read(i, j), eps);
-//       }
-//     }
-//   };
+    for (int32_t i = 0; i < lum.rows; i++) {
+      for (int32_t j = 0; j < lum.cols; j++) {
+        EXPECT_NEAR(lum(i, j), lum_read(i, j), eps);
+        EXPECT_NEAR(lum(i, j), lum_read(i, j), eps);
+        EXPECT_NEAR(lum(i, j), lum_read(i, j), eps);
+      }
+    }
+  };
 
-//   testReadSaveRead();
-// }
+  testReadSaveRead("png", 1. / 0xFFFF, true);
+  testReadSaveRead("png", 1. / 0xFFFF, false);
+  testReadSaveRead("jpg", 1. / 0xFF, true);
+  testReadSaveRead("jpg", 1. / 0xFF, false);
+}

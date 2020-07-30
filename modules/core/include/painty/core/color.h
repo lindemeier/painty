@@ -180,7 +180,7 @@ class ColorConverter {
 
   // make linear rgb, no chromatic adaption
   void srgb2rgb(const Scalar s, Scalar& l) const {
-    if (s <= 0.04045)
+    if (s <= 0.0404482362771082)
       l = s / 12.92;
     else
       l = std::pow(((s + 0.055) / 1.055), 2.4);
@@ -188,7 +188,7 @@ class ColorConverter {
 
   // make sRGB, with gamma
   void rgb2srgb(const Scalar l, Scalar& s) const {
-    if (l <= 0.0031308)
+    if (l <= 0.00313066844250063)
       s = l * 12.92;
     else
       s = 1.055 * std::pow(l, 1. / 2.4) - 0.055;
