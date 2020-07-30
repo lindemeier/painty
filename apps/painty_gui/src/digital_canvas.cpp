@@ -1,5 +1,6 @@
 #include "digital_canvas.h"
 
+#include <painty/core/color.h>
 #include <painty/core/kubelka_munk.h>
 #include <painty/core/spline.h>
 #include <painty/renderer/canvas.h>
@@ -156,9 +157,14 @@ void DigitalCanvas::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
 
 void DigitalCanvas::updateCanvas() {
   painty::Renderer<painty::vec3> renderer;
+  painty::ColorConverter<double> converter;
+
   {
     painty::Mat<painty::vec3> rgb = renderer.compose(*_canvasPtr);
-    painty::Mat<painty::vec<uchar, 3UL>> rgb_8(rgb.rows, rgb.cols);
+    // convert to srgb for display
+    for (auto& v : rgb) {
+      converter.rgb2srgb(v, v);
+    }
 
     QImage qimage(rgb.cols, rgb.rows, QImage::Format_RGB32);
     for (auto i = 0U; i < rgb.rows; i++) {
@@ -180,7 +186,11 @@ void DigitalCanvas::updateCanvas() {
     }
     painty::Mat<painty::vec3> rgb =
       renderer.compose(_brushFootprintPtr->getPickupMap(), white);
-    painty::Mat<painty::vec<uchar, 3UL>> rgb_8(rgb.rows, rgb.cols);
+
+    // convert to srgb for display
+    for (auto& v : rgb) {
+      converter.rgb2srgb(v, v);
+    }
 
     QImage qimage(rgb.cols, rgb.rows, QImage::Format_RGB32);
     for (auto i = 0U; i < rgb.rows; i++) {

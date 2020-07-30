@@ -48,17 +48,8 @@ TEST(ImageIoTest, ReadWriteRGB) {
 
   testReadSaveRead("png", 1. / 0xFFFF, true);
   testReadSaveRead("png", 1. / 0xFFFF, false);
-  // testReadSaveRead("jpg", 1. / 0xFF, true);
-  // testReadSaveRead("jpg", 1. / 0xFF, false);
-
-  painty::Mat<painty::vec3> read;
-  painty::io::imRead("/home/tsl/Pictures/140467.png", read, true);
-  painty::io::imSave("/home/tsl/Pictures/140467_saved.png", read, true);
-  // for (auto& v : read) {
-  //   std::swap(v[0U], v[2U]);
-  // }
-  // cv::imshow("read", read);
-  // cv::waitKey(0);
+  testReadSaveRead("jpg", 1. / 0xFF, true);
+  testReadSaveRead("jpg", 1. / 0xFF, false);
 }
 
 // TEST(ImageIoTest, ReadWriteSingle) {
