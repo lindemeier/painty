@@ -27,7 +27,7 @@ DigitalCanvas::DigitalCanvas(const uint32_t width, const uint32_t height,
       _canvasPtr(nullptr),
       _brushStrokePath(),
       _brushTexturePtr(std::make_unique<painty::TextureBrush<painty::vec3>>(
-        "/home/tsl/development/painty/data/sample_0")),
+        "./data/sample_0")),
       _brushFootprintPtr(
         std::make_unique<painty::FootprintBrush<painty::vec3>>(256U)),
       _pickupMapLabelPtr(pickupMapLabelPtr) {

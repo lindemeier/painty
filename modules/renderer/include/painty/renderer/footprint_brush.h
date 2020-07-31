@@ -34,8 +34,7 @@ class FootprintBrush final {
         _snapshotBuffer(0, 0)
 
   {
-    io::imRead("/home/tsl/development/painty/data/footprint/footprint.png",
-               _footprintFullSize, true);
+    io::imRead("./data/footprint/footprint.png", _footprintFullSize, true);
 
     setRadius(radius);
   }
