@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <painty/core/math.h>
 #include <painty/core/vec.h>
 
 #include <array>
@@ -31,8 +32,8 @@ template <class Scalar>
 class ColorConverter {
   static constexpr auto N = 3;
 
-  static constexpr Scalar Pi =
-    static_cast<Scalar>(3.1415926535897932384626433832795);
+  static constexpr auto Epsilon =
+    std::numeric_limits<Scalar>::epsilon() * static_cast<Scalar>(1000.0);
 
  public:
   static constexpr std::array<Scalar, 3U> IM_ILLUMINANT_A   = {1.09850, 1.00000,
@@ -96,15 +97,15 @@ class ColorConverter {
 
     LCHab[2] = std::atan2(Lab[2], Lab[1]);
     if (LCHab[2] < 0) {
-      LCHab[2] += Pi * 2.;  // [0, 2pi]
+      LCHab[2] += Pi<Scalar> * 2.;  // [0, 2pi]
     }
   }
 
   void LCHab2lab(const vec<Scalar, N>& LCHab, vec<Scalar, N>& Lab) const {
     Lab[0]   = LCHab[0];
     Scalar h = LCHab[2];
-    if (h > Pi) {
-      h -= Pi * 2.;  // [0, 2pi]
+    if (h > Pi<Scalar>) {
+      h -= Pi<Scalar> * 2.;  // [0, 2pi]
     }
     Lab[1] = LCHab[1] * std::cos(h);
     Lab[2] = LCHab[1] * std::sin(h);
@@ -296,19 +297,19 @@ class ColorConverter {
 
     const Scalar fa = 1. / 360.0;
 
-    if (fuzzyCompare(max, min))
+    if (fuzzyCompare(max, min, Epsilon))
       hsv[0] = 0;
-    else if (fuzzyCompare(max, srgb[0]))
+    else if (fuzzyCompare(max, srgb[0], Epsilon))
       hsv[0] = 60.0 * (0 + (srgb[1] - srgb[2]) * delMax);
-    else if (fuzzyCompare(max, srgb[1]))
+    else if (fuzzyCompare(max, srgb[1], Epsilon))
       hsv[0] = 60.0 * (2 + (srgb[2] - srgb[0]) * delMax);
-    else if (fuzzyCompare(max, srgb[2]))
+    else if (fuzzyCompare(max, srgb[2], Epsilon))
       hsv[0] = 60.0 * (4 + (srgb[0] - srgb[1]) * delMax);
 
     if (hsv[0] < 0.0)
       hsv[0] += 360.0;
 
-    if (fuzzyCompare(max, 0.0)) {
+    if (fuzzyCompare(max, 0.0, Epsilon)) {
       hsv[1] = 0.0;
     } else {
       hsv[1] = (max - min) / max;
@@ -493,12 +494,12 @@ class ColorConverter {
     // Ensure hue is between 0 and 2pi
     Scalar hpstd = std::atan2(bstd, apstd);
     if (hpstd < 0)
-      hpstd += 2. * Pi;  // rollover ones that come -ve
+      hpstd += 2. * Pi<Scalar>;  // rollover ones that come -ve
 
     Scalar hpsample = std::atan2(bsample, apsample);
     if (hpsample < 0)
-      hpsample += 2. * Pi;
-    if (fuzzyCompare((fabs(apsample) + fabs(bsample)), 0.))
+      hpsample += 2. * Pi<Scalar>;
+    if (fuzzyCompare((fabs(apsample) + fabs(bsample)), 0., Epsilon))
       hpsample = 0.;
 
     Scalar dL = (Lsample - Lstd);
@@ -506,12 +507,12 @@ class ColorConverter {
 
     // Computation of hue difference
     Scalar dhp = (hpsample - hpstd);
-    if (dhp > Pi)
-      dhp -= 2. * Pi;
-    if (dhp < -Pi)
-      dhp += 2. * Pi;
+    if (dhp > Pi<Scalar>)
+      dhp -= 2. * Pi<Scalar>;
+    if (dhp < -Pi<Scalar>)
+      dhp += 2. * Pi<Scalar>;
     // set chroma difference to zero if the product of chromas is zero
-    if (fuzzyCompare(Cpprod, 0.))
+    if (fuzzyCompare(Cpprod, 0., Epsilon))
       dhp = 0.;
 
     // Note that the defining equations actually need
@@ -531,28 +532,28 @@ class ColorConverter {
     // where needed
     Scalar hp = (hpstd + hpsample) / 2.;
     // Identify positions for which abs hue diff exceeds 180 degrees
-    if (fabs(hpstd - hpsample) > Pi)
-      hp -= Pi;
+    if (fabs(hpstd - hpsample) > Pi<Scalar>)
+      hp -= Pi<Scalar>;
     // rollover ones that come -ve
     if (hp < 0)
-      hp += 2. * Pi;
+      hp += 2. * Pi<Scalar>;
 
     // Check if one of the chroma values is zero, in which case set
     // mean hue to the sum which is equivalent to other value
-    if (fuzzyCompare(Cpprod, 0.))
+    if (fuzzyCompare(Cpprod, 0., Epsilon))
       hp = hpsample + hpstd;
 
     Scalar Lpm502 = (Lp - 50.) * (Lp - 50.);
     Scalar Sl     = 1. + 0.015f * Lpm502 / std::sqrt(20.0f + Lpm502);
     Scalar Sc     = 1. + 0.045f * Cp;
-    Scalar Ta     = 1. - 0.17f * std::cos(hp - Pi / 6.) +
+    Scalar Ta     = 1. - 0.17f * std::cos(hp - Pi<Scalar> / 6.) +
                 0.24f * std::cos(2. * hp) +
-                0.32f * std::cos(3. * hp + Pi / 30.) -
-                0.20f * std::cos(4. * hp - 63. * Pi / 180.);
+                0.32f * std::cos(3. * hp + Pi<Scalar> / 30.) -
+                0.20f * std::cos(4. * hp - 63. * Pi<Scalar> / 180.);
     Scalar Sh = 1. + 0.015f * Cp * Ta;
     Scalar delthetarad =
-      (30. * Pi / 180.) *
-      std::exp(-std::pow(((180. / Pi * hp - 275.) / 25.), 2.));
+      (30. * Pi<Scalar> / 180.) *
+      std::exp(-std::pow(((180. / Pi<Scalar> * hp - 275.) / 25.), 2.));
     Scalar Rc =
       2. * std::sqrt(std::pow(Cp, 7.) / (std::pow(Cp, 7.) + std::pow(25., 7.)));
     Scalar RT = -std::sin(2.0f * delthetarad) * Rc;
@@ -575,18 +576,6 @@ class ColorConverter {
     return (t > 6. / 29.)
              ? std::pow<Scalar>(t, 3.)
              : 3. * std::pow<Scalar>(6. / 29., 2.) * (t - (4. / 29.));
-  }
-
-  /**
-   * @brief Simple fuzzyCompare comparison of floating point values.
-   *
-   * @return true
-   * @return false
-   */
-  static bool fuzzyCompare(const Scalar a, const Scalar b) {
-    constexpr auto FuzzynessFactor = 10.0;
-    return std::fabs(a - b) <
-           (FuzzynessFactor * std::numeric_limits<Scalar>::epsilon());
   }
 };
 

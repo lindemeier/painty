@@ -17,7 +17,10 @@
 #include <vector>
 
 namespace painty {
-constexpr auto PI = 3.141592653589793238462643383279502884197169399375105820974;
+
+template <class Float>
+static constexpr auto Pi = static_cast<Float>(
+  3.141592653589793238462643383279502884197169399375105820974L);
 
 /**
  * @brief Fuzzy comparison of floating points.
