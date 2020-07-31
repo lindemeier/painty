@@ -65,14 +65,15 @@ using Mat4d  = Mat<vec4>;
  * @return T bilinearly interpolated value at position.
  */
 template <class T>
-T Interpolate(const Mat<T>& input, const vec2& position) {
+T Interpolate(const Mat<T>& input, const vec2& position,
+              int borderType = cv::BORDER_REFLECT) {
   const auto x = static_cast<int32_t>(std::floor(position[0]));
   const auto y = static_cast<int32_t>(std::floor(position[1]));
 
-  const auto x0 = cv::borderInterpolate(x, input.cols, cv::BORDER_REFLECT);
-  const auto x1 = cv::borderInterpolate(x + 1, input.cols, cv::BORDER_REFLECT);
-  const auto y0 = cv::borderInterpolate(y, input.rows, cv::BORDER_REFLECT);
-  const auto y1 = cv::borderInterpolate(y + 1, input.rows, cv::BORDER_REFLECT);
+  const auto x0 = cv::borderInterpolate(x, input.cols, borderType);
+  const auto x1 = cv::borderInterpolate(x + 1, input.cols, borderType);
+  const auto y0 = cv::borderInterpolate(y, input.rows, borderType);
+  const auto y1 = cv::borderInterpolate(y + 1, input.rows, borderType);
 
   const auto a = position[0] - static_cast<double>(x);
   const auto c = position[1] - static_cast<double>(y);

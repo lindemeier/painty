@@ -2,10 +2,11 @@ cmake_minimum_required(VERSION 3.10.2)
 
 project(paintyImage)
 
-find_package(OpenCV REQUIRED core imgproc)
+find_package(OpenCV REQUIRED core imgproc ximgproc)
 
 add_library(${PROJECT_NAME} STATIC
   ${PROJECT_SOURCE_DIR}/src/texture_warp.cpp
+  ${PROJECT_SOURCE_DIR}/src/edge_tangent_flow.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
