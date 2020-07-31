@@ -2,11 +2,16 @@
 A paint renderer based on Kubelka Munk equations
 
 ## Library
+- Image processing
+- NPR: Painterly rendering, image abstraction and stylization
+- paint rendering and realistic mixing
+- ... and more to come
+
+
+## Paint renderer
 
 - 2d imprint brush (3d in development)
 - 2d texture brush
-
-## User Interface
 
 ![Screenshot](doc/screenshot-gui.jpg)
 
