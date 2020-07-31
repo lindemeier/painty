@@ -147,4 +147,12 @@ Mat<T> ScaledMat(const Mat<T>& input, const uint32_t rows, const uint32_t cols,
   return resized;
 }
 
+template <class It1, class It2, class BinaryOperation>
+void transform(It1 it1_begin, It1 it1_end, It2 it2_begin,
+               BinaryOperation operation) {
+  while (it1_begin != it1_end) {
+    operation(*it1_begin++, *it2_begin++);
+  }
+}
+
 }  // namespace painty
