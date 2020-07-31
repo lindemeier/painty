@@ -5,14 +5,17 @@ project(paintyImageTest)
 add_executable(${PROJECT_NAME}
     ${PROJECT_SOURCE_DIR}/src/main.cpp
     ${PROJECT_SOURCE_DIR}/src/mat_test.cpp
+    ${PROJECT_SOURCE_DIR}/src/edge_tangent_flow_test.cpp
   )
 
 target_link_libraries(${PROJECT_NAME}
   gtest
   paintyImage
+  paintyIo
 )
 add_dependencies(${PROJECT_NAME}
   paintyImage
+  paintyIo
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD_REQUIRED ON)

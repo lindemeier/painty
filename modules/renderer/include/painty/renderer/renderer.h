@@ -69,7 +69,8 @@ class Renderer final {
     };
 
     const auto Beckmann = [](T NdotH, T m) {
-      T A = 1.0 / (std::pow(m, 2.0) + std::pow(NdotH, 4.0) * painty::PI);
+      T A =
+        1.0 / (std::pow(m, 2.0) + std::pow(NdotH, 4.0) * painty::Pi<double>);
       T B =
         std::exp(-std::pow(std::tan(std::acos(NdotH)), 2.0) / std::pow(m, 2.0));
       return A * B;
@@ -140,7 +141,7 @@ class Renderer final {
         }
         const vector_type beta =
           lightPower *
-          (1.0 / (4.0 * PI * std::pow(lightDirection.norm(), 2.0)));
+          (1.0 / (4.0 * Pi<double> * std::pow(lightDirection.norm(), 2.0)));
         const vector_type result =
           (beta * NdotL).array() * ((1.0 - s) * Kd + s * specular).array() +
           ambient.array() * Kd.array();

@@ -190,13 +190,13 @@ class Smudge final {
   }
 
   T normalizeAngle(T angle) {
-    constexpr auto HALF_PI = 0.5 * painty::PI;
+    constexpr auto HALF_PI = 0.5 * painty::Pi<double>;
     auto newAngle          = angle;
     while (newAngle <= -HALF_PI) {
-      newAngle += painty::PI;
+      newAngle += painty::Pi<double>;
     }
     while (newAngle > HALF_PI) {
-      newAngle -= painty::PI;
+      newAngle -= painty::Pi<double>;
     }
     return newAngle;
   }
