@@ -480,8 +480,8 @@ class ColorConverter {
     Scalar Cabarithmean = (Cabstd + Cabsample) / 2.;
 
     Scalar G =
-      0.5f * (1. - std::sqrt(std::pow(Cabarithmean, 7.) /
-                             (std::pow(Cabarithmean, 7.) + std::pow(25., 7.))));
+      0.5 * (1. - std::sqrt(std::pow(Cabarithmean, 7.) /
+                            (std::pow(Cabarithmean, 7.) + std::pow(25., 7.))));
 
     Scalar apstd    = (1. + G) * astd;     // aprime in paper
     Scalar apsample = (1. + G) * asample;  // aprime in paper
@@ -544,23 +544,41 @@ class ColorConverter {
       hp = hpsample + hpstd;
 
     Scalar Lpm502 = (Lp - 50.) * (Lp - 50.);
-    Scalar Sl     = 1. + 0.015f * Lpm502 / std::sqrt(20.0f + Lpm502);
-    Scalar Sc     = 1. + 0.045f * Cp;
-    Scalar Ta     = 1. - 0.17f * std::cos(hp - Pi<Scalar> / 6.) +
-                0.24f * std::cos(2. * hp) +
-                0.32f * std::cos(3. * hp + Pi<Scalar> / 30.) -
-                0.20f * std::cos(4. * hp - 63. * Pi<Scalar> / 180.);
-    Scalar Sh = 1. + 0.015f * Cp * Ta;
+    Scalar Sl     = 1. + 0.015 * Lpm502 / std::sqrt(20.0 + Lpm502);
+    Scalar Sc     = 1. + 0.045 * Cp;
+    Scalar Ta     = 1. - 0.17 * std::cos(hp - Pi<Scalar> / 6.) +
+                0.24 * std::cos(2. * hp) +
+                0.32 * std::cos(3. * hp + Pi<Scalar> / 30.) -
+                0.20 * std::cos(4. * hp - 63. * Pi<Scalar> / 180.);
+    Scalar Sh = 1. + 0.015 * Cp * Ta;
     Scalar delthetarad =
       (30. * Pi<Scalar> / 180.) *
       std::exp(-std::pow(((180. / Pi<Scalar> * hp - 275.) / 25.), 2.));
     Scalar Rc =
       2. * std::sqrt(std::pow(Cp, 7.) / (std::pow(Cp, 7.) + std::pow(25., 7.)));
-    Scalar RT = -std::sin(2.0f * delthetarad) * Rc;
+    Scalar RT = -std::sin(2.0 * delthetarad) * Rc;
 
     // The CIE 00 color difference
     return std::sqrt(std::pow((dL / Sl), 2.) + std::pow((dC / Sc), 2.) +
                      std::pow((dH / Sh), 2.) + RT * (dC / Sc) * (dH / Sh));
+  }
+
+  /**
+   * @brief Simplified color difference. Keeps values between 0 and 1 and clamps large differences.
+   *
+   * @param lab1
+   * @param lab2
+   * @return Scalar
+   */
+  static Scalar ColorDifference(const vec<Scalar, N>& lab1,
+                                const vec<Scalar, N>& lab2) {
+    static constexpr Scalar d0 = 100.;
+    Scalar d                   = ColorDifferenceCIEDE2000(lab1, lab2);
+    if (d >= 0 && d <= d0) {
+      return d / d0;
+    } else {
+      return 1.;
+    }
   }
 
  private:
