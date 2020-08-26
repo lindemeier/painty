@@ -3,10 +3,11 @@ cmake_minimum_required(VERSION 3.10.2)
 project(paintyImageTest)
 
 add_executable(${PROJECT_NAME}
-    ${PROJECT_SOURCE_DIR}/src/main.cpp
-    ${PROJECT_SOURCE_DIR}/src/mat_test.cpp
-    ${PROJECT_SOURCE_DIR}/src/edge_tangent_flow_test.cpp
-  )
+  ${PROJECT_SOURCE_DIR}/src/edge_tangent_flow_test.cpp
+  ${PROJECT_SOURCE_DIR}/src/main.cpp
+  ${PROJECT_SOURCE_DIR}/src/mat_test.cpp
+  ${PROJECT_SOURCE_DIR}/src/superpixel_test.cpp
+)
 
 target_link_libraries(${PROJECT_NAME}
   gtest

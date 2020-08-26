@@ -119,20 +119,20 @@ class ImageRegion {
 class SuperpixelSegmentation {
   class SuperPixel {
    public:
-    vec2 center;
-    vec2 centerT;
-    vec3 meanColor;
-    vec3 meanColorT;
-    double meanDiff;
-    double meanDiffT;
-    int32_t area;
+    vec2 _center;
+    vec2 _centerT;
+    vec3 _meanColor;
+    vec3 _meanColorT;
+    double _meanDiff;
+    double _meanDiffT;
+    int32_t _area;
 
-    double maxSpatialDist;
-    double maxSpatialDistT;
-    double maxColorDist;
-    double maxColorDistT;
-    double maxDiffDist;
-    double maxDiffDistT;
+    double _maxSpatialDist;
+    double _maxSpatialDistT;
+    double _maxColorDist;
+    double _maxColorDistT;
+    double _maxDiffDist;
+    double _maxDiffDistT;
 
     void reset();
 
@@ -142,15 +142,15 @@ class SuperpixelSegmentation {
     SuperPixel(const vec2& center, const vec3& meanColor);
 
     vec2 getCenter() const {
-      return center;
+      return _center;
     }
 
     vec3 getMeanColor() const {
-      return meanColor;
+      return _meanColor;
     }
 
     int32_t getArea() const {
-      return area;
+      return _area;
     }
   };
 
@@ -158,13 +158,12 @@ class SuperpixelSegmentation {
   enum ExtractionStrategy : uint8_t {
     SLICO_GRID             = static_cast<uint8_t>(0U),
     SLICO_POISSON_WEIGHTED = static_cast<uint8_t>(1U),
-    GRID                   = static_cast<uint8_t>(2U),
-    GRID_SHUFFLED          = static_cast<uint8_t>(3U)
+    GRID_SHUFFLED          = static_cast<uint8_t>(2U)
   };
 
  public:
   void extract(const Mat3d& targetLab, const Mat3d& canvasLab,
-               const Mat1d& mask, const int32_t& brushSize);
+               const Mat<uint8_t>& mask, const int32_t cellWidth);
 
   void getSegmentationOutlined(Mat3d& background) const;
 
@@ -187,7 +186,7 @@ class SuperpixelSegmentation {
   Mat3d _targetLab;
   Mat1d _difference;
   Mat<int32_t> _labels;
-  Mat1d _mask;
+  Mat<uint8_t> _mask;
 
   ExtractionStrategy _extractionStrategy =
     ExtractionStrategy::SLICO_POISSON_WEIGHTED;

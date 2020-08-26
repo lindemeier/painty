@@ -13,7 +13,168 @@
 
 #include "painty/core/color.h"
 
+namespace segmentation_details {
+static void drawContoursAroundSegments(painty::Mat3d& image,
+                                       const painty::Mat<int32_t>& labels,
+                                       const painty::vec3& color) {
+  const std::array<int32_t, 8UL> dx8 = {-1, -1, 0, 1, 1, 1, 0, -1};
+  const std::array<int32_t, 8UL> dy8 = {0, -1, -1, -1, 0, 1, 1, 1};
+
+  const auto sz = image.total();
+
+  std::vector<bool> istaken(sz, false);
+
+  auto mainindex = 0;
+  for (int32_t j = 0; j < image.rows; j++) {
+    for (int32_t k = 0; k < image.cols; k++) {
+      int32_t np(0);
+      for (int32_t i = 0; i < 8; i++) {
+        int32_t x = k + dx8[static_cast<size_t>(i)];
+        int32_t y = j + dy8[static_cast<size_t>(i)];
+
+        if ((x >= 0 && x < image.cols) && (y >= 0 && y < image.rows)) {
+          const auto index = y * image.cols + x;
+
+          if (labels(index) < 0)
+            continue;
+
+          if (false == istaken[static_cast<size_t>(index)]) {
+            if (labels(mainindex) != labels(index))
+              np++;
+          }
+        }
+      }
+      if (np > 1) {
+        image(mainindex)                        = color;
+        istaken[static_cast<size_t>(mainindex)] = true;
+      }
+      mainindex++;
+    }
+  }
+}
+
+static painty::Mat<int32_t> enforceLabelConnectivity(
+  painty::Mat<int32_t>& labels, int32_t& numlabels, int32_t K) {
+  const std::array<int32_t, 4UL> xn4 = {-1, 0, 1, 0};
+  const std::array<int32_t, 4UL> yn4 = {0, -1, 0, 1};
+
+  const auto sz = labels.total();
+
+  painty::Mat<int32_t> nlabels(labels.size());
+
+  const int32_t supsz = static_cast<int32_t>(sz / static_cast<size_t>(K));
+
+  for (auto i = 0U; i < sz; i++) {
+    nlabels(static_cast<int32_t>(i)) = -1;
+  }
+  int32_t label = 0;
+  std::vector<int32_t> x_vector(sz);
+  std::vector<int32_t> y_vector(sz);
+  int32_t oindex   = 0;
+  int32_t adjlabel = 0;
+  for (int32_t j = 0; j < labels.rows; j++) {
+    for (int32_t k = 0; k < labels.cols; k++) {
+      if (0 > nlabels(oindex)) {
+        nlabels(oindex) = label;
+
+        x_vector[0] = k;
+        y_vector[0] = j;
+
+        for (auto n = 0UL; n < 4UL; n++) {
+          int32_t x = x_vector[0] + xn4[n];
+          int32_t y = y_vector[0] + yn4[n];
+          if ((x >= 0 && x < labels.cols) && (y >= 0 && y < labels.rows)) {
+            int32_t nindex = y * labels.cols + x;
+            if (nlabels(nindex) >= 0)
+              adjlabel = nlabels(nindex);
+          }
+        }
+
+        int32_t count = 1;
+        for (int32_t c = 0; c < count; c++) {
+          for (auto n = 0UL; n < 4UL; n++) {
+            int32_t x = x_vector[static_cast<size_t>(c)] + xn4[n];
+            int32_t y = y_vector[static_cast<size_t>(c)] + yn4[n];
+
+            if ((x >= 0 && x < labels.cols) && (y >= 0 && y < labels.rows)) {
+              int32_t nindex = y * labels.cols + x;
+
+              if (0 > nlabels(nindex) && labels(oindex) == labels(nindex)) {
+                x_vector[static_cast<size_t>(count)] = x;
+                y_vector[static_cast<size_t>(count)] = y;
+                nlabels(nindex)                      = label;
+                count++;
+              }
+            }
+          }
+        }
+
+        if (count <= supsz >> 2) {
+          for (int32_t c = 0; c < count; c++) {
+            int32_t ind = y_vector[static_cast<size_t>(c)] * labels.cols +
+                          x_vector[static_cast<size_t>(c)];
+            nlabels(ind) = adjlabel;
+          }
+          label--;
+        }
+        label++;
+      }
+      oindex++;
+    }
+  }
+  numlabels = label;
+
+  return nlabels;
+}
+
+}  // namespace segmentation_details
+
 namespace painty {
+
+SuperpixelSegmentation::SuperPixel::SuperPixel(const vec2& center,
+                                               const vec3& meanColor)
+    : _center(center),
+      _centerT(),
+      _meanColor(meanColor),
+      _meanColorT(),
+      _meanDiff(),
+      _meanDiffT(),
+      _area(),
+      _maxSpatialDist(1.0),
+      _maxSpatialDistT(),
+      _maxColorDist(1.0),
+      _maxColorDistT(),
+      _maxDiffDist(0.001),
+      _maxDiffDistT() {
+  reset();
+}
+
+SuperpixelSegmentation::SuperPixel::SuperPixel()
+    : _center(),
+      _centerT(),
+      _meanColor(),
+      _meanColorT(),
+      _meanDiff(),
+      _meanDiffT(),
+      _area(),
+      _maxSpatialDist(1.0),
+      _maxSpatialDistT(),
+      _maxColorDist(1.0),
+      _maxColorDistT(),
+      _maxDiffDist(0.001),
+      _maxDiffDistT() {
+  reset();
+}
+
+void SuperpixelSegmentation::SuperPixel::reset() {
+  _centerT         = {0.0, 0.0};
+  _meanColorT      = vec3::Zero();
+  _meanDiffT       = 0.0;
+  _maxColorDistT   = 0.0001;
+  _maxDiffDistT    = 0.0001;
+  _maxSpatialDistT = 0.0001;
+  _area            = 0;
+}
 
 ImageRegion::ImageRegion() : label(), active(false) {}
 
@@ -125,27 +286,33 @@ vec2 ImageRegion::getSpatialMean() const {
 
 void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
                                      const Mat3d& canvasLabArg,
-                                     const Mat1d& maskArg,
-                                     const int32_t& brushSize) {
+                                     const Mat<uint8_t>& maskArg,
+                                     const int32_t cellWidth) {
   _targetLab = targetLabArg;
   _mask      = maskArg;
 
-  _difference = Mat1d(_targetLab.size());
-  for (int32_t i = 0; i < static_cast<int32_t>(_targetLab.total()); i++) {
-    _difference(i) =
-      ColorConverter<double>::ColorDifference(_targetLab(i), canvasLabArg(i));
+  if (!canvasLabArg.empty()) {
+    _useDiffWeight = true;
+    _difference    = Mat1d(_targetLab.size());
+    for (int32_t i = 0; i < static_cast<int32_t>(_targetLab.total()); i++) {
+      _difference(i) =
+        ColorConverter<double>::ColorDifference(_targetLab(i), canvasLabArg(i));
+    }
+  } else {
+    _useDiffWeight = false;
   }
 
   const int32_t N = _targetLab.cols * _targetLab.rows;
-  const int32_t K = static_cast<int32_t>(N / (std::pow(brushSize, 2)));
+  const int32_t K = static_cast<int32_t>(N / (std::pow(cellWidth, 2)));
   const int32_t S = static_cast<int32_t>(std::sqrt(N / K));
 
   _superPixels.clear();
 
-  if (_extractionStrategy == SLICO_POISSON_WEIGHTED) {
+  if ((!_difference.empty()) &&
+      (_extractionStrategy == SLICO_POISSON_WEIGHTED)) {
     //poisson disc distribution weighted by distribution energy
     std::vector<vec2> samples;
-    Mat<double> p = _difference.clone();
+    Mat1d p = _difference.clone();
 
     std::vector<double> intervals(p.total());
     for (size_t i = 0; i < intervals.size(); ++i) {
@@ -159,7 +326,7 @@ void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
     std::default_random_engine generator;
     vec2 sample;
     bool stop = false;
-    for (int32_t j = 0; j < maxSamples && !stop; ++j) {
+    for (int32_t j = 0; (j < maxSamples) && (!stop); ++j) {
       int32_t index;
       int32_t nrTrials = 0;
       do {
@@ -172,7 +339,7 @@ void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
       if (p(index) > 0.0) {
         sample << index % p.cols, index / p.cols;
 
-        if (_mask(index) == 1.0) {
+        if (_mask(index) > 0U) {
           // add poisson disc
           cv::circle(p,
                      cv::Point(static_cast<int32_t>(sample[0]),
@@ -197,7 +364,7 @@ void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
                                              static_cast<int32_t>(sample[0])));
       }
     }
-  } else if (_extractionStrategy == GRID_SHUFFLED) {
+  } else {  //(_extractionStrategy == GRID_SHUFFLED)
     std::default_random_engine generator;
     _superPixels.reserve(static_cast<size_t>(K));
     _labels    = Mat1i(_targetLab.size(), 0);
@@ -257,14 +424,15 @@ void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
       double cdist;
       double ndist;
 
-      for (int32_t x = static_cast<int32_t>(cluster.center[0]) - size;
-           x <= static_cast<int32_t>(cluster.center[0]) + size; x++) {
-        for (int32_t y = static_cast<int32_t>(cluster.center[1]) - size;
-             y <= static_cast<int32_t>(cluster.center[1]) + size; y++) {
+      for (int32_t x = static_cast<int32_t>(cluster._center[0]) - size;
+           x <= static_cast<int32_t>(cluster._center[0]) + size; x++) {
+        for (int32_t y = static_cast<int32_t>(cluster._center[1]) - size;
+             y <= static_cast<int32_t>(cluster._center[1]) + size; y++) {
           if (x < 0 || y < 0 || y >= distances.rows || x >= distances.cols)
             continue;
 
-          if (_mask(y, x) < 1.0 || _difference(y, x) <= 0.0) {
+          if (_mask(y, x) == 0U ||
+              (!_difference.empty() && (_difference(y, x) <= 0.0))) {
             newLabels(y, x) = -1;
             distances(y, x) = std::numeric_limits<double>::max();
             continue;
@@ -284,36 +452,31 @@ void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
     }
     error = computeStats(_superPixels, newLabels);
   }
-  _labels = Mat<int32_t>(_targetLab.size());
   int32_t newK;
-  enforceLabelConnectivity((int32_t*)newLabels.data, newLabels.cols,
-                           newLabels.rows, (int32_t*)_labels.data, newK,
-                           (int32_t)(double(N) / double(S * S)));
+  _labels = segmentation_details::enforceLabelConnectivity(
+    newLabels, newK, static_cast<int32_t>(double(N) / double(S * S)));
 }
 
 void SuperpixelSegmentation::getSegmentationOutlined(Mat3d& background) const {
-  Mat1i labelClone = _labels.clone();
-
-  drawContoursAroundSegments(reinterpret_cast<vec3*>(background.data),
-                             reinterpret_cast<const int32_t*>(labelClone.data),
-                             _labels.cols, _labels.rows, vec3(0.5f, 0.5f, 0.0));
+  segmentation_details::drawContoursAroundSegments(background, _labels,
+                                                   vec3(0.5, 0.5, 0.0));
 }
 
 void SuperpixelSegmentation::perturbClusterCenters(
   std::vector<SuperpixelSegmentation::SuperPixel>& superPixels) const {
   const int32_t r = 1;
   for (auto& cluster : superPixels) {
-    cluster.area = 0;
+    cluster._area = 0;
 
     double minG = std::numeric_limits<double>::max();
     vec2 o;
-    o[0] = cluster.center[0];
-    o[1] = cluster.center[1];
+    o[0] = cluster._center[0];
+    o[1] = cluster._center[1];
     for (int32_t x_ = static_cast<int32_t>(o[0]) - r;
          x_ <= static_cast<int32_t>(o[0]) + r; x_++) {
       for (int32_t y_ = static_cast<int32_t>(o[1]) - r;
            y_ <= static_cast<int32_t>(o[1]) + r; y_++) {
-        if (_mask(y_, x_) < 1.0)
+        if (_mask(y_, x_) == 0U)
           continue;
 
         int32_t x =
@@ -334,10 +497,10 @@ void SuperpixelSegmentation::perturbClusterCenters(
                    (_targetLab(ny, x) - _targetLab(py, x)).norm();
 
         if (G < minG) {
-          minG              = G;
-          cluster.center[0] = x;
-          cluster.center[1] = y;
-          cluster.meanColor = _targetLab(y, x);
+          minG               = G;
+          cluster._center[0] = x;
+          cluster._center[1] = y;
+          cluster._meanColor = _targetLab(y, x);
         }
       }
     }
@@ -350,36 +513,36 @@ double SuperpixelSegmentation::computeStats(
   for (int32_t x = 0; x < labels.cols; ++x) {
     for (int32_t y = 0; y < labels.rows; ++y) {
       int32_t clusterID = labels(y, x);
-      if (_mask(y, x) < 1.0 || clusterID == -1)
+      if (_mask(y, x) == 0U || clusterID == -1)
         continue;
 
       SuperPixel& center = superPixels[static_cast<size_t>(clusterID)];
-      center.meanColorT += _targetLab(y, x);
-      center.meanDiffT += _difference(y, x);
-      center.centerT[0] += x;
-      center.centerT[1] += y;
-      center.area++;
+      center._meanColorT += _targetLab(y, x);
+      center._meanDiffT += (_difference.empty()) ? 0.0 : _difference(y, x);
+      center._centerT[0] += x;
+      center._centerT[1] += y;
+      center._area++;
     }
   }
 
   double error = 0.;
   for (auto& superPixel : superPixels) {
-    if (superPixel.area == 0)
+    if (superPixel._area == 0)
       continue;
 
-    const double f = 1.0 / superPixel.area;
-    superPixel.meanColorT *= f;
-    superPixel.meanDiffT *= f;
-    superPixel.centerT *= f;
+    const double f = 1.0 / superPixel._area;
+    superPixel._meanColorT *= f;
+    superPixel._meanDiffT *= f;
+    superPixel._centerT *= f;
 
-    error += (superPixel.centerT - superPixel.center).norm() +
-             (superPixel.meanColor - superPixel.meanColorT).norm();
-    superPixel.center         = superPixel.centerT;
-    superPixel.meanColor      = superPixel.meanColorT;
-    superPixel.meanDiff       = superPixel.meanDiffT;
-    superPixel.maxColorDist   = superPixel.maxColorDistT;
-    superPixel.maxDiffDist    = superPixel.maxDiffDistT;
-    superPixel.maxSpatialDist = superPixel.maxSpatialDistT;
+    error += (superPixel._centerT - superPixel._center).norm() +
+             (superPixel._meanColor - superPixel._meanColorT).norm();
+    superPixel._center         = superPixel._centerT;
+    superPixel._meanColor      = superPixel._meanColorT;
+    superPixel._meanDiff       = superPixel._meanDiffT;
+    superPixel._maxColorDist   = superPixel._maxColorDistT;
+    superPixel._maxDiffDist    = superPixel._maxDiffDistT;
+    superPixel._maxSpatialDist = superPixel._maxSpatialDistT;
   }
 
   return error / superPixels.size();
@@ -389,28 +552,31 @@ double SuperpixelSegmentation::distance(
   SuperpixelSegmentation::SuperPixel& superPixel, const vec2i& pos2) const {
   if (_useDiffWeight) {
     const double dc =
-      (superPixel.meanColor - _targetLab(pos2[1], pos2[0])).norm();
-    const double ds = (superPixel.center - vec2(pos2[0], pos2[1])).norm();
-    const double dd = std::sqrt(
-      std::pow(superPixel.meanDiff - _difference(pos2[1], pos2[0]), 2.0));
+      (superPixel._meanColor - _targetLab(pos2[1], pos2[0])).norm();
+    const double ds = (superPixel._center - vec2(pos2[0], pos2[1])).norm();
+    const double dd =
+      (_difference.empty())
+        ? 0.0
+        : std::sqrt(std::pow(
+            superPixel._meanDiff - _difference(pos2[1], pos2[0]), 2.0));
 
-    superPixel.maxColorDistT   = std::max(superPixel.maxColorDistT, dc);
-    superPixel.maxDiffDistT    = std::max(superPixel.maxDiffDistT, dd);
-    superPixel.maxSpatialDistT = std::max(superPixel.maxSpatialDistT, ds);
+    superPixel._maxColorDistT   = std::max(superPixel._maxColorDistT, dc);
+    superPixel._maxDiffDistT    = std::max(superPixel._maxDiffDistT, dd);
+    superPixel._maxSpatialDistT = std::max(superPixel._maxSpatialDistT, ds);
     // SLICO
-    return std::sqrt(std::pow(dc / superPixel.maxColorDist, 2.0f) +
-                     std::pow(dd / superPixel.maxDiffDist, 2.0f) +
-                     std::pow(ds / superPixel.maxSpatialDist, 2.0f));
+    return std::sqrt(std::pow(dc / superPixel._maxColorDist, 2.0f) +
+                     std::pow(dd / superPixel._maxDiffDist, 2.0f) +
+                     std::pow(ds / superPixel._maxSpatialDist, 2.0f));
   } else {
     const double dc =
-      (superPixel.meanColor - _targetLab(pos2[1], pos2[0])).norm();
-    const double ds = (superPixel.center - vec2(pos2[0], pos2[1])).norm();
+      (superPixel._meanColor - _targetLab(pos2[1], pos2[0])).norm();
+    const double ds = (superPixel._center - vec2(pos2[0], pos2[1])).norm();
 
-    superPixel.maxColorDistT   = std::max(superPixel.maxColorDistT, dc);
-    superPixel.maxSpatialDistT = std::max(superPixel.maxSpatialDistT, ds);
+    superPixel._maxColorDistT   = std::max(superPixel._maxColorDistT, dc);
+    superPixel._maxSpatialDistT = std::max(superPixel._maxSpatialDistT, ds);
     // SLICO
-    return std::sqrt(std::pow(dc / superPixel.maxColorDist, 2.0f) +
-                     std::pow(ds / superPixel.maxSpatialDist, 2.0f));
+    return std::sqrt(std::pow(dc / superPixel._maxColorDist, 2.0) +
+                     std::pow(ds / superPixel._maxSpatialDist, 2.0));
   }
 }
 
@@ -420,7 +586,7 @@ const Mat1i& SuperpixelSegmentation::getRegions(
   for (int32_t label = 0; label < static_cast<int32_t>(_superPixels.size());
        label++) {
     ImageRegion r(label, _labels);
-    double m = r.computeMean(_difference);
+    double m = (_difference.empty()) ? 0.0 : r.computeMean(_difference);
     regionsS.emplace_back(std::move(r), m);
   }
 
