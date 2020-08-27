@@ -5,8 +5,11 @@ project(paintyImage)
 find_package(OpenCV REQUIRED core imgproc ximgproc)
 
 add_library(${PROJECT_NAME} STATIC
+  ${PROJECT_SOURCE_DIR}/src/convolution.cpp
+  ${PROJECT_SOURCE_DIR}/src/flow_based_dog.cpp
   ${PROJECT_SOURCE_DIR}/src/texture_warp.cpp
   ${PROJECT_SOURCE_DIR}/src/edge_tangent_flow.cpp
+  ${PROJECT_SOURCE_DIR}/src/superpixel.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

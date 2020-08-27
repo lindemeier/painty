@@ -451,6 +451,179 @@ class ColorConverter {
     lab2rgb(v, rgb);
   }
 
+  enum class Conversion {
+    CIELab_2_XYZ,
+    XYZ_2_CIELab,
+    CIELab_2_LCHab,  // CIE LCHab
+    LCH_ab_2_CIELab,
+    ryb_2_rgb,  // http://en.wikipedia.org/wiki/RYB_color_model,
+                // http://threekings.tk/mirror/ryb_TR.pdf
+    rgb_2_cmy,
+    cmy_2_rgb,
+    rgb_2_XYZ,        // uses sRGB chromatic adapted matrix
+    XYZ_2_rgb,        // uses sRGB chromatic adapted matrix
+    srgb_2_rgb,       // make linear rgb, no chromatic adaption
+    rgb_2_srgb,       // make sRGB, with gamma
+    CIELab_2_srgb,    // Lab (whitepoint) -> XYZ -> rgb (D65) -> sRGB (D65)
+    srgb_2_CIELab,    // sRGB (D65) -> rgb (D65) -> XYZ -> Lab (whitepoint)
+    srgb_2_CIELCHab,  // sRGB (D65) -> rgb (D65) -> XYZ -> Lab (whitepoint)
+    CIELCHab_2_srgb,  // sRGB (D65) -> rgb (D65) -> XYZ -> Lab (whitepoint)
+    rgb_2_CIELCHab,
+    CIELCHab_2_rgb,
+    CIELab_2_rgb,  // Lab (whitepoint) -> XYZ -> rgb (D65)
+    rgb_2_CIELab,  // rgb (D65) -> XYZ -> Lab (D50)
+    XYZ_2_srgb,    // XYZ -> rgb (D65) -> sRGB (D65)
+    hsv_2_srgb,    // [0..1] -> [0..1]
+    srgb_2_hsv,    // [0..1] -> [0..1]
+    srgb_2_XYZ,    // sRGB (D65) -> XYZ
+    XYZ_2_xyY,
+    xyY_2_XYZ,
+    Luv_2_XYZ,
+    XYZ_2_Luv,
+    Luv_2_LCH_uv,  // CIE LCHuv
+    LCH_uv_2_Luv,
+    Yuv_2_rgb,  // Y Cb Cr
+    rgb_2_Yuv
+  };
+
+  void convert(const vec<Scalar, N>& input, vec<Scalar, N>& output,
+               Conversion conversion) const {
+    switch (conversion) {
+      case Conversion::CIELab_2_XYZ: {
+        lab2xyz(input, output);
+        break;
+      }
+      case Conversion::XYZ_2_CIELab: {
+        xyz2lab(input, output);
+        break;
+      }
+      case Conversion::CIELab_2_LCHab: {
+        lab2LCHab(input, output);
+        break;
+      }
+      case Conversion::LCH_ab_2_CIELab: {
+        LCHab2lab(input, output);
+        break;
+      }
+      case Conversion::ryb_2_rgb: {
+        ryb2rgb(input, output);
+        break;
+      }
+      case Conversion::rgb_2_cmy: {
+        rgb2cmy(input, output);
+        break;
+      }
+      case Conversion::cmy_2_rgb: {
+        cmy2rgb(input, output);
+        break;
+      }
+      case Conversion::rgb_2_XYZ: {
+        rgb2xyz(input, output);
+        break;
+      }
+      case Conversion::XYZ_2_rgb: {
+        xyz2rgb(input, output);
+        break;
+      }
+      case Conversion::srgb_2_rgb: {
+        srgb2rgb(input, output);
+        break;
+      }
+      case Conversion::rgb_2_srgb: {
+        rgb2srgb(input, output);
+        break;
+      }
+      case Conversion::CIELab_2_srgb: {
+        lab2srgb(input, output);
+        break;
+      }
+      case Conversion::srgb_2_CIELab: {
+        srgb2lab(input, output);
+        break;
+      }
+      case Conversion::CIELab_2_rgb: {
+        lab2rgb(input, output);
+        break;
+      }
+      case Conversion::rgb_2_CIELab: {
+        rgb2lab(input, output);
+        break;
+      }
+      case Conversion::XYZ_2_srgb: {
+        xyz2srgb(input, output);
+        break;
+      }
+      case Conversion::hsv_2_srgb: {
+        hsv2srgb(input, output);
+        break;
+      }
+      case Conversion::srgb_2_hsv: {
+        srgb2hsv(input, output);
+        break;
+      }
+      case Conversion::srgb_2_XYZ: {
+        srgb2xyz(input, output);
+        break;
+      }
+      case Conversion::XYZ_2_xyY: {
+        xyz2xyY(input, output);
+        break;
+      }
+      case Conversion::xyY_2_XYZ: {
+        xyY2xyz(input, output);
+        break;
+      }
+      case Conversion::Luv_2_XYZ: {
+        Luv2XYZ(input, output);
+        break;
+      }
+      case Conversion::XYZ_2_Luv: {
+        XYZ2Luv(input, output);
+        break;
+      }
+      case Conversion::Luv_2_LCH_uv: {
+        Luv2LCHuv(input, output);
+        break;
+      }
+      case Conversion::LCH_uv_2_Luv: {
+        LCHuv2Luv(input, output);
+        break;
+      }
+      case Conversion::Yuv_2_rgb: {
+        Yuv2rgb(input, output);
+        break;
+      }
+      case Conversion::rgb_2_Yuv: {
+        rgb2Yuv(input, output);
+        break;
+      }
+      case Conversion::srgb_2_CIELCHab: {
+        vec<Scalar, N> v;
+        srgb2lab(input, v);
+        lab2LCHab(v, output);
+        break;
+      }
+      case Conversion::rgb_2_CIELCHab: {
+        vec<Scalar, N> v;
+        rgb2lab(input, v);
+        lab2LCHab(v, output);
+        break;
+      }
+      case Conversion::CIELCHab_2_srgb: {
+        vec<Scalar, N> v;
+        LCHab2lab(input, v);
+        lab2srgb(v, output);
+        break;
+      }
+      case Conversion::CIELCHab_2_rgb: {
+        vec<Scalar, N> v;
+        LCHab2lab(input, v);
+        lab2rgb(v, output);
+        break;
+      }
+    }
+  }
+
   /**
    * @brief Compute difference of two given colors.
    *
@@ -480,8 +653,8 @@ class ColorConverter {
     Scalar Cabarithmean = (Cabstd + Cabsample) / 2.;
 
     Scalar G =
-      0.5f * (1. - std::sqrt(std::pow(Cabarithmean, 7.) /
-                             (std::pow(Cabarithmean, 7.) + std::pow(25., 7.))));
+      0.5 * (1. - std::sqrt(std::pow(Cabarithmean, 7.) /
+                            (std::pow(Cabarithmean, 7.) + std::pow(25., 7.))));
 
     Scalar apstd    = (1. + G) * astd;     // aprime in paper
     Scalar apsample = (1. + G) * asample;  // aprime in paper
@@ -544,23 +717,41 @@ class ColorConverter {
       hp = hpsample + hpstd;
 
     Scalar Lpm502 = (Lp - 50.) * (Lp - 50.);
-    Scalar Sl     = 1. + 0.015f * Lpm502 / std::sqrt(20.0f + Lpm502);
-    Scalar Sc     = 1. + 0.045f * Cp;
-    Scalar Ta     = 1. - 0.17f * std::cos(hp - Pi<Scalar> / 6.) +
-                0.24f * std::cos(2. * hp) +
-                0.32f * std::cos(3. * hp + Pi<Scalar> / 30.) -
-                0.20f * std::cos(4. * hp - 63. * Pi<Scalar> / 180.);
-    Scalar Sh = 1. + 0.015f * Cp * Ta;
+    Scalar Sl     = 1. + 0.015 * Lpm502 / std::sqrt(20.0 + Lpm502);
+    Scalar Sc     = 1. + 0.045 * Cp;
+    Scalar Ta     = 1. - 0.17 * std::cos(hp - Pi<Scalar> / 6.) +
+                0.24 * std::cos(2. * hp) +
+                0.32 * std::cos(3. * hp + Pi<Scalar> / 30.) -
+                0.20 * std::cos(4. * hp - 63. * Pi<Scalar> / 180.);
+    Scalar Sh = 1. + 0.015 * Cp * Ta;
     Scalar delthetarad =
       (30. * Pi<Scalar> / 180.) *
       std::exp(-std::pow(((180. / Pi<Scalar> * hp - 275.) / 25.), 2.));
     Scalar Rc =
       2. * std::sqrt(std::pow(Cp, 7.) / (std::pow(Cp, 7.) + std::pow(25., 7.)));
-    Scalar RT = -std::sin(2.0f * delthetarad) * Rc;
+    Scalar RT = -std::sin(2.0 * delthetarad) * Rc;
 
     // The CIE 00 color difference
     return std::sqrt(std::pow((dL / Sl), 2.) + std::pow((dC / Sc), 2.) +
                      std::pow((dH / Sh), 2.) + RT * (dC / Sc) * (dH / Sh));
+  }
+
+  /**
+   * @brief Simplified color difference. Keeps values between 0 and 1 and clamps large differences.
+   *
+   * @param lab1
+   * @param lab2
+   * @return Scalar
+   */
+  static Scalar ColorDifference(const vec<Scalar, N>& lab1,
+                                const vec<Scalar, N>& lab2) {
+    static constexpr Scalar d0 = 100.;
+    Scalar d                   = ColorDifferenceCIEDE2000(lab1, lab2);
+    if (d >= 0 && d <= d0) {
+      return d / d0;
+    } else {
+      return 1.;
+    }
   }
 
  private:

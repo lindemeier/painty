@@ -9,6 +9,7 @@
  */
 #pragma once
 
+#include <painty/core/color.h>
 #include <painty/core/vec.h>
 
 #include <memory>
@@ -153,6 +154,20 @@ void transform(It1 it1_begin, It1 it1_end, It2 it2_begin,
   while (it1_begin != it1_end) {
     operation(*it1_begin++, *it2_begin++);
   }
+}
+
+template <class T>
+Mat<vec<T, 3>> convertColor(const Mat<vec<T, 3>> input,
+                            typename ColorConverter<T>::Conversion conversion) {
+  ColorConverter<T> converter;
+
+  Mat<vec<T, 3>> out(input.size());
+  painty::transform(
+    input.begin(), input.end(), out.begin(),
+    [&converter, conversion](const painty::vec3& a, painty::vec3& b) {
+      converter.convert(a, b, conversion);
+    });
+  return out;
 }
 
 }  // namespace painty
