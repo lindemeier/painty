@@ -5,6 +5,7 @@ project(paintyImageTest)
 add_executable(${PROJECT_NAME}
   ${PROJECT_SOURCE_DIR}/src/convolution_test.cpp
   ${PROJECT_SOURCE_DIR}/src/edge_tangent_flow_test.cpp
+  ${PROJECT_SOURCE_DIR}/src/flow_based_dog_test.cpp
   ${PROJECT_SOURCE_DIR}/src/main.cpp
   ${PROJECT_SOURCE_DIR}/src/mat_test.cpp
   ${PROJECT_SOURCE_DIR}/src/superpixel_test.cpp
