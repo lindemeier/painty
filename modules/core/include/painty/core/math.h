@@ -256,4 +256,96 @@ bool PointInPolyon(const std::vector<vec<Float, 2UL>>& polygon,
   return isInside;
 }
 
+template <typename T>
+inline T clamp(const T& x, const T& minV, const T& maxV) {
+  return min(maxV, max(minV, x));
+}
+
+template <typename T>
+inline T map(const T& x, const T& minX, const T& maxX, const T& minR,
+             const T& maxR) {
+  return (((x - minX) * (maxR - minR)) / (maxX - minX)) + minR;
+}
+
+template <typename T>
+inline T lerp(const T& p0, const T& p1, T c) {
+  return (T(1) - c) * p0 + c * p1;
+}
+
+template <class T>
+inline T sgn(T val) {
+  return (T(0) < val) - (val < T(0));
+}
+
+template <class T>
+inline T smoothstep(const T edge0, const T edge1, const T x) {
+  T t = clamp<T>((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+  return t * t * (3.0 - 2.0 * t);
+}
+
+// Gauss functions
+template <class T>
+inline T Gauss(const T& x, const T& sigma) {
+  T sigmasquare = sigma * sigma;
+  return exp(-x * x / (2 * sigmasquare)) /
+         (std::sqrt(Pi<T> * static_cast<T>(2.0) * sigmasquare));
+}
+
+template <class T>
+inline T Gauss(const T& x, const T& y, const T& sigma) {
+  T sigmasquare = sigma * sigma;
+  return std::exp(-(x * x + y * y) / (2. * sigmasquare)) /
+         (Pi<T> * static_cast<T>(2.0) * sigmasquare);
+}
+
+template <class T>
+inline T Gauss(const T& x_, const T& y_, const T& sigma_x, const T& sigma_y,
+               const T theta, bool normalized = true) {
+  const T x = x_ * cos(theta) + y_ * sin(theta);
+  const T y = -x_ * sin(theta) + y_ * cos(theta);
+
+  const T exponential = std::exp(-((x * x) / (T(2) * sigma_x * sigma_x)) +
+                                 ((y * y) / (T(2) * sigma_y * sigma_y)));
+  if (normalized) {
+    const T norm = (Pi<T> * static_cast<T>(2.0) * sigma_x * sigma_y);
+    return exponential / norm;
+  }
+  return exponential;
+}
+
+template <class T>
+inline T Gauss1deriv(const T& dx, const T& dy, const T& sigma, const T& theta,
+                     bool normalized = true) {
+  const T x     = dx * cos(theta) + dy * sin(theta);
+  const T y     = -dx * sin(theta) + dy * cos(theta);
+  T sigmasquare = sigma * sigma;
+
+  if (!normalized) {
+    return (-(x / sigmasquare)) *
+           std::exp(-(x * x + y * y) / (2. * sigmasquare));
+  }
+
+  return (-x / (Pi<T> * static_cast<T>(2.0) * sigmasquare * sigmasquare)) *
+         std::exp(-(x * x + y * y) / (2. * sigmasquare));
+}
+
+template <class T>
+inline T Gauss2deriv(const T& dx, const T& dy, const T& sigma, const T& theta,
+                     bool normalized = true) {
+  const T x     = dx * cos(theta) + dy * sin(theta);
+  const T y     = -dx * sin(theta) + dy * cos(theta);
+  T sigmasquare = sigma * sigma;
+  T xsquare     = x * x;
+  T ysquare     = y * y;
+
+  if (!normalized) {
+    return ((x - sigmasquare) / (sigmasquare * sigmasquare)) *
+           std::exp(-(x * x + y * y) / (T(2) * sigmasquare));
+  }
+
+  return (-1. + (xsquare / sigmasquare)) *
+         (exp(-(xsquare + ysquare) / (2. * sigmasquare)) /
+          (Pi<T> * static_cast<T>(2.0) * sigmasquare * sigmasquare));
+}
+
 }  // namespace painty

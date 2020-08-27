@@ -451,6 +451,179 @@ class ColorConverter {
     lab2rgb(v, rgb);
   }
 
+  enum class Conversion {
+    CIELab_2_XYZ,
+    XYZ_2_CIELab,
+    CIELab_2_LCHab,  // CIE LCHab
+    LCH_ab_2_CIELab,
+    ryb_2_rgb,  // http://en.wikipedia.org/wiki/RYB_color_model,
+                // http://threekings.tk/mirror/ryb_TR.pdf
+    rgb_2_cmy,
+    cmy_2_rgb,
+    rgb_2_XYZ,        // uses sRGB chromatic adapted matrix
+    XYZ_2_rgb,        // uses sRGB chromatic adapted matrix
+    srgb_2_rgb,       // make linear rgb, no chromatic adaption
+    rgb_2_srgb,       // make sRGB, with gamma
+    CIELab_2_srgb,    // Lab (whitepoint) -> XYZ -> rgb (D65) -> sRGB (D65)
+    srgb_2_CIELab,    // sRGB (D65) -> rgb (D65) -> XYZ -> Lab (whitepoint)
+    srgb_2_CIELCHab,  // sRGB (D65) -> rgb (D65) -> XYZ -> Lab (whitepoint)
+    CIELCHab_2_srgb,  // sRGB (D65) -> rgb (D65) -> XYZ -> Lab (whitepoint)
+    rgb_2_CIELCHab,
+    CIELCHab_2_rgb,
+    CIELab_2_rgb,  // Lab (whitepoint) -> XYZ -> rgb (D65)
+    rgb_2_CIELab,  // rgb (D65) -> XYZ -> Lab (D50)
+    XYZ_2_srgb,    // XYZ -> rgb (D65) -> sRGB (D65)
+    hsv_2_srgb,    // [0..1] -> [0..1]
+    srgb_2_hsv,    // [0..1] -> [0..1]
+    srgb_2_XYZ,    // sRGB (D65) -> XYZ
+    XYZ_2_xyY,
+    xyY_2_XYZ,
+    Luv_2_XYZ,
+    XYZ_2_Luv,
+    Luv_2_LCH_uv,  // CIE LCHuv
+    LCH_uv_2_Luv,
+    Yuv_2_rgb,  // Y Cb Cr
+    rgb_2_Yuv
+  };
+
+  void convert(const vec<Scalar, N>& input, vec<Scalar, N>& output,
+               Conversion conversion) const {
+    switch (conversion) {
+      case Conversion::CIELab_2_XYZ: {
+        lab2xyz(input, output);
+        break;
+      }
+      case Conversion::XYZ_2_CIELab: {
+        xyz2lab(input, output);
+        break;
+      }
+      case Conversion::CIELab_2_LCHab: {
+        lab2LCHab(input, output);
+        break;
+      }
+      case Conversion::LCH_ab_2_CIELab: {
+        LCHab2lab(input, output);
+        break;
+      }
+      case Conversion::ryb_2_rgb: {
+        ryb2rgb(input, output);
+        break;
+      }
+      case Conversion::rgb_2_cmy: {
+        rgb2cmy(input, output);
+        break;
+      }
+      case Conversion::cmy_2_rgb: {
+        cmy2rgb(input, output);
+        break;
+      }
+      case Conversion::rgb_2_XYZ: {
+        rgb2xyz(input, output);
+        break;
+      }
+      case Conversion::XYZ_2_rgb: {
+        xyz2rgb(input, output);
+        break;
+      }
+      case Conversion::srgb_2_rgb: {
+        srgb2rgb(input, output);
+        break;
+      }
+      case Conversion::rgb_2_srgb: {
+        rgb2srgb(input, output);
+        break;
+      }
+      case Conversion::CIELab_2_srgb: {
+        lab2srgb(input, output);
+        break;
+      }
+      case Conversion::srgb_2_CIELab: {
+        srgb2lab(input, output);
+        break;
+      }
+      case Conversion::CIELab_2_rgb: {
+        lab2rgb(input, output);
+        break;
+      }
+      case Conversion::rgb_2_CIELab: {
+        rgb2lab(input, output);
+        break;
+      }
+      case Conversion::XYZ_2_srgb: {
+        xyz2srgb(input, output);
+        break;
+      }
+      case Conversion::hsv_2_srgb: {
+        hsv2srgb(input, output);
+        break;
+      }
+      case Conversion::srgb_2_hsv: {
+        srgb2hsv(input, output);
+        break;
+      }
+      case Conversion::srgb_2_XYZ: {
+        srgb2xyz(input, output);
+        break;
+      }
+      case Conversion::XYZ_2_xyY: {
+        xyz2xyY(input, output);
+        break;
+      }
+      case Conversion::xyY_2_XYZ: {
+        xyY2xyz(input, output);
+        break;
+      }
+      case Conversion::Luv_2_XYZ: {
+        Luv2XYZ(input, output);
+        break;
+      }
+      case Conversion::XYZ_2_Luv: {
+        XYZ2Luv(input, output);
+        break;
+      }
+      case Conversion::Luv_2_LCH_uv: {
+        Luv2LCHuv(input, output);
+        break;
+      }
+      case Conversion::LCH_uv_2_Luv: {
+        LCHuv2Luv(input, output);
+        break;
+      }
+      case Conversion::Yuv_2_rgb: {
+        Yuv2rgb(input, output);
+        break;
+      }
+      case Conversion::rgb_2_Yuv: {
+        rgb2Yuv(input, output);
+        break;
+      }
+      case Conversion::srgb_2_CIELCHab: {
+        vec<Scalar, N> v;
+        srgb2lab(input, v);
+        lab2LCHab(v, output);
+        break;
+      }
+      case Conversion::rgb_2_CIELCHab: {
+        vec<Scalar, N> v;
+        rgb2lab(input, v);
+        lab2LCHab(v, output);
+        break;
+      }
+      case Conversion::CIELCHab_2_srgb: {
+        vec<Scalar, N> v;
+        LCHab2lab(input, v);
+        lab2srgb(v, output);
+        break;
+      }
+      case Conversion::CIELCHab_2_rgb: {
+        vec<Scalar, N> v;
+        LCHab2lab(input, v);
+        lab2rgb(v, output);
+        break;
+      }
+    }
+  }
+
   /**
    * @brief Compute difference of two given colors.
    *
