@@ -84,8 +84,9 @@ static void run_oabf(uint32_t pass, const Mat3d& sourceLab, Mat3d& target,
 
 Mat3d FlowBasedDoG::execute(const Mat3d& imageInLab,
                             const Mat2d& edgeTangentFlow) const {
-  return filterBilateralOrientationAligned(
-    imageInLab, edgeTangentFlow, _oabfSigma_d, _oabfSigma_r, _oabfIterations);
+  filterBilateralOrientationAligned(imageInLab, edgeTangentFlow, _oabfSigma_d,
+                                    _oabfSigma_r, _oabfIterations);
+  return quantizeColors(imageInLab, _phi_q, _nbins);
 }
 
 Mat3d FlowBasedDoG::filterBilateralOrientationAligned(
@@ -100,6 +101,26 @@ Mat3d FlowBasedDoG::filterBilateralOrientationAligned(
   }
 
   return t1;
+}
+
+Mat3d FlowBasedDoG::quantizeColors(const Mat3d& imageInLab, const double phi_q,
+                                   const uint32_t nbins) {
+  const auto w = imageInLab.cols;
+  const auto h = imageInLab.rows;
+  Mat3d out(h, w);
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      const auto c = imageInLab(y, x);
+
+      const auto qn = std::floor(c[0U] * static_cast<double>(nbins) + 0.5) /
+                      static_cast<double>(nbins);
+      const auto qs =
+        painty::smoothstep(-2.0, 2.0, phi_q * (c[0U] - qn) * 100.0) - 0.5;
+      const auto qc = qn + qs / static_cast<double>(nbins);
+      out(y, x)     = {qc, c[1U], c[2U]};
+    }
+  }
+  return out;
 }
 
 }  // namespace painty

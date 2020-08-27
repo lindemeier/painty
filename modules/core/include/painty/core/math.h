@@ -258,7 +258,7 @@ bool PointInPolyon(const std::vector<vec<Float, 2UL>>& polygon,
 
 template <typename T>
 inline T clamp(const T& x, const T& minV, const T& maxV) {
-  return min(maxV, max(minV, x));
+  return std::min(maxV, std::max(minV, x));
 }
 
 template <typename T>

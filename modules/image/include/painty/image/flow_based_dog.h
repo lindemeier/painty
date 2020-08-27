@@ -23,7 +23,8 @@ class FlowBasedDoG {
                                                  const double sigma_r,
                                                  const uint32_t n);
 
-  static Mat3d quantizeColors(const Mat3d& imageInLab);
+  static Mat3d quantizeColors(const Mat3d& imageInLab, const double phi_q,
+                              const uint32_t nbins);
 
   static Mat3d thresholdingXDoG(const Mat3d response);
 
@@ -32,6 +33,10 @@ class FlowBasedDoG {
   double _oabfSigma_d      = 3.0;
   double _oabfSigma_r      = 4.25;
   uint32_t _oabfIterations = 5;
+
+  // color quantization
+  double _phi_q   = 3.4;
+  uint32_t _nbins = 6;
 
   Mat3d overlay(const Mat3d& edge, const Mat3d& image) const;
 };
