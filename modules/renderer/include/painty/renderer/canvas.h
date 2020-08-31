@@ -28,7 +28,7 @@ class Canvas final {
         _backgroundColor(),
         _R0_buffer(rows, cols),
         _h_buffer(rows, cols),
-        _timeMap(rows, cols),
+        _timeMap(rows * cols),
         _dryingTime(static_cast<uint32_t>(0.25 * 60 * 1000000)) {
     _backgroundColor.fill(static_cast<T>(1.0));
     clear();
@@ -42,7 +42,7 @@ class Canvas final {
     _R0_buffer      = Mat<vector_type>(rows, cols);
     _h_buffer       = Mat<T>(rows, cols);
 
-    _timeMap = Mat<std::chrono::system_clock::time_point>(rows, cols);
+    _timeMap = std::vector<std::chrono::system_clock::time_point>(rows * cols);
     auto now = std::chrono::system_clock::now();
     for (auto& t : _timeMap) {
       t = now;
@@ -93,18 +93,18 @@ class Canvas final {
     return _paintLayer;
   }
 
-  const Mat<std::chrono::system_clock::time_point>& getTimeMap() const {
+  const std::vector<std::chrono::system_clock::time_point>& getTimeMap() const {
     return _timeMap;
   }
 
-  Mat<std::chrono::system_clock::time_point>& getTimeMap() {
+  std::vector<std::chrono::system_clock::time_point>& getTimeMap() {
     return _timeMap;
   }
 
   void dryCanvas() {
     const auto timePoint = std::chrono::system_clock::now();
-    for (auto y = 0U; y < _paintLayer.getRows(); y++) {
-      for (auto x = 0U; x < _paintLayer.getCols(); x++) {
+    for (auto y = 0; y < _paintLayer.getRows(); y++) {
+      for (auto x = 0; x < _paintLayer.getCols(); x++) {
         const auto v = _paintLayer.getV_buffer()(y, x);
         _h_buffer(y, x) += v;
         getR0()(y, x) =
@@ -114,7 +114,7 @@ class Canvas final {
         _paintLayer.getK_buffer()(y, x).fill(0.0);
         _paintLayer.getS_buffer()(y, x).fill(0.0);
 
-        _timeMap(y, x) = timePoint;
+        _timeMap[y * _h_buffer.cols + x] = timePoint;
       }
     }
   }
@@ -124,7 +124,7 @@ class Canvas final {
     T v = _paintLayer.getV_buffer()(y, x);
     if ((_dryingTime.count() > 0.0) && (v > 0.001)) {
       auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(
-        timePoint - _timeMap(y, x));
+        timePoint - _timeMap[y * _h_buffer.cols + x]);
 
       if (dur >= _dryingTime) {
         _h_buffer(y, x) += v;
@@ -150,7 +150,7 @@ class Canvas final {
         }
       }
     }
-    _timeMap(y, x) = timePoint;
+    _timeMap[y * _h_buffer.cols + x] = timePoint;
   }
 
   std::chrono::milliseconds getDryingTime() {
@@ -187,7 +187,7 @@ class Canvas final {
    * @brief Time pased since a cell was affected by paint.
    *
    */
-  Mat<std::chrono::system_clock::time_point> _timeMap;
+  std::vector<std::chrono::system_clock::time_point> _timeMap;
 
   /**
    * @brief Total time of drying process.

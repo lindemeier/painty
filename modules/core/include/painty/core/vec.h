@@ -13,9 +13,10 @@
 
 #include <array>
 #include <cmath>
-#include <eigen3/Eigen/Dense>
 #include <ostream>
 #include <type_traits>
+
+#include "Eigen/Dense"
 
 namespace painty {
 /**

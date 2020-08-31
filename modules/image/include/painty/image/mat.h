@@ -121,8 +121,8 @@ Mat<T> PaddedMat(const Mat<T>& input, const uint32_t left, const uint32_t right,
   for (auto& v : s) {
     v = paddingValue;
   }
-  for (auto i = 0U; i < input.rows; i++) {
-    for (auto j = 0U; j < input.cols; j++) {
+  for (auto i = 0; i < input.rows; i++) {
+    for (auto j = 0; j < input.cols; j++) {
       s(i + up, j + left) = input(i, j);
     }
   }

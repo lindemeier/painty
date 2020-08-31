@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.10.2)
 
 project(paintyCore)
 
-# eigen
-find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-
 add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME}
   INTERFACE ${PROJECT_SOURCE_DIR}/include/painty/core/color.h
@@ -21,8 +18,20 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME} INTERFACE
-    Eigen3::Eigen
+  eigen
 )
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # using Clang
+  target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Weverything -Wno-c++98-compat -Wno-padded -Wno-documentation -Werror -Wno-global-constructors
+                        )
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  # using GCC
+  target_compile_options(${PROJECT_NAME} INTERFACE -Wall -Werror)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  # using Visual Studio C++
+  target_compile_options(${PROJECT_NAME} INTERFACE /W4 /WX)
+endif()
 
 if(RUN_TESTS)
   add_subdirectory(test)

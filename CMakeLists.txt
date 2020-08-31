@@ -16,6 +16,10 @@ if(RUN_TESTS)
     enable_testing()
 endif()
 
+# 3rdParty
+add_subdirectory(3rdParty/eigen)
+add_subdirectory(3rdParty/opencv)
+
 # modules
 add_subdirectory(modules/core)
 add_subdirectory(modules/image)
@@ -25,5 +29,5 @@ add_subdirectory(modules/renderer)
 # apps
 option(BUILD_APPS "Build apps" ON)
 if(BUILD_APPS)
-    add_subdirectory(apps/painty_gui)
+  add_subdirectory(apps/painty_gui)
 endif()

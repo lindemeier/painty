@@ -70,8 +70,6 @@ class FootprintBrush final {
    */
   void imprint(const vec2& center, const double theta,
                Canvas<vector_type>& canvas) {
-    constexpr auto Eps = 0.0000001;
-
     const int32_t h  = _footprint.rows;
     const int32_t w  = _footprint.cols;
     const int32_t hr = (h - 1) / 2;
@@ -114,7 +112,7 @@ class FootprintBrush final {
 
         canvas.checkDry(xy_canvas[0U], xy_canvas[1U], now);
 
-        const auto footprintHeight = _footprint(xy_map[1U], xy_map[0U]);
+        // const auto footprintHeight = _footprint(xy_map[1U], xy_map[0U]);
         {
           counter++;
 
@@ -158,8 +156,8 @@ class FootprintBrush final {
    *
    */
   void clean() {
-    for (auto i = 0U; i < _sizeMap; i++) {
-      for (auto j = 0U; j < _sizeMap; j++) {
+    for (auto i = 0; i < _sizeMap; i++) {
+      for (auto j = 0; j < _sizeMap; j++) {
         _pickupMap.set(i, j, vector_type::Zero(), vector_type::Zero(), 0.0);
       }
     }
@@ -377,7 +375,7 @@ class FootprintBrush final {
    * @brief Size of footprint and pickup map based on radius. Wide enough to cover all rotations of the footprint.
    *
    */
-  uint32_t _sizeMap;
+  int32_t _sizeMap;
 
   /**
    * @brief Height map resulting from a 3d brush footprinting.
