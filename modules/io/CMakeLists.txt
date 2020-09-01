@@ -2,21 +2,22 @@ cmake_minimum_required(VERSION 3.10.2)
 
 project(paintyIo)
 
-find_package(OpenCV REQUIRED core imgproc imgcodecs highgui)
-
 add_library(${PROJECT_NAME} STATIC
   ${PROJECT_SOURCE_DIR}/src/image_io.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>
-  PUBLIC ${OpenCV_INCLUDE_DIRS}
   PUBLIC $<INSTALL_INTERFACE:include/>
+  ${opencv_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
-  paintyImage
-  ${OpenCV_LIBS}
+  PUBLIC paintyImage
+  opencv_core
+  opencv_imgproc
+  opencv_imgcodecs
+  opencv_highgui
 )
 
 add_dependencies(${PROJECT_NAME}

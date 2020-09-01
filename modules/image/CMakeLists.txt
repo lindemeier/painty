@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.10.2)
 
 project(paintyImage)
 
-find_package(OpenCV REQUIRED core imgproc ximgproc)
-
 add_library(${PROJECT_NAME} STATIC
   ${PROJECT_SOURCE_DIR}/src/convolution.cpp
   ${PROJECT_SOURCE_DIR}/src/flow_based_dog.cpp
@@ -14,13 +12,15 @@ add_library(${PROJECT_NAME} STATIC
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>
-  PUBLIC ${OpenCV_INCLUDE_DIRS}
   PUBLIC $<INSTALL_INTERFACE:include/>
+  ${opencv_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
-  paintyCore
-  ${OpenCV_LIBS}
+  PUBLIC paintyCore
+  opencv_core
+  opencv_imgproc
+  opencv_ximgproc
 )
 
 add_dependencies(${PROJECT_NAME}

@@ -28,7 +28,7 @@ void KMVisualizeWidget::setRb(const QColor& c) {
   this->update();
 }
 
-void KMVisualizeWidget::paintEvent(QPaintEvent* event) {
+void KMVisualizeWidget::paintEvent(QPaintEvent*) {
   QPainter p(this);
 
   p.fillRect(0, 0, this->width(), this->height(), Qt::white);

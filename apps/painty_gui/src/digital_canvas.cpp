@@ -25,11 +25,11 @@ DigitalCanvas::DigitalCanvas(const uint32_t width, const uint32_t height,
                      static_cast<double>(height), parent),
       _pixmapItem(nullptr),
       _canvasPtr(nullptr),
-      _brushStrokePath(),
       _brushTexturePtr(std::make_unique<painty::TextureBrush<painty::vec3>>(
         "./data/sample_0")),
       _brushFootprintPtr(
         std::make_unique<painty::FootprintBrush<painty::vec3>>(256U)),
+      _brushStrokePath(),
       _pickupMapLabelPtr(pickupMapLabelPtr) {
   this->setBackgroundBrush(QBrush(QColor(128, 128, 128)));
   _pixmapItem = this->addPixmap(
@@ -167,8 +167,8 @@ void DigitalCanvas::updateCanvas() {
     }
 
     QImage qimage(rgb.cols, rgb.rows, QImage::Format_RGB32);
-    for (auto i = 0U; i < rgb.rows; i++) {
-      for (auto j = 0U; j < rgb.cols; j++) {
+    for (auto i = 0; i < rgb.rows; i++) {
+      for (auto j = 0; j < rgb.cols; j++) {
         qimage.setPixel(j, i,
                         qRgb(static_cast<uint8_t>(rgb(i, j)[0U] * 255.0),
                              static_cast<uint8_t>(rgb(i, j)[1U] * 255.0),
@@ -193,8 +193,8 @@ void DigitalCanvas::updateCanvas() {
     }
 
     QImage qimage(rgb.cols, rgb.rows, QImage::Format_RGB32);
-    for (auto i = 0U; i < rgb.rows; i++) {
-      for (auto j = 0U; j < rgb.cols; j++) {
+    for (auto i = 0; i < rgb.rows; i++) {
+      for (auto j = 0; j < rgb.cols; j++) {
         qimage.setPixel(j, i,
                         qRgb(static_cast<uint8_t>(rgb(i, j)[0U] * 255.0),
                              static_cast<uint8_t>(rgb(i, j)[1U] * 255.0),

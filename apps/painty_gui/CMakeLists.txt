@@ -43,3 +43,17 @@ add_dependencies(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME}
     PRIVATE src/
     )
+
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD_REQUIRED ON)
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # using Clang
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Weverything -Wno-c++98-compat -Wno-padded -Wno-documentation -Werror -Wno-global-constructors -Wno-redundant-parens)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  # using GCC
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Werror)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  # using Visual Studio C++
+  target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+endif()
