@@ -7,8 +7,9 @@
  * @date 2020-04-22
  *
  */
-#include <gtest/gtest.h>
 #include "painty/image/mat.h"
+
+#include "gtest/gtest.h"
 
 TEST(MatTest, Construct) {
   painty::Mat<double> m0;

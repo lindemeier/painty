@@ -8,8 +8,9 @@
  *
  */
 
-#include <gtest/gtest.h>
 #include "painty/renderer/paint_layer.h"
+
+#include "gtest/gtest.h"
 
 TEST(PaintLayerTest, Construct) {
   auto layer = painty::PaintLayer<painty::vec3>(800, 600);

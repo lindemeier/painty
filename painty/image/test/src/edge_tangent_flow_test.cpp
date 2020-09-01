@@ -9,8 +9,7 @@
  */
 #include "painty/image/edge_tangent_flow.h"
 
-#include <gtest/gtest.h>
-
+#include "gtest/gtest.h"
 #include "painty/core/color.h"
 #include "painty/io/image_io.h"
 

@@ -7,9 +7,10 @@
  * @date 2020-08-26
  *
  */
-#include <gtest/gtest.h>
-#include "painty/core/color.h"
 #include "painty/image/superpixel.h"
+
+#include "gtest/gtest.h"
+#include "painty/core/color.h"
 #include "painty/io/image_io.h"
 
 TEST(SuperPixelTest, SuperPixelExecuteTest) {

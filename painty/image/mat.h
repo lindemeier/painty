@@ -10,9 +10,9 @@
 #pragma once
 
 #include <memory>
-#include <opencv2/imgproc.hpp>
 #include <vector>
 
+#include "opencv2/imgproc.hpp"
 #include "painty/core/color.h"
 #include "painty/core/vec.h"
 

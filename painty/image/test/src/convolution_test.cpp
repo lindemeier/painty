@@ -7,8 +7,9 @@
  * @date 2020-08-26
  *
  */
-#include <gtest/gtest.h>
 #include "painty/image/convolution.h"
+
+#include "gtest/gtest.h"
 #include "painty/io/image_io.h"
 
 TEST(ConvolutionTest, Convolve2dTest) {

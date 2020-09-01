@@ -10,10 +10,8 @@
 
 #include "painty/io/image_io.h"
 
-#include <gtest/gtest.h>
-
-#include <opencv2/highgui.hpp>
-
+#include "gtest/gtest.h"
+#include "opencv2/highgui.hpp"
 #include "painty/core/color.h"
 
 TEST(ImageIoTest, ReadWriteRGB) {

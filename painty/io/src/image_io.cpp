@@ -2,10 +2,10 @@
 
 #include <algorithm>
 #include <cstring>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <string>
 
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgcodecs/imgcodecs.hpp"
 #include "painty/core/color.h"
 
 static std::string extractFiletype(const std::string& filename) {
