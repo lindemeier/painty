@@ -17,4 +17,5 @@ cc_test(
         "@gtest",
         "//painty/io:io",
     ],
+    data = ["//data:exported_test_images"]
 )

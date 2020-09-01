@@ -1,0 +1,7 @@
+filegroup(
+    name = "exported_test_images",
+    srcs = glob([
+        "test_images/*.jpg",
+    ]),
+    visibility = ["//visibility:public"]
+)
