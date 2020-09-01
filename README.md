@@ -3,7 +3,8 @@
 Library containing several algorithms for:
 - Image processing.
 - Non photorealistic rendering: painterly rendering, image abstraction and stylization.
-- paint rendering and realistic mixing.
+- Paint rendering and realistic mixing.
+- Color conversions.
 - ... and more to come
 
 
