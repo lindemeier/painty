@@ -1,30 +1,27 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project(paintyImage)
+project(paintyRenderer)
+
 
 add_library(${PROJECT_NAME} STATIC
-  ${PROJECT_SOURCE_DIR}/src/convolution.cpp
-  ${PROJECT_SOURCE_DIR}/src/flow_based_dog.cpp
-  ${PROJECT_SOURCE_DIR}/src/texture_warp.cpp
-  ${PROJECT_SOURCE_DIR}/src/edge_tangent_flow.cpp
-  ${PROJECT_SOURCE_DIR}/src/superpixel.cpp
+  ${PROJECT_SOURCE_DIR}/src/brush_stroke_sample.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
-  PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
   PUBLIC $<INSTALL_INTERFACE:include/>
-  ${opencv_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
-  PUBLIC paintyCore
-  opencv_core
-  opencv_imgproc
-  opencv_ximgproc
+  paintyCore
+  paintyImage
+  paintyIo
 )
 
 add_dependencies(${PROJECT_NAME}
   paintyCore
+  paintyImage
+  paintyIo
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
@@ -40,6 +37,8 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # using Visual Studio C++
   target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
 endif()
+
+
 if(RUN_TESTS)
   add_subdirectory(test)
 endif()

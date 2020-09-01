@@ -4,16 +4,16 @@ project(paintyCore)
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME}
-  INTERFACE ${PROJECT_SOURCE_DIR}/include/painty/core/color.h
-  INTERFACE ${PROJECT_SOURCE_DIR}/include/painty/core/math.h
-  INTERFACE ${PROJECT_SOURCE_DIR}/include/painty/core/kubelka_munk.h
-  INTERFACE ${PROJECT_SOURCE_DIR}/include/painty/core/spline.h
-  INTERFACE ${PROJECT_SOURCE_DIR}/include/painty/core/types.h
-  INTERFACE ${PROJECT_SOURCE_DIR}/include/painty/core/vec.h
+  INTERFACE ${PROJECT_SOURCE_DIR}/color.h
+  INTERFACE ${PROJECT_SOURCE_DIR}/math.h
+  INTERFACE ${PROJECT_SOURCE_DIR}/kubelka_munk.h
+  INTERFACE ${PROJECT_SOURCE_DIR}/spline.h
+  INTERFACE ${PROJECT_SOURCE_DIR}/types.h
+  INTERFACE ${PROJECT_SOURCE_DIR}/vec.h
 )
 
 target_include_directories(${PROJECT_NAME}
-  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>
+  INTERFACE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
   INTERFACE $<INSTALL_INTERFACE:include/>
 )
 

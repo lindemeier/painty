@@ -23,8 +23,7 @@ vec2 GetMinEigenVector(const vec3& tensor);
 vec2 GetMaxEigenvector(const vec3& tensor);
 
 Mat3d ComputeTensors(const Mat3d& image, const Mat1d& mask, double innerSigma,
-                     double outerSigma, const double spatialSigma,
-                     const double colorSigma);
+                     double outerSigma);
 
 }  // namespace tensor
 

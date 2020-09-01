@@ -1,0 +1,16 @@
+cc_library(
+    name = "core",
+    srcs = glob(["src/*.cpp"]),
+    hdrs = glob(["*.h"]),
+    deps = ["//3rdParty:eigen"],
+    visibility = ["//visibility:public"]
+)
+
+cc_test(
+    name = "test",
+    srcs = glob(["test/src/*.cpp"]),
+    deps = [
+        ":core",
+        "@gtest//:gtest"
+    ]
+)

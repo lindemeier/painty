@@ -212,7 +212,7 @@ Mat3d FlowBasedDoG::execute(const Mat3d& rgbLinear) const {
   const auto Lab =
     convertColor(rgbLinear, ColorConverter<double>::Conversion::rgb_2_CIELab);
   const auto etf = ComputeEdgeTangentFlow(
-    tensor::ComputeTensors(Lab, Mat1d(), 0.0, _tensorOuterSigma, 0.0, 0.0));
+    tensor::ComputeTensors(Lab, Mat1d(), 0.0, _tensorOuterSigma));
 
   const auto oabf = filterBilateralOrientationAligned(
     Lab, etf, _oabfSigma_d, _oabfSigma_r, _oabfIterations);

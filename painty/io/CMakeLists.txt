@@ -7,7 +7,7 @@ add_library(${PROJECT_NAME} STATIC
 )
 
 target_include_directories(${PROJECT_NAME}
-  PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
   PUBLIC $<INSTALL_INTERFACE:include/>
   ${opencv_INCLUDE_DIRS}
 )

@@ -63,8 +63,7 @@ vec2 GetMaxEigenvector(const vec3& tensor) {
  * @return
  */
 Mat3d ComputeTensors(const Mat3d& image, const Mat1d& mask, double innerSigma,
-                     double outerSigma, const double spatialSigma,
-                     const double colorSigma) {
+                     double outerSigma) {
   // compute derivation according to "Image and Video Abstraction by Coherence-Enhancing Filtering"
   // http://onlinelibrary.wiley.com/doi/10.1111/j.1467-8659.2011.01882[0]/full
   Mat3d dxTemp(image.size()), dyTemp(image.size());
@@ -175,17 +174,6 @@ Mat3d ComputeTensors(const Mat3d& image, const Mat1d& mask, double innerSigma,
       tensors(index)[1] *= magScale;
       tensors(index)[2] *= magScale;
     }
-  }
-
-  if (spatialSigma > 0.0 && colorSigma > 0.0) {
-    // smooth according to source image
-    Mat3f fTensors;
-    tensors.convertTo(fTensors, CV_32FC3, 1.0);
-    Mat3f fImage;
-    image.convertTo(fImage, CV_32FC3, 1.0);
-    fTensors = filterDomainTransform(fImage, fTensors, spatialSigma, colorSigma,
-                                     cv::ximgproc::DTF_NC);
-    fTensors.convertTo(tensors, CV_64FC3, 1.0);
   }
 
   return tensors;

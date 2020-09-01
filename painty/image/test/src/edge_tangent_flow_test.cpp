@@ -7,9 +7,11 @@
  * @date 2020-07-31
  *
  */
-#include <gtest/gtest.h>
-#include "painty/core/color.h"
 #include "painty/image/edge_tangent_flow.h"
+
+#include <gtest/gtest.h>
+
+#include "painty/core/color.h"
 #include "painty/io/image_io.h"
 
 TEST(MatTest, EdgeTangentFlowTest) {
@@ -25,9 +27,9 @@ TEST(MatTest, EdgeTangentFlowTest) {
                     });
 
   // compute tensors
-  const auto tensors = painty::tensor::ComputeTensors(labImage, painty::Mat1d(),
-                                                      0.0, 0.5, 20.0, 30.0);
-  const auto etf     = painty::ComputeEdgeTangentFlow(tensors);
+  const auto tensors =
+    painty::tensor::ComputeTensors(labImage, painty::Mat1d(), 0.0, 0.5);
+  const auto etf = painty::ComputeEdgeTangentFlow(tensors);
 
   constexpr auto Eps = 0.000001;
 
