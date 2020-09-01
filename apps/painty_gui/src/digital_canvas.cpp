@@ -1,11 +1,5 @@
 #include "digital_canvas.h"
 
-#include <painty/core/color.h>
-#include <painty/core/kubelka_munk.h>
-#include <painty/core/spline.h>
-#include <painty/renderer/canvas.h>
-#include <painty/renderer/renderer.h>
-
 #include <QGraphicsPixmapItem>
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
@@ -13,6 +7,11 @@
 #include <iostream>
 
 #include "digital_paint_main_window.h"
+#include "painty/core/color.h"
+#include "painty/core/kubelka_munk.h"
+#include "painty/core/spline.h"
+#include "painty/renderer/canvas.h"
+#include "painty/renderer/renderer.h"
 #include "ui_digital_paint_main_window.h"
 
 std::shared_ptr<painty::Canvas<painty::vec3>> DigitalCanvas::getCanvas() const {

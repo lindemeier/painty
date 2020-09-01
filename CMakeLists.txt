@@ -21,10 +21,10 @@ add_subdirectory(3rdParty/eigen)
 add_subdirectory(3rdParty/opencv)
 
 # modules
-add_subdirectory(modules/core)
-add_subdirectory(modules/image)
-add_subdirectory(modules/io)
-add_subdirectory(modules/renderer)
+add_subdirectory(painty/core)
+add_subdirectory(painty/image)
+add_subdirectory(painty/io)
+add_subdirectory(painty/renderer)
 
 # apps
 option(BUILD_APPS "Build apps" ON)

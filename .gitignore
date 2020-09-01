@@ -37,3 +37,7 @@ luminance.png
 hugo.png
 linear_rgb_16.png
 luminance_16.png
+bazel-bin
+bazel-out
+bazel-painty
+bazel-testlogs

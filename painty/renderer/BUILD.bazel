@@ -1,0 +1,22 @@
+cc_library(
+    name = "renderer",
+    srcs = glob(["src/*.cpp"]),
+    hdrs = glob(["*.h"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//painty/core:core",
+        "//painty/image:image",
+        "//painty/io:io"
+    ],
+)
+
+cc_test(
+    name = "test",
+    srcs = glob(["test/src/*.cpp"]),
+    deps = [
+        ":renderer",
+        "@gtest",
+        "//painty/io:io",
+    ],
+    data = ["//data:exported_texture_sample_0", "//data:exported_footprint"]
+)

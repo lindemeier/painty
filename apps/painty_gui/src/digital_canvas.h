@@ -1,9 +1,9 @@
 #ifndef EDAVID_DIGITAL_canvasPtr_H
 #define EDAVID_DIGITAL_canvasPtr_H
 
-#include <painty/renderer/canvas.h>
-#include <painty/renderer/footprint_brush.h>
-#include <painty/renderer/texture_brush.h>
+#include "painty/renderer/canvas.h"
+#include "painty/renderer/footprint_brush.h"
+#include "painty/renderer/texture_brush.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>

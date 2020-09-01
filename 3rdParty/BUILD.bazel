@@ -1,0 +1,37 @@
+load("@rules_foreign_cc//tools/build_defs:cmake.bzl", "cmake_external")
+
+cmake_external(
+    name = "eigen",
+    cache_entries = {
+    },
+    headers_only = True,
+    lib_source = "@eigen//:all",
+    out_include_dir = "include/eigen3",
+    visibility = ["//visibility:public"]
+)
+
+cmake_external(
+    name = "opencv",
+    cmake_options = [
+        # "-GNinja",
+        "-DBUILD_LIST=calib3d,core,features2d,flann,highgui,imgcodecs,imgproc,video,videoio",
+    ],
+    lib_source = "@opencv//:all",
+    # make_commands = [
+    #     "ninja",
+    #     "ninja install",
+    # ],
+    out_include_dir = "include/opencv4",
+    shared_libraries = [
+        "libopencv_calib3d.so.4.4",
+        "libopencv_core.so.4.4",
+        "libopencv_features2d.so.4.4",
+        "libopencv_flann.so.4.4",
+        "libopencv_highgui.so.4.4",
+        "libopencv_imgcodecs.so.4.4",
+        "libopencv_imgproc.so.4.4",
+        "libopencv_video.so.4.4",
+        "libopencv_videoio.so.4.4",
+    ],
+    visibility = ["//visibility:public"],
+)
