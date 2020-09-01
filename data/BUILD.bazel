@@ -5,3 +5,20 @@ filegroup(
     ]),
     visibility = ["//visibility:public"]
 )
+
+filegroup(
+    name = "exported_texture_sample_0",
+    srcs = glob([
+        "sample_0",
+        "sample_0/*.txt",
+    ]),
+    visibility = ["//visibility:public"]
+)
+
+filegroup(
+    name = "exported_footprint",
+    srcs = glob([
+        "footprint/footprint.png"
+    ]),
+    visibility = ["//visibility:public"]
+)

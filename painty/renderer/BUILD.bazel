@@ -6,7 +6,7 @@ cc_library(
     deps = [
         "//painty/core:core",
         "//painty/image:image",
-        "//painty/io:io",
+        "//painty/io:io"
     ],
 )
 
@@ -16,5 +16,7 @@ cc_test(
     deps = [
         ":renderer",
         "@gtest",
+        "//painty/io:io",
     ],
+    data = ["//data:exported_texture_sample_0", "//data:exported_footprint"]
 )
