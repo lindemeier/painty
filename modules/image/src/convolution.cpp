@@ -4,7 +4,7 @@
  * @date 2020-08-27
  *
  */
-#include <painty/image/convolution.h>
+#include "painty/image/convolution.h"
 
 namespace painty {
 

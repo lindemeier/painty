@@ -8,8 +8,8 @@
  *
  */
 #include <gtest/gtest.h>
-#include <painty/image/convolution.h>
-#include <painty/io/image_io.h>
+#include "painty/image/convolution.h"
+#include "painty/io/image_io.h"
 
 TEST(ConvolutionTest, Convolve2dTest) {
   painty::Mat3d image;

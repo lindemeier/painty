@@ -6,8 +6,8 @@
  *
  * @date 2020-05-01
  */
-#include <painty/io/image_io.h>
-#include <painty/renderer/brush_stroke_sample.h>
+#include "painty/io/image_io.h"
+#include "painty/renderer/brush_stroke_sample.h"
 
 #include <fstream>
 #include <iostream>

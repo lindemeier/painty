@@ -9,8 +9,8 @@
  */
 #pragma once
 
-#include <painty/core/spline.h>
-#include <painty/renderer/paint_layer.h>
+#include "painty/core/spline.h"
+#include "painty/renderer/paint_layer.h"
 
 namespace painty {
 template <class vector_type>

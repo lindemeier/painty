@@ -9,10 +9,10 @@
  */
 #pragma once
 
-#include <painty/core/kubelka_munk.h>
-#include <painty/image/mat.h>
-
 #include <type_traits>
+
+#include "painty/core/kubelka_munk.h"
+#include "painty/image/mat.h"
 
 namespace painty {
 /**

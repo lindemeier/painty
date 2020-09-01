@@ -8,11 +8,13 @@
  *
  */
 
+#include "painty/io/image_io.h"
+
 #include <gtest/gtest.h>
-#include <painty/core/color.h>
-#include <painty/io/image_io.h>
 
 #include <opencv2/highgui.hpp>
+
+#include "painty/core/color.h"
 
 TEST(ImageIoTest, ReadWriteRGB) {
   painty::Mat<painty::vec3> linear_rgb(1, 0xFF);

@@ -9,14 +9,13 @@
  */
 #pragma once
 
-#include <painty/core/types.h>
-
 #include <array>
 #include <cmath>
 #include <ostream>
 #include <type_traits>
 
 #include "Eigen/Dense"
+#include "painty/core/types.h"
 
 namespace painty {
 /**

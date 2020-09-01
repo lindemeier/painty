@@ -7,14 +7,14 @@
  */
 #pragma once
 
-#include <painty/core/kubelka_munk.h>
-#include <painty/core/vec.h>
-#include <painty/image/mat.h>
-#include <painty/renderer/paint_layer.h>
-
 #include <algorithm>
 #include <chrono>
 #include <type_traits>
+
+#include "painty/core/kubelka_munk.h"
+#include "painty/core/vec.h"
+#include "painty/image/mat.h"
+#include "painty/renderer/paint_layer.h"
 
 namespace painty {
 template <class vector_type>

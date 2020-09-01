@@ -9,10 +9,10 @@
  */
 #pragma once
 
-#include <painty/core/spline.h>
-#include <painty/renderer/brush_stroke_sample.h>
-#include <painty/renderer/canvas.h>
-#include <painty/renderer/smudge.h>
+#include "painty/core/spline.h"
+#include "painty/renderer/brush_stroke_sample.h"
+#include "painty/renderer/canvas.h"
+#include "painty/renderer/smudge.h"
 
 namespace painty {
 template <class vector_type>

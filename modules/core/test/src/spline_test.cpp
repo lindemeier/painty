@@ -9,7 +9,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <painty/core/spline.h>
+#include "painty/core/spline.h"
 
 TEST(SplineTest, BaseFunctions) {
   painty::vec<double, 2> v0 = {0.5, 0.2};

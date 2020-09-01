@@ -9,7 +9,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <painty/renderer/brush_stroke_sample.h>
+#include "painty/renderer/brush_stroke_sample.h"
 
 TEST(BrushStrokeSample, Construct) {
   const auto sample = painty::BrushStrokeSample("./data/sample_0");

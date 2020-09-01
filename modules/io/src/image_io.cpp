@@ -1,12 +1,12 @@
 #include "painty/io/image_io.h"
 
-#include <painty/core/color.h>
-
 #include <algorithm>
 #include <cstring>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <string>
+
+#include "painty/core/color.h"
 
 static std::string extractFiletype(const std::string& filename) {
   std::string res(filename);

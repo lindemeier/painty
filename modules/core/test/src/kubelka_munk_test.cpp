@@ -8,8 +8,9 @@
  *
  */
 
+#include "painty/core/kubelka_munk.h"
+
 #include <gtest/gtest.h>
-#include <painty/core/kubelka_munk.h>
 
 TEST(KubelkaMunk, Reflectance) {
   constexpr auto Eps = 0.00001;

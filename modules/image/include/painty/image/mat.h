@@ -9,12 +9,12 @@
  */
 #pragma once
 
-#include <painty/core/color.h>
-#include <painty/core/vec.h>
-
 #include <memory>
 #include <opencv2/imgproc.hpp>
 #include <vector>
+
+#include "painty/core/color.h"
+#include "painty/core/vec.h"
 
 namespace cv {  // opencv access data traits
 template <typename T, int32_t R, int32_t C>

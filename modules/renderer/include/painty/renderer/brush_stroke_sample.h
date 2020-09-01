@@ -9,11 +9,11 @@
  */
 #pragma once
 
-#include <painty/core/vec.h>
-#include <painty/image/mat.h>
-#include <painty/image/texture_warp.h>
-
 #include <vector>
+
+#include "painty/core/vec.h"
+#include "painty/image/mat.h"
+#include "painty/image/texture_warp.h"
 
 namespace painty {
 class BrushStrokeSample final {

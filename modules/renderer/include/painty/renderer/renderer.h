@@ -7,9 +7,9 @@
  */
 #pragma once
 
-#include <painty/image/mat.h>
-#include <painty/renderer/canvas.h>
-#include <painty/renderer/paint_layer.h>
+#include "painty/image/mat.h"
+#include "painty/renderer/canvas.h"
+#include "painty/renderer/paint_layer.h"
 
 namespace painty {
 template <class vector_type>

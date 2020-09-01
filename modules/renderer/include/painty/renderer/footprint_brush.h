@@ -9,12 +9,12 @@
  */
 #pragma once
 
-#include <painty/io/image_io.h>
-#include <painty/renderer/canvas.h>
-#include <painty/renderer/paint_layer.h>
-
 #include <iostream>
 #include <random>
+
+#include "painty/io/image_io.h"
+#include "painty/renderer/canvas.h"
+#include "painty/renderer/paint_layer.h"
 
 #define PRINT(x) std::cout << #x ":\t" << x << std::endl
 

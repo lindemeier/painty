@@ -9,12 +9,12 @@
  */
 #pragma once
 
-#include <painty/core/vec.h>
-
 #include <cmath>
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
+
+#include "painty/core/vec.h"
 
 namespace painty {
 

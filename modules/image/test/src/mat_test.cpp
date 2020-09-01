@@ -8,7 +8,7 @@
  *
  */
 #include <gtest/gtest.h>
-#include <painty/image/mat.h>
+#include "painty/image/mat.h"
 
 TEST(MatTest, Construct) {
   painty::Mat<double> m0;

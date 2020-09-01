@@ -9,7 +9,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <painty/core/math.h>
+#include "painty/core/math.h"
 
 TEST(MathTest, GeneralizedBarycentricCoordinatesInterpolate) {
   {

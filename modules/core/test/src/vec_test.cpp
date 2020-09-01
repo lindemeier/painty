@@ -9,7 +9,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <painty/core/vec.h>
+#include "painty/core/vec.h"
 
 TEST(VecTest, Construct) {
   painty::vec<double, 2> v = {0.0, 0.0};

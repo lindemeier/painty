@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include <painty/core/math.h>
-#include <painty/core/vec.h>
-
 #include <array>
 #include <cmath>
 #include <limits>
+
+#include "painty/core/math.h"
+#include "painty/core/vec.h"
 
 namespace painty {
 

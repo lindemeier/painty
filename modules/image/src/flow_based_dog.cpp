@@ -7,7 +7,7 @@
  */
 #include "painty/image/flow_based_dog.h"
 
-#include <painty/image/edge_tangent_flow.h>
+#include "painty/image/edge_tangent_flow.h"
 
 namespace painty {
 

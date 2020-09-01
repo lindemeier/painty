@@ -8,8 +8,8 @@
  */
 #pragma once
 
-#include <painty/core/math.h>
-#include <painty/image/mat.h>
+#include "painty/core/math.h"
+#include "painty/image/mat.h"
 
 #include <opencv2/ximgproc/edge_filter.hpp>
 

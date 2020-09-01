@@ -8,9 +8,9 @@
  *
  */
 #include <gtest/gtest.h>
-#include <painty/core/color.h>
-#include <painty/image/edge_tangent_flow.h>
-#include <painty/io/image_io.h>
+#include "painty/core/color.h"
+#include "painty/image/edge_tangent_flow.h"
+#include "painty/io/image_io.h"
 
 TEST(MatTest, EdgeTangentFlowTest) {
   painty::Mat3d image;

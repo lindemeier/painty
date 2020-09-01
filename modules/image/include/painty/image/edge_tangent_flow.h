@@ -8,8 +8,8 @@
  */
 #pragma once
 
-#include <painty/core/vec.h>
-#include <painty/image/mat.h>
+#include "painty/core/vec.h"
+#include "painty/image/mat.h"
 
 namespace painty {
 namespace tensor {

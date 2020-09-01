@@ -8,9 +8,9 @@
  *
  */
 #include <gtest/gtest.h>
-#include <painty/image/edge_tangent_flow.h>
-#include <painty/image/flow_based_dog.h>
-#include <painty/io/image_io.h>
+#include "painty/image/edge_tangent_flow.h"
+#include "painty/image/flow_based_dog.h"
+#include "painty/io/image_io.h"
 
 TEST(FDoGTest, FDoGTestFunc) {
   painty::Mat3d image;

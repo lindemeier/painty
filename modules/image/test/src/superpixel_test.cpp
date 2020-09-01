@@ -8,9 +8,9 @@
  *
  */
 #include <gtest/gtest.h>
-#include <painty/core/color.h>
-#include <painty/image/superpixel.h>
-#include <painty/io/image_io.h>
+#include "painty/core/color.h"
+#include "painty/image/superpixel.h"
+#include "painty/io/image_io.h"
 
 TEST(SuperPixelTest, SuperPixelExecuteTest) {
   painty::Mat3d image;

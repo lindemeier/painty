@@ -6,8 +6,9 @@
  *
  * @date 2020-05-01
  */
-#include <painty/core/math.h>
-#include <painty/image/texture_warp.h>
+#include "painty/image/texture_warp.h"
+
+#include "painty/core/math.h"
 
 painty::TextureWarp::TextureWarp() : _in(), _out() {}
 

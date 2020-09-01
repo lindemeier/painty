@@ -9,9 +9,9 @@
  */
 #pragma once
 
-#include <painty/core/vec.h>
-
 #include <vector>
+
+#include "painty/core/vec.h"
 
 namespace painty {
 class TextureWarp final {

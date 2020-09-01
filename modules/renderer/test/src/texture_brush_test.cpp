@@ -9,9 +9,9 @@
  */
 
 #include <gtest/gtest.h>
-#include <painty/io/image_io.h>
-#include <painty/renderer/renderer.h>
-#include <painty/renderer/texture_brush.h>
+#include "painty/io/image_io.h"
+#include "painty/renderer/renderer.h"
+#include "painty/renderer/texture_brush.h"
 
 TEST(TextureBrushTest, Construct) {
   auto brush = painty::TextureBrush<painty::vec3>(

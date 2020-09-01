@@ -9,7 +9,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <painty/renderer/canvas.h>
+#include "painty/renderer/canvas.h"
 
 TEST(CanvasTest, Construct) {
   auto layer = painty::Canvas<painty::vec3>(800, 600);

@@ -6,7 +6,7 @@
  *
  */
 #pragma once
-#include <painty/image/mat.h>
+#include "painty/image/mat.h"
 
 namespace painty {
 /**

@@ -9,10 +9,10 @@
  */
 #pragma once
 
-#include <painty/image/mat.h>
-
 #include <map>
 #include <vector>
+
+#include "painty/image/mat.h"
 
 namespace painty {
 class ImageRegion {
