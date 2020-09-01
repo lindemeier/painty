@@ -1,22 +1,37 @@
 # painty
-A paint renderer based on Kubelka Munk equations
 
-## Library
-- Image processing
-- NPR: Painterly rendering, image abstraction and stylization
-- paint rendering and realistic mixing
+Library containing several algorithms for:
+- Image processing.
+- Non photorealistic rendering: painterly rendering, image abstraction and stylization.
+- paint rendering and realistic mixing.
 - ... and more to come
 
 
-## Paint renderer
+## Paint Renderer
 
-- 2d imprint brush (3d in development)
-- 2d texture brush
+- Implementation of the Kubelka-Munk equations.
+- 2d imprint brush (3d on the roadmap).
+- 2d texture brush.
+- Realistic paint mixing.
 
+### Simple paint program
 ![Screenshot](doc/screenshot-gui.jpg)
+
+## Image Stylization and Non Photorealistic Rendering
+
+- Image convolution wrapper for OpenCV.
+- Flow fields of images.
+- Edge detectors.
+- Superpixel segmentation.
+
+### Implementation of the image abstraction filter proposed by Kyprianidis, et al.
+| Input image  | Filtered |
+| :---:  | :---:  |
+|![Screenshot](data/test_images/flower.jpg)|![Screenshot](data/test_images/flower_oabf.jpg)|
 
 
 ## References
+
 Implementation based on the following papers:
 
 - Bill Baxter, Vincent Scheib, Ming C. Lin, and Dinesh Manocha. 2001. **DAB: interactive haptic painting with 3D virtual brushes**. In Proceedings of the 28th annual conference on Computer graphics and interactive techniques (SIGGRAPH ’01). Association for Computing Machinery, New York, NY, USA, 461–468. DOI:https://doi.org/10.1145/383259.383313
