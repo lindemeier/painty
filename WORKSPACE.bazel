@@ -44,8 +44,8 @@ rules_foreign_cc_dependencies(register_default_tools=True)
 http_archive(
    name = "eigen",
    build_file_content = all_content,
-   strip_prefix = "eigen-3.3.7",
-   urls = ["https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz"],
+   strip_prefix = "eigen-3.3.7-patched",
+   urls = ["https://gitlab.com/thomas.lindemeier/eigen/-/archive/3.3.7-patched/eigen-3.3.7-patched.tar.gz"],
 )
 
 # OpenCV source release
