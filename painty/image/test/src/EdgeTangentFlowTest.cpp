@@ -33,25 +33,28 @@ TEST(MatTest, EdgeTangentFlowTest) {
 
   {
     const auto v0                  = etf(123, 98);
-    const painty::vec2 v0_expected = {-0.99992, -0.0126501};
+    const painty::vec2 v0_expected = {0.80594522703129268,
+                                      -0.59199011058080875};
     EXPECT_NEAR(v0[0], v0_expected[0], Eps);
     EXPECT_NEAR(v0[1], v0_expected[1], Eps);
   }
   {
     const auto v0                  = etf(651, 68);
-    const painty::vec2 v0_expected = {0.83832, -0.545178};
+    const painty::vec2 v0_expected = {0.68232404693122051,
+                                      -0.73104985806674061};
     EXPECT_NEAR(v0[0], v0_expected[0], Eps);
     EXPECT_NEAR(v0[1], v0_expected[1], Eps);
   }
   {
     const auto v0                  = etf(700, 2);
-    const painty::vec2 v0_expected = {0.915475, -0.402374};
+    const painty::vec2 v0_expected = {0.96539425013213997,
+                                      -0.26079482704187806};
     EXPECT_NEAR(v0[0], v0_expected[0], Eps);
     EXPECT_NEAR(v0[1], v0_expected[1], Eps);
   }
   {
     const auto v0                  = etf(800, 134);
-    const painty::vec2 v0_expected = {0.107728, 0.0384994};
+    const painty::vec2 v0_expected = {33.965732810242017, -23.807639308987106};
     EXPECT_NEAR(v0[0], v0_expected[0], Eps);
     EXPECT_NEAR(v0[1], v0_expected[1], Eps);
   }
