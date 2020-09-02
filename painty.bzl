@@ -21,14 +21,15 @@ def painty_cc_library(
     )
 
 
-def painty_cc_binary(name, srcs = None, hdrs = None, tags = None, **kwargs):
+def painty_cc_binary(name, srcs = None, hdrs = None, tags = None, visibility = None, **kwargs):
 
     native.cc_binary(name = name,
         srcs = srcs,
         hdrs = hdrs,
         tags = tags,
+        copts = painty_copts,
+        visibility = visibility,
         **kwargs,
-        copts = painty_copts
     )
 
 
@@ -36,7 +37,7 @@ def painty_cc_binary(name, srcs = None, hdrs = None, tags = None, **kwargs):
 def painty_cc_test(name, srcs = None, hdrs = None, tags = None, **kwargs):
 
     native.cc_test(
-            name = name,
+        name = name,
         srcs = srcs,
         hdrs = hdrs,
         tags = tags,
