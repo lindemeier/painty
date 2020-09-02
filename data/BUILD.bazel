@@ -9,11 +9,12 @@ filegroup(
 filegroup(
     name = "exported_texture_sample_0",
     srcs = glob([
-        "sample_0",
+        "sample_0/*.png",
         "sample_0/*.txt",
     ]),
     visibility = ["//visibility:public"]
 )
+
 
 filegroup(
     name = "exported_footprint",

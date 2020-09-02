@@ -17,5 +17,5 @@ TEST(BrushStrokeSample, Construct) {
   EXPECT_EQ(800U, sample.getThicknessMap().cols);
   EXPECT_EQ(171U, sample.getThicknessMap().rows);
 
-  EXPECT_NEAR(0.58, sample.getSampleAt({341, 101}), 0.01);
+  EXPECT_NEAR(0.2900139589503905, sample.getSampleAt({341, 101}), 0.01);
 }
