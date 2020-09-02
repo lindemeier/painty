@@ -30,6 +30,6 @@ jobs:
 
     - name: Test
       run: |
-        "${GITHUB_WORKSPACE}/bin/bazel" test //painty/...
+        "${GITHUB_WORKSPACE}/bin/bazel" test --test_output=errors //painty/...
 
     
