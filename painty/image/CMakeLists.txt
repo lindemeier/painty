@@ -20,7 +20,6 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC paintyCore
   opencv_core
   opencv_imgproc
-  opencv_ximgproc
 )
 
 add_dependencies(${PROJECT_NAME}
