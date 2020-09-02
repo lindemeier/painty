@@ -16,13 +16,13 @@ find_package(Qt5Widgets)
 
 #
 add_executable(${PROJECT_NAME}
-    src/digital_paint.cpp
-    src/digital_canvas.h
-    src/digital_canvas.cpp
-    src/digital_paint_main_window.h
-    src/digital_paint_main_window.cpp
-    src/KM_visualize_widget.h
-    src/KM_visualize_widget.cpp
+    src/DigitalPaint.cpp
+    src/DigitalCanvas.h
+    src/DigitalCanvas.cpp
+    src/DigitalPaintMainWindow.h
+    src/DigitalPaintMainWindow.cpp
+    src/KMVisualizeWidget.h
+    src/KMVisualizeWidget.cpp
     )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)

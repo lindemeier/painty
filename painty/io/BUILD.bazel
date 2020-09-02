@@ -1,20 +1,22 @@
-cc_library(
-    name = "io",
+load("//:painty.bzl", "painty_cc_library", "painty_cc_test")
+
+painty_cc_library(
+    name = "painty_io",
     srcs = glob(["src/*.cpp"]),
     hdrs = glob(["*.h"]),
     visibility = ["//visibility:public"],
     deps = [
         "//3rdParty:opencv",
-        "//painty/core:core",
-        "//painty/image:image",
+        "//painty/core:painty_core",
+        "//painty/image:painty_image",
     ],
 )
 
-cc_test(
+painty_cc_test(
     name = "test",
     srcs = glob(["test/src/*.cpp"]),
     deps = [
-        ":io",
+        ":painty_io",
         "@gtest",
     ],
 )

@@ -4,7 +4,7 @@ project(paintyRenderer)
 
 
 add_library(${PROJECT_NAME} STATIC
-  ${PROJECT_SOURCE_DIR}/src/brush_stroke_sample.cpp
+  ${PROJECT_SOURCE_DIR}/src/BrushStrokeSample.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

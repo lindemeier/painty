@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10.2)
 project(paintyIo)
 
 add_library(${PROJECT_NAME} STATIC
-  ${PROJECT_SOURCE_DIR}/src/image_io.cpp
+  ${PROJECT_SOURCE_DIR}/src/ImageIO.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

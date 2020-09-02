@@ -1,22 +1,24 @@
-cc_library(
-    name = "renderer",
+load("//:painty.bzl", "painty_cc_library", "painty_cc_test")
+
+painty_cc_library(
+    name = "painty_renderer",
     srcs = glob(["src/*.cpp"]),
     hdrs = glob(["*.h"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//painty/core:core",
-        "//painty/image:image",
-        "//painty/io:io"
+        "//painty/core:painty_core",
+        "//painty/image:painty_image",
+        "//painty/io:painty_io"
     ],
 )
 
-cc_test(
+painty_cc_test(
     name = "test",
     srcs = glob(["test/src/*.cpp"]),
     deps = [
-        ":renderer",
+        ":painty_renderer",
         "@gtest",
-        "//painty/io:io",
+        "//painty/io:painty_io",
     ],
     data = ["//data:exported_texture_sample_0", "//data:exported_footprint"]
 )

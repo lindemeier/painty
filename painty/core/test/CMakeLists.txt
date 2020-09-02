@@ -4,10 +4,10 @@ project(paintyCoreTest)
 
 add_executable(${PROJECT_NAME}
     ${PROJECT_SOURCE_DIR}/src/main.cpp
-    ${PROJECT_SOURCE_DIR}/src/math_test.cpp
-    ${PROJECT_SOURCE_DIR}/src/kubelka_munk_test.cpp
-    ${PROJECT_SOURCE_DIR}/src/spline_test.cpp
-    ${PROJECT_SOURCE_DIR}/src/vec_test.cpp
+    ${PROJECT_SOURCE_DIR}/src/MathTest.cpp
+    ${PROJECT_SOURCE_DIR}/src/KubelkaMunkTest.cpp
+    ${PROJECT_SOURCE_DIR}/src/SplineTest.cpp
+    ${PROJECT_SOURCE_DIR}/src/VecTest.cpp
   )
 
 target_link_libraries(${PROJECT_NAME}
