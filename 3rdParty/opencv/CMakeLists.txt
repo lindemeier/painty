@@ -4,14 +4,14 @@ project(opencv LANGUAGES CXX)
 
 include(FetchContent)
 
-FetchContent_Declare(
-  opencv_contrib
-  GIT_REPOSITORY https://github.com/opencv/opencv_contrib.git
-  GIT_TAG 4.4.0
-)
-FetchContent_MakeAvailable(opencv_contrib)
+# FetchContent_Declare(
+#   opencv_contrib
+#   GIT_REPOSITORY https://github.com/opencv/opencv_contrib.git
+#   GIT_TAG 4.4.0
+# )
+# FetchContent_MakeAvailable(opencv_contrib)
 
-set(OPENCV_EXTRA_MODULES_PATH ${opencv_contrib_SOURCE_DIR}/modules)
+# set(OPENCV_EXTRA_MODULES_PATH ${opencv_contrib_SOURCE_DIR}/modules)
 set(BUILD_TESTS OFF)
 set(BUILD_JAVA OFF)
 set(BUILD_SHARED_LIBS ON)
@@ -154,7 +154,7 @@ set(BUILD_opencv_saliency OFF)
 set(BUILD_opencv_sfm OFF)
 
 # Include opencv_shape module into the OpenCV build
-set(BUILD_opencv_shape ON)
+set(BUILD_opencv_shape OFF)
 
 # Include opencv_stereo module into the OpenCV build
 set(BUILD_opencv_stereo OFF)
@@ -199,7 +199,7 @@ set(BUILD_opencv_world OFF)
 set(BUILD_opencv_xfeatures2d OFF)
 
 # Include opencv_ximgproc module into the OpenCV build
-set(BUILD_opencv_ximgproc ON)
+set(BUILD_opencv_ximgproc OFF)
 
 # Include opencv_xobjdetect module into the OpenCV build
 set(BUILD_opencv_xobjdetect OFF)
@@ -255,9 +255,9 @@ add_opencv_module(flann opencv_INCLUDE_DIRS)
 add_opencv_module(highgui opencv_INCLUDE_DIRS)
 add_opencv_module(imgcodecs opencv_INCLUDE_DIRS)
 add_opencv_module(imgproc opencv_INCLUDE_DIRS)
-add_opencv_module(shape opencv_INCLUDE_DIRS)
+# add_opencv_module(shape opencv_INCLUDE_DIRS)
 add_opencv_module(video opencv_INCLUDE_DIRS)
 add_opencv_module(videoio opencv_INCLUDE_DIRS)
-add_opencv_contrib_module(ximgproc opencv_INCLUDE_DIRS)
+# add_opencv_contrib_module(ximgproc opencv_INCLUDE_DIRS)
 
 SET(opencv_INCLUDE_DIRS  "${opencv_INCLUDE_DIRS}" CACHE INTERNAL "opencv_INCLUDE_DIRS")
