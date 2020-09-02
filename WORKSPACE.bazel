@@ -45,7 +45,9 @@ http_archive(
    name = "eigen",
    build_file_content = all_content,
    strip_prefix = "eigen-3.3.7-patched",
-   urls = ["https://gitlab.com/thomas.lindemeier/eigen/-/archive/3.3.7-patched/eigen-3.3.7-patched.tar.gz"],
+   # urls = ["https://gitlab.com/thomas.lindemeier/eigen/-/archive/3.3.7-patched/eigen-3.3.7-patched.tar.gz"],
+   # usually the urls above should be used. However, bazel is not able to download from gitlab and I therefore use an url to a copy of the archive for now.
+   urls =["https://gist.github.com/lindemeier/e1c3506ea6b0e20a6b08d1ac142c8380/raw/ca1779dbb9964a5df4f950bfebd5833ad7f79528/eigen-3.3.7-patched.tar.gz"]
 )
 
 # OpenCV source release
