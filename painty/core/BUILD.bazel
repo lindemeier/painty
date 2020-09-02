@@ -1,4 +1,6 @@
-cc_library(
+load("//:painty.bzl", "painty_cc_library", "painty_cc_test")
+
+painty_cc_library(
     name = "core",
     srcs = glob(["src/*.cpp"]),
     hdrs = glob(["*.h"]),
@@ -6,7 +8,7 @@ cc_library(
     visibility = ["//visibility:public"]
 )
 
-cc_test(
+painty_cc_test(
     name = "test",
     srcs = glob(["test/src/*.cpp"]),
     deps = [
