@@ -15,7 +15,7 @@
 
 TEST(TextureBrushTest, Construct) {
   auto brush = painty::TextureBrush<painty::vec3>(
-    "/home/tsl/development/painty/data/sample_0");
+    "data/sample_0");
 
   brush.dip({{{0.2, 0.3, 0.4}, {0.1, 0.23, 0.14}}});
 
