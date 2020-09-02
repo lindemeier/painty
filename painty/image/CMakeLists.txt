@@ -3,11 +3,11 @@ cmake_minimum_required(VERSION 3.10.2)
 project(paintyImage)
 
 add_library(${PROJECT_NAME} STATIC
-  ${PROJECT_SOURCE_DIR}/src/convolution.cpp
-  ${PROJECT_SOURCE_DIR}/src/flow_based_dog.cpp
-  ${PROJECT_SOURCE_DIR}/src/texture_warp.cpp
-  ${PROJECT_SOURCE_DIR}/src/edge_tangent_flow.cpp
-  ${PROJECT_SOURCE_DIR}/src/superpixel.cpp
+  ${PROJECT_SOURCE_DIR}/src/Convolution.cpp
+  ${PROJECT_SOURCE_DIR}/src/FlowBasedDoG.cpp
+  ${PROJECT_SOURCE_DIR}/src/TextureWarp.cpp
+  ${PROJECT_SOURCE_DIR}/src/EdgeTangentFlow.cpp
+  ${PROJECT_SOURCE_DIR}/src/Superpixel.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
