@@ -1,4 +1,5 @@
-# painty
+# painty ![Bazel build and test](https://github.com/lindemeier/painty/workflows/Bazel/badge.svg)
+
 
 Library containing several algorithms for:
 - Image processing.
