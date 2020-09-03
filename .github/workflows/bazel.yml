@@ -1,6 +1,6 @@
 # This is a basic workflow that is manually triggered
 
-name: Bazel workflow
+name: Bazel
 
 on: [push, pull_request]
 
