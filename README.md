@@ -1,4 +1,4 @@
-# painty ![Bazel build and test](https://github.com/lindemeier/painty/workflows/Bazel/badge.svg)
+# painty ![Bazel build and test](https://github.com/lindemeier/painty/workflows/Bazel/badge.svg) ![clang-format](https://github.com/lindemeier/painty/workflows/clang-format/badge.svg)
 
 
 Library containing several algorithms for:
