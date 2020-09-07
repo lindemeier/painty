@@ -2,12 +2,12 @@
 
 name: Bazel
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v1
 
@@ -23,13 +23,11 @@ jobs:
         mkdir -p "${GITHUB_WORKSPACE}/bin/"
         mv bazelisk-linux-amd64 "${GITHUB_WORKSPACE}/bin/bazel"
         chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
-        
+
     - name: Build
       run: |
-        "${GITHUB_WORKSPACE}/bin/bazel" build //painty/...    
+        "${GITHUB_WORKSPACE}/bin/bazel" build //painty/...
 
     - name: Test
       run: |
         "${GITHUB_WORKSPACE}/bin/bazel" test --test_output=errors //painty/...
-
-    
