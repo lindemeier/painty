@@ -17,7 +17,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - name: Install clang
+      run: |
+        sudo apt install clang-10
+
+    - name: Checkout
+      uses: actions/checkout@v1
 
     - name: Mount bazel cache
       uses: actions/cache@v1
@@ -39,3 +44,7 @@ jobs:
     - name: Test
       run: |
         "${GITHUB_WORKSPACE}/bin/bazel" test --test_output=errors //painty/...
+
+    # - name: Lint
+    #   run: |
+    #    ./tools/lint-clang-tidy.sh
