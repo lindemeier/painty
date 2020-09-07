@@ -1,6 +1,6 @@
 # This is a basic workflow that is manually triggered
 
-name: Bazel
+name: bazel-tests
 
 on:
   # Trigger the workflow on push or pull request,
