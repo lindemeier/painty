@@ -7,6 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: clang-tidy check
-        uses: lindemeier/clang-tidy-action@master
+        uses: lindemeier/cpp-linter-action@master
     env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
