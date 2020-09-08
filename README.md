@@ -5,7 +5,7 @@ Library containing several algorithms for:
 - Non photorealistic rendering: painterly rendering, image abstraction and stylization.
 - Paint rendering and realistic mixing.
 - Color conversions.
-- ... and more to come
+- ... and more to come.
 
 
 ## Paint Renderer
