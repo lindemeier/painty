@@ -92,7 +92,7 @@ template <
 void ComputeScatteringAndAbsorption(const vec<Float, N>& Rb,
                                     const vec<Float, N>& Rw, vec<Float, N>& K,
                                     vec<Float, N>& S) {
-  for (size_t i = 0; i < N; i++) {
+  for (int32_t i = 0; i < N; i++) {
     if (!(Rb[i] < Rw[i] && Rb[i] > 0 && Rb[i] < 1.0 && Rw[i] > 0 &&
           Rw[i] < 1.0)) {
       throw std::invalid_argument(

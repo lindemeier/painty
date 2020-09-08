@@ -552,7 +552,7 @@ double SuperpixelSegmentation::computeStats(
     superPixel._maxSpatialDist = superPixel._maxSpatialDistT;
   }
 
-  return error / superPixels.size();
+  return error / static_cast<double>(superPixels.size());
 }
 
 double SuperpixelSegmentation::distance(

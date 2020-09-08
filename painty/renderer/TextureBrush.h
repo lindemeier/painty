@@ -35,7 +35,7 @@ class TextureBrush final {
   void setRadius(const double radius) {
     _radius = radius;
 
-    _smudge = Smudge<vector_type>(static_cast<uint32_t>(2.0 * radius));
+    _smudge = Smudge<vector_type>(static_cast<int32_t>(2.0 * radius));
   }
 
   /**

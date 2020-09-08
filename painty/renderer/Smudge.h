@@ -60,7 +60,8 @@ class Smudge final {
       vec2 center;
       center[0] = rasteredPoints[i][0] + 0.5;
       center[1] = rasteredPoints[i][1] + 0.5;
-      auto u    = static_cast<double>(i) / (rasteredPoints.size() - 1);
+      auto u    = static_cast<double>(i) /
+               static_cast<double>(rasteredPoints.size() - 1U);
       // spine tangent vector
       vec2 t = spineSpline.linearDerivative(u).normalized();
       updateOrientation(t);

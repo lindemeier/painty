@@ -28,7 +28,7 @@ class Canvas final {
         _backgroundColor(),
         _R0_buffer(rows, cols),
         _h_buffer(rows, cols),
-        _timeMap(rows * cols),
+        _timeMap(static_cast<size_t>(rows * cols)),
         _dryingTime(static_cast<uint32_t>(0.25 * 60 * 1000000)) {
     _backgroundColor.fill(static_cast<T>(1.0));
     clear();
@@ -42,7 +42,8 @@ class Canvas final {
     _R0_buffer      = Mat<vector_type>(rows, cols);
     _h_buffer       = Mat<T>(rows, cols);
 
-    _timeMap = std::vector<std::chrono::system_clock::time_point>(rows * cols);
+    _timeMap = std::vector<std::chrono::system_clock::time_point>(
+      static_cast<size_t>(rows * cols));
     auto now = std::chrono::system_clock::now();
     for (auto& t : _timeMap) {
       t = now;
@@ -114,7 +115,7 @@ class Canvas final {
         _paintLayer.getK_buffer()(y, x).fill(0.0);
         _paintLayer.getS_buffer()(y, x).fill(0.0);
 
-        _timeMap[y * _h_buffer.cols + x] = timePoint;
+        _timeMap[static_cast<size_t>(y * _h_buffer.cols + x)] = timePoint;
       }
     }
   }
@@ -122,9 +123,9 @@ class Canvas final {
   void checkDry(int32_t x, int32_t y,
                 const std::chrono::system_clock::time_point& timePoint) {
     T v = _paintLayer.getV_buffer()(y, x);
-    if ((_dryingTime.count() > 0.0) && (v > 0.001)) {
+    if ((_dryingTime.count() > 0U) && (v > 0.001)) {
       auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(
-        timePoint - _timeMap[y * _h_buffer.cols + x]);
+        timePoint - _timeMap[static_cast<size_t>(y * _h_buffer.cols + x)]);
 
       if (dur >= _dryingTime) {
         _h_buffer(y, x) += v;
@@ -135,7 +136,7 @@ class Canvas final {
         _paintLayer.getK_buffer()(y, x).fill(0.0);
         _paintLayer.getS_buffer()(y, x).fill(0.0);
       } else {
-        const T rate = dur.count() / static_cast<T>(_dryingTime.count());
+        const T rate = static_cast<T>(dur.count() / _dryingTime.count());
 
         if (rate > 0.01) {
           // only dry a portion
@@ -150,7 +151,7 @@ class Canvas final {
         }
       }
     }
-    _timeMap[y * _h_buffer.cols + x] = timePoint;
+    _timeMap[static_cast<size_t>(y * _h_buffer.cols + x)] = timePoint;
   }
 
   std::chrono::milliseconds getDryingTime() {

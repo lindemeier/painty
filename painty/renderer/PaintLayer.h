@@ -119,7 +119,7 @@ class PaintLayer final {
    * @param s Absorption
    * @param v Volume
    */
-  void set(uint32_t i, uint32_t j, const vector_type& k, const vector_type& s,
+  void set(int32_t i, int32_t j, const vector_type& k, const vector_type& s,
            const T v) {
     _K_buffer(i, j) = k;
     _S_buffer(i, j) = s;

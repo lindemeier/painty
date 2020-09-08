@@ -164,7 +164,7 @@ class SplineEval {
   void getControl(const value u, int32_t& index, value& t) const {
     auto n = std::distance(_begin, _end);
 
-    const value x = (n - 1) * u;
+    const value x = static_cast<value>(n - 1U) * u;
     index         = static_cast<int32_t>(x);
     t             = x - std::floor(x);
   }
