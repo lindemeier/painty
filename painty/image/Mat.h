@@ -113,9 +113,8 @@ T Interpolate(const Mat<T>& input, const vec2& position,
   * @return Mat<T>
   */
 template <class T>
-Mat<T> PaddedMat(const Mat<T>& input, const uint32_t left, const uint32_t right,
-                 const uint32_t up, const uint32_t down,
-                 const T& paddingValue) {
+Mat<T> PaddedMat(const Mat<T>& input, const int32_t left, const int32_t right,
+                 const int32_t up, const int32_t down, const T& paddingValue) {
   Mat<T> s(input.rows + up + down, input.cols + left + right);
   // initialize all to default value
   for (auto& v : s) {
@@ -139,7 +138,7 @@ Mat<T> PaddedMat(const Mat<T>& input, const uint32_t left, const uint32_t right,
  * @return Mat<T>
  */
 template <class T>
-Mat<T> ScaledMat(const Mat<T>& input, const uint32_t rows, const uint32_t cols,
+Mat<T> ScaledMat(const Mat<T>& input, const int32_t rows, const int32_t cols,
                  cv::InterpolationFlags flag = cv::INTER_LANCZOS4) {
   Mat<T> resized;
   cv::resize(input, resized,

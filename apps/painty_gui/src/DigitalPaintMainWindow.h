@@ -13,7 +13,7 @@ class DigitalPaintMainWindow : public QMainWindow {
   Q_OBJECT
 
  public:
-  explicit DigitalPaintMainWindow(QWidget* parent = 0);
+  explicit DigitalPaintMainWindow(QWidget* parent = nullptr);
   ~DigitalPaintMainWindow();
 
   Ui::DigitalPaintMainWindow* ui;

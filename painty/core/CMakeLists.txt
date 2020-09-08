@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.10.2)
 
 project(paintyCore)
 
+# eigen
+find_package (Eigen3 REQUIRED NO_MODULE)
+
 add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME}
   INTERFACE ${PROJECT_SOURCE_DIR}/Color.h
@@ -18,7 +21,7 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME} INTERFACE
-  eigen
+  Eigen3::Eigen
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")

@@ -67,8 +67,7 @@ TEST(MatTest, Resize) {
     EXPECT_NEAR(testColor, p, 0.0001);
   }
 
-  const auto bigger = painty::ScaledMat(m0, 2U * static_cast<uint32_t>(m0.rows),
-                                        3U * static_cast<uint32_t>(m0.cols));
+  const auto bigger = painty::ScaledMat(m0, 2 * m0.rows, 3 * m0.cols);
   for (const auto& p : bigger) {
     EXPECT_NEAR(testColor, p, 0.0001);
   }

@@ -106,16 +106,16 @@ void DigitalCanvas::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
 
   if (_useFootprintBrush && _mousePressed && (_brushStrokePath.size() >= 2)) {
     // interpolate positions between last and this point
-    const auto p0   = _brushStrokePath[std::max(
-      0, static_cast<int32_t>(_brushStrokePath.size()) - 3)];
-    const auto p1   = _brushStrokePath[std::max(
-      0, static_cast<int32_t>(_brushStrokePath.size()) - 2)];
-    const auto p2   = _brushStrokePath[std::max(
-      0, static_cast<int32_t>(_brushStrokePath.size()) - 1)];
+    const auto p0   = _brushStrokePath[static_cast<size_t>(
+      std::max(0, static_cast<int32_t>(_brushStrokePath.size()) - 3))];
+    const auto p1   = _brushStrokePath[static_cast<size_t>(
+      std::max(0, static_cast<int32_t>(_brushStrokePath.size()) - 2))];
+    const auto p2   = _brushStrokePath[static_cast<size_t>(
+      std::max(0, static_cast<int32_t>(_brushStrokePath.size()) - 1))];
     const auto dist = (p2 - p1).norm();  // distance in pixel
     // don't imprint at previous point
-    for (uint32_t p = 1U; p <= static_cast<uint32_t>(dist); p++) {
-      const double t = static_cast<double>(p) / dist;
+    for (int32_t pd = 1; pd <= static_cast<int32_t>(dist); pd++) {
+      const double t = static_cast<double>(pd) / dist;
 
       const auto point = painty::CatmullRom(p0, p1, p2, p2, t);
       _brushFootprintPtr->imprint(point, 0.0, *_canvasPtr);

@@ -16,9 +16,6 @@ if(RUN_TESTS)
     enable_testing()
 endif()
 
-# 3rdParty
-add_subdirectory(3rdParty/eigen)
-
 # modules
 add_subdirectory(painty/core)
 add_subdirectory(painty/image)

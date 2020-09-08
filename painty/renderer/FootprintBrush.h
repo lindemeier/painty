@@ -46,8 +46,8 @@ class FootprintBrush final {
    */
   void setRadius(const double radius) {
     _radius          = radius;
-    const auto width = static_cast<uint32_t>(2.0 * std::ceil(radius) + 1.0);
-    _sizeMap         = static_cast<uint32_t>(std::ceil(std::sqrt(2.0) * width));
+    const auto width = static_cast<int32_t>(2.0 * std::ceil(radius) + 1.0);
+    _sizeMap         = static_cast<int32_t>(std::ceil(std::sqrt(2.0) * width));
 
     // resize the footprint to the radius and pad to cover all rotations.
     const auto pad = (_sizeMap - width) / 2;
