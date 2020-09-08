@@ -33,10 +33,10 @@ inline T gaussSigmaFromKernelRadius(const int32_t radius) {
   return gaussSigmaFromKernelSize<T>(radius * 2 + 1);
 }
 
-Mat1d createGauss1stDerivativeKernel(const double sigma, const double theta,
+Mat1d createGauss1stDerivativeKernel(double sigma, double theta,
                                      bool normalized = true);
 
-Mat1d createGauss2ndDerivativeKernel(const double sigma, const double theta,
+Mat1d createGauss2ndDerivativeKernel(double sigma, double theta,
                                      bool normalized = true);
 /**
  *  article{DBLP:journals/saj/GwetuTV14,
@@ -97,7 +97,8 @@ Mat<T> convolve2d(const Mat<T>& source, const Mat1d& kernel) {
 template <class T>
 Mat<T> differencesOfGaussians(const Mat<T>& input, const double sigma,
                               const double tau = 0.99) {
-  Mat<T> d0, d1;
+  Mat<T> d0;
+  Mat<T> d1;
   cv::GaussianBlur(input, d0, cv::Size(-1, -1), sigma);
   cv::GaussianBlur(input, d1, cv::Size(-1, -1), 1.6 * sigma);
 

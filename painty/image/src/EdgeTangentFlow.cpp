@@ -66,13 +66,14 @@ Mat3d ComputeTensors(const Mat3d& image, const Mat1d& mask, double innerSigma,
                      double outerSigma) {
   // compute derivation according to "Image and Video Abstraction by Coherence-Enhancing Filtering"
   // http://onlinelibrary.wiley.com/doi/10.1111/j.1467-8659.2011.01882[0]/full
-  Mat3d dxTemp(image.size()), dyTemp(image.size());
+  Mat3d dxTemp(image.size());
+  Mat3d dyTemp(image.size());
   cv::Sobel(image, dxTemp, dxTemp.depth(), 1, 0, 3);
   cv::Sobel(image, dyTemp, dyTemp.depth(), 0, 1, 3);
 
   // inner blur
   if (innerSigma > 0) {
-    if (mask.data) {
+    if (!mask.empty()) {
       cv::Mat_<double> maskB(mask.size());
       for (int32_t i = 0; i < (dxTemp.cols * dxTemp.rows); i++) {
         maskB(i) = mask(i) > 0 ? 1. : 0.;
@@ -105,7 +106,9 @@ Mat3d ComputeTensors(const Mat3d& image, const Mat1d& mask, double innerSigma,
   }
 
   // second order tensors
-  cv::Mat_<double> dx2(dxTemp.size()), dy2(dxTemp.size()), dxy(dxTemp.size());
+  cv::Mat_<double> dx2(dxTemp.size());
+  cv::Mat_<double> dy2(dxTemp.size());
+  cv::Mat_<double> dxy(dxTemp.size());
   for (int32_t i = 0; i < dxTemp.cols * dxTemp.rows; i++) {
     vec3 g0 = dxTemp(i);
     vec3 g1 = dyTemp(i);
@@ -118,7 +121,7 @@ Mat3d ComputeTensors(const Mat3d& image, const Mat1d& mask, double innerSigma,
   // outer blur
   if (outerSigma > 0) {
     const int32_t k_size = -1;
-    if (mask.data) {
+    if (!mask.empty()) {
       Mat<double> maskB(mask.size());
       for (int32_t i = 0; i < dxTemp.cols * dxTemp.rows; i++) {
         maskB(i) = mask(i) > 0 ? 1. : 0.;
@@ -262,15 +265,17 @@ Mat1d lineIntegralConv(const Mat2d& etf, const double sigmaL) {
       for (int32_t i = 0; i < l / 2; i++) {
         vec2 v1 = Interpolate(etf, xy_, cv::BORDER_REFLECT);
 
-        if (v1.dot(v0) < 0.0)
+        if (v1.dot(v0) < 0.0) {
           v1 *= (-1.0);
+        }
 
         xy_[0] += v1[0] * step;
         xy_[1] += v1[1] * step;
 
         if (std::isnan(xy_[0]) || std::isnan(xy_[1]) || xy_[0] < 0.0 ||
-            xy_[0] >= w || xy_[1] < 0.0 || xy_[1] >= h)
+            xy_[0] >= w || xy_[1] < 0.0 || xy_[1] >= h) {
           break;
+        }
 
         v0 = v1;
 
@@ -285,15 +290,17 @@ Mat1d lineIntegralConv(const Mat2d& etf, const double sigmaL) {
       for (int32_t i = 0; i < l / 2; i++) {
         vec2 v1 = -1.0 * Interpolate(etf, xy_, cv::BORDER_REFLECT);
 
-        if (v1.dot(v0) < 0.0)
+        if (v1.dot(v0) < 0.0) {
           v1 *= (-1.0);
+        }
 
         xy_[0] += v1[0] * step;
         xy_[1] += v1[1] * step;
 
         if (std::isnan(xy_[0]) || std::isnan(xy_[1]) || xy_[0] < 0.0 ||
-            xy_[0] >= w || xy_[1] < 0.0 || xy_[1] >= h)
+            xy_[0] >= w || xy_[1] < 0.0 || xy_[1] >= h) {
           break;
+        }
 
         v0 = v1;
 

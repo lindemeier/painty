@@ -153,8 +153,9 @@ static void smoothAlongFlow(const Mat1d& img, Mat1d& dst, const Mat2d& tfm,
 
   const auto step = [sign, &tfm](lic_t& s) {
     auto t = Interpolate(tfm, {s.p[0U], s.p[1U]});
-    if (t.dot(s.t) < 0.0)
+    if (t.dot(s.t) < 0.0) {
       t *= -1.0;
+    }
     s.t[0U] = t[0U];
     s.t[1U] = t[1U];
 
@@ -180,7 +181,8 @@ static void smoothAlongFlow(const Mat1d& img, Mat1d& dst, const Mat2d& tfm,
       double wg     = 1.0;
       double H      = img(y, x);
 
-      lic_t a, b;
+      lic_t a;
+      lic_t b;
       a.p[0U] = b.p[0U] = uv[0U];
       a.p[1U] = b.p[1U] = uv[1U];
       a.t               = tfm(y, x);
@@ -292,7 +294,7 @@ Mat1d FlowBasedDoG::filterFlowBasedDoG(const Mat1d& img, const Mat2d& tfm,
   return outSmooth;
 }
 
-Mat3d FlowBasedDoG::overlay(const Mat1d& edges, const Mat3d& image) const {
+Mat3d FlowBasedDoG::overlay(const Mat1d& edges, const Mat3d& image) {
   const auto w = edges.cols;
   const auto h = edges.rows;
 

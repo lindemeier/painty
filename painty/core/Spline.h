@@ -49,7 +49,10 @@ inline T Cubic(const T& p_1, const T& p0, const T& p1, const T& p2,
   using Float = typename DataType<T>::channel_type;
 
   Float t2;
-  T a0, a1, a2, a3;
+  T a0;
+  T a1;
+  T a2;
+  T a3;
 
   t2 = t * t;
   a0 = p2 - p1 - p_1 + p0;
@@ -104,21 +107,21 @@ class SplineEval {
   SplineEval(ContainerIt begin, ContainerIt end) : _begin(begin), _end(end) {}
 
   value_type linear(value u) {
-    int32_t index;
+    int32_t index = 0;
     value t;
     getControl(u, index, t);
     return Linear(getIndexClamped(index), getIndexClamped(index + 1), t);
   }
 
   value_type linearDerivative(value u) {
-    int32_t index;
+    int32_t index = 0;
     value t;
     getControl(u, index, t);
     return LinearDerivative(getIndexClamped(index), getIndexClamped(index + 1));
   }
 
   value_type cubic(value u) {
-    int32_t index;
+    int32_t index = 0;
     value t;
     getControl(u, index, t);
     return Cubic(getIndexClamped(index - 1), getIndexClamped(index),
@@ -126,22 +129,21 @@ class SplineEval {
   }
 
   value_type cubicDerivative(value u, int32_t order) {
-    int32_t index;
+    int32_t index = 0;
     value t;
     getControl(u, index, t);
     if (order == 2) {
       return CubicDerivativeSecond(
         getIndexClamped(index - 1), getIndexClamped(index),
         getIndexClamped(index + 1), getIndexClamped(index + 2), t);
-    } else {
-      return CubicDerivativeFirst(
-        getIndexClamped(index - 1), getIndexClamped(index),
-        getIndexClamped(index + 1), getIndexClamped(index + 2), t);
     }
+    return CubicDerivativeFirst(
+      getIndexClamped(index - 1), getIndexClamped(index),
+      getIndexClamped(index + 1), getIndexClamped(index + 2), t);
   }
 
   value cubicCurvature(value u) {
-    int32_t index;
+    int32_t index = 0;
     value t;
     getControl(u, index, t);
     return CubicCurvature(getIndexClamped(index - 1), getIndexClamped(index),
@@ -150,7 +152,7 @@ class SplineEval {
   }
 
   value_type catmullRom(value u) {
-    int32_t index;
+    int32_t index = 0;
     value t;
     getControl(u, index, t);
     return CatmullRom(getIndexClamped(index - 1), getIndexClamped(index),

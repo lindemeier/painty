@@ -138,12 +138,12 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir) {
   // create texture warper from spine
   {
     std::vector<vec2> uv;
-    for (auto p : _puv_l) {
+    for (const auto& p : _puv_l) {
       uv.push_back(p);
     }
     uv.insert(uv.end(), _puv_r.rbegin(), _puv_r.rend());
     std::vector<vec2> t;
-    for (auto p : _txy_l) {
+    for (const auto& p : _txy_l) {
       t.push_back(p);
     }
     t.insert(t.end(), _txy_r.rbegin(), _txy_r.rend());

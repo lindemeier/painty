@@ -16,8 +16,6 @@
 #include "painty/renderer/Canvas.h"
 #include "painty/renderer/PaintLayer.h"
 
-#define PRINT(x) std::cout << #x ":\t" << x << std::endl
-
 namespace painty {
 template <class vector_type>
 class FootprintBrush final {
@@ -210,7 +208,7 @@ class FootprintBrush final {
    * @param exceptCenter the center point of the brush. Anchor point.
    */
   void updateSnapshot(const Canvas<vector_type>& canvas,
-                      const vec2 exceptCenter) {
+                      const vec2& exceptCenter) {
     // check if snapshot buffer has the correct size
     if ((canvas.getPaintLayer().getCols() != _snapshotBuffer.getCols()) ||
         (canvas.getPaintLayer().getRows() != _snapshotBuffer.getRows())) {
@@ -369,13 +367,13 @@ class FootprintBrush final {
    * @brief Radius of the brush.
    *
    */
-  double _radius;
+  double _radius = 0.0;
 
   /**
    * @brief Size of footprint and pickup map based on radius. Wide enough to cover all rotations of the footprint.
    *
    */
-  int32_t _sizeMap;
+  int32_t _sizeMap = 0;
 
   /**
    * @brief Height map resulting from a 3d brush footprinting.

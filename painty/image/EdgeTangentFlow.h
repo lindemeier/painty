@@ -29,6 +29,6 @@ Mat3d ComputeTensors(const Mat3d& image, const Mat1d& mask, double innerSigma,
 
 Mat2d ComputeEdgeTangentFlow(const Mat3d& structureTensorField);
 
-Mat1d lineIntegralConv(const Mat2d& etf, const double sigmaL);
+Mat1d lineIntegralConv(const Mat2d& etf, double sigmaL);
 
 }  // namespace painty

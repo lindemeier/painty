@@ -118,7 +118,12 @@ class ColorConverter {
       Scalar weight = t * t * (3 - 2 * t);
       return A + weight * (B - A);
     };
-    Scalar x0, x1, x2, x3, y0, y1;
+    Scalar x0;
+    Scalar x1;
+    Scalar x2;
+    Scalar x3;
+    Scalar y0;
+    Scalar y1;
     // red
     x0     = cubicInt(ryb[2], 1., 0.163);
     x1     = cubicInt(ryb[2], 1., 0.);
@@ -181,18 +186,20 @@ class ColorConverter {
 
   // make linear rgb, no chromatic adaption
   void srgb2rgb(const Scalar s, Scalar& l) const {
-    if (s <= 0.0404482362771082)
+    if (s <= 0.0404482362771082) {
       l = s / 12.92;
-    else
+    } else {
       l = std::pow(((s + 0.055) / 1.055), 2.4);
+    }
   }
 
   // make sRGB, with gamma
   void rgb2srgb(const Scalar l, Scalar& s) const {
-    if (l <= 0.00313066844250063)
+    if (l <= 0.00313066844250063) {
       s = l * 12.92;
-    else
+    } else {
       s = 1.055 * std::pow(l, 1. / 2.4) - 0.055;
+    }
   }
 
   // make linear rgb, no chromatic adaption
@@ -297,17 +304,19 @@ class ColorConverter {
 
     const Scalar fa = 1. / 360.0;
 
-    if (fuzzyCompare(max, min, Epsilon))
+    if (fuzzyCompare(max, min, Epsilon)) {
       hsv[0] = 0;
-    else if (fuzzyCompare(max, srgb[0], Epsilon))
+    } else if (fuzzyCompare(max, srgb[0], Epsilon)) {
       hsv[0] = 60.0 * (0 + (srgb[1] - srgb[2]) * delMax);
-    else if (fuzzyCompare(max, srgb[1], Epsilon))
+    } else if (fuzzyCompare(max, srgb[1], Epsilon)) {
       hsv[0] = 60.0 * (2 + (srgb[2] - srgb[0]) * delMax);
-    else if (fuzzyCompare(max, srgb[2], Epsilon))
+    } else if (fuzzyCompare(max, srgb[2], Epsilon)) {
       hsv[0] = 60.0 * (4 + (srgb[0] - srgb[1]) * delMax);
+    }
 
-    if (hsv[0] < 0.0)
+    if (hsv[0] < 0.0) {
       hsv[0] += 360.0;
+    }
 
     if (fuzzyCompare(max, 0.0, Epsilon)) {
       hsv[1] = 0.0;
@@ -346,16 +355,22 @@ class ColorConverter {
     XYZ[1] =
       (Luv[0] > keps) ? (std::pow((Luv[0] + 16.) / 116., 3.)) : (Luv[1] / k);
 
-    Scalar Xr, Yr, Zr;
+    Scalar Xr;
+    Scalar Yr;
+    Scalar Zr;
     Xr = illuminant[0];
     Yr = illuminant[1];
     Zr = illuminant[2];
 
-    Scalar u0, v0;
+    Scalar u0;
+    Scalar v0;
     u0 = (4. * Xr) / (Xr + 15. * Yr + 3. * Zr);
     v0 = (9. * Yr) / (Xr + 15. * Yr + 3. * Zr);
 
-    Scalar a, b, c, d;
+    Scalar a;
+    Scalar b;
+    Scalar c;
+    Scalar d;
     a = (1. / 3.) * (((52. * Luv[0]) / (Luv[1] + 13. * Luv[0] * u0)) - 1.);
     b = -5. * XYZ[1];
     c = -(1. / 3.);
@@ -666,27 +681,33 @@ class ColorConverter {
 
     // Ensure hue is between 0 and 2pi
     Scalar hpstd = std::atan2(bstd, apstd);
-    if (hpstd < 0)
+    if (hpstd < 0) {
       hpstd += 2. * Pi<Scalar>;  // rollover ones that come -ve
+    }
 
     Scalar hpsample = std::atan2(bsample, apsample);
-    if (hpsample < 0)
+    if (hpsample < 0) {
       hpsample += 2. * Pi<Scalar>;
-    if (fuzzyCompare((fabs(apsample) + fabs(bsample)), 0., Epsilon))
+    }
+    if (fuzzyCompare((fabs(apsample) + fabs(bsample)), 0., Epsilon)) {
       hpsample = 0.;
+    }
 
     Scalar dL = (Lsample - Lstd);
     Scalar dC = (Cpsample - Cpstd);
 
     // Computation of hue difference
     Scalar dhp = (hpsample - hpstd);
-    if (dhp > Pi<Scalar>)
+    if (dhp > Pi<Scalar>) {
       dhp -= 2. * Pi<Scalar>;
-    if (dhp < -Pi<Scalar>)
+    }
+    if (dhp < -Pi<Scalar>) {
       dhp += 2. * Pi<Scalar>;
+    }
     // set chroma difference to zero if the product of chromas is zero
-    if (fuzzyCompare(Cpprod, 0., Epsilon))
+    if (fuzzyCompare(Cpprod, 0., Epsilon)) {
       dhp = 0.;
+    }
 
     // Note that the defining equations actually need
     // signed Hue and chroma differences which is different
@@ -705,16 +726,19 @@ class ColorConverter {
     // where needed
     Scalar hp = (hpstd + hpsample) / 2.;
     // Identify positions for which abs hue diff exceeds 180 degrees
-    if (fabs(hpstd - hpsample) > Pi<Scalar>)
+    if (fabs(hpstd - hpsample) > Pi<Scalar>) {
       hp -= Pi<Scalar>;
+    }
     // rollover ones that come -ve
-    if (hp < 0)
+    if (hp < 0) {
       hp += 2. * Pi<Scalar>;
+    }
 
     // Check if one of the chroma values is zero, in which case set
     // mean hue to the sum which is equivalent to other value
-    if (fuzzyCompare(Cpprod, 0., Epsilon))
+    if (fuzzyCompare(Cpprod, 0., Epsilon)) {
       hp = hpsample + hpstd;
+    }
 
     Scalar Lpm502 = (Lp - 50.) * (Lp - 50.);
     Scalar Sl     = 1. + 0.015 * Lpm502 / std::sqrt(20.0 + Lpm502);
@@ -749,9 +773,8 @@ class ColorConverter {
     Scalar d                   = ColorDifferenceCIEDE2000(lab1, lab2);
     if (d >= 0 && d <= d0) {
       return d / d0;
-    } else {
-      return 1.;
     }
+    return 1.;
   }
 
  private:

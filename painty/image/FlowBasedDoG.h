@@ -19,21 +19,18 @@ class FlowBasedDoG {
 
   static Mat3d filterBilateralOrientationAligned(const Mat3d& imageInLab,
                                                  const Mat2d& edgeTangentFlow,
-                                                 const double sigma_d,
-                                                 const double sigma_r,
-                                                 const uint32_t n);
+                                                 double sigma_d, double sigma_r,
+                                                 uint32_t n);
 
-  static Mat3d quantizeColors(const Mat3d& imageInLab, const double phi_q,
-                              const uint32_t nbins);
+  static Mat3d quantizeColors(const Mat3d& imageInLab, double phi_q,
+                              uint32_t nbins);
 
-  static Mat1d thresholdingXDoG(const Mat1d& response,
-                                const double xdogParamEps,
-                                const double xdogParamPhi);
+  static Mat1d thresholdingXDoG(const Mat1d& response, double xdogParamEps,
+                                double xdogParamPhi);
 
   static Mat1d filterFlowBasedDoG(const Mat1d& img, const Mat2d& tfm,
-                                  const double sigma_e, const double sigma_r,
-                                  const double tau,
-                                  const double sigmaSmoothing);
+                                  double sigma_e, double sigma_r, double tau,
+                                  double sigmaSmoothing);
 
  private:
   // orientation aligned bilateral filter
@@ -65,7 +62,7 @@ class FlowBasedDoG {
 
   double _tensorOuterSigma = 3.0;
 
-  Mat3d overlay(const Mat1d& edge, const Mat3d& image) const;
+  static Mat3d overlay(const Mat1d& edge, const Mat3d& image);
 };
 
 }  // namespace painty

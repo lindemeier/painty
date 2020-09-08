@@ -11,6 +11,7 @@
 
 #include <random>
 
+#include "math.h"
 #include "painty/core/Color.h"
 
 namespace segmentation_details {
@@ -35,12 +36,14 @@ static void drawContoursAroundSegments(painty::Mat3d& image,
         if ((x >= 0 && x < image.cols) && (y >= 0 && y < image.rows)) {
           const auto index = y * image.cols + x;
 
-          if (labels(index) < 0)
+          if (labels(index) < 0) {
             continue;
+          }
 
-          if (false == istaken[static_cast<size_t>(index)]) {
-            if (labels(mainindex) != labels(index))
+          if (!istaken[static_cast<size_t>(index)]) {
+            if (labels(mainindex) != labels(index)) {
               np++;
+            }
           }
         }
       }
@@ -85,8 +88,9 @@ static painty::Mat<int32_t> enforceLabelConnectivity(
           int32_t y = y_vector[0] + yn4[n];
           if ((x >= 0 && x < labels.cols) && (y >= 0 && y < labels.rows)) {
             int32_t nindex = y * labels.cols + x;
-            if (nlabels(nindex) >= 0)
+            if (nlabels(nindex) >= 0) {
               adjlabel = nlabels(nindex);
+            }
           }
         }
 
@@ -134,9 +138,9 @@ namespace painty {
 SuperpixelSegmentation::SuperPixel::SuperPixel(const vec2& center,
                                                const vec3& meanColor)
     : _center(center),
-      _centerT(),
+
       _meanColor(meanColor),
-      _meanColorT(),
+
       _meanDiff(),
       _meanDiffT(),
       _area(),
@@ -150,11 +154,7 @@ SuperpixelSegmentation::SuperPixel::SuperPixel(const vec2& center,
 }
 
 SuperpixelSegmentation::SuperPixel::SuperPixel()
-    : _center(),
-      _centerT(),
-      _meanColor(),
-      _meanColorT(),
-      _meanDiff(),
+    : _meanDiff(),
       _meanDiffT(),
       _area(),
       _maxSpatialDist(1.0),
@@ -194,7 +194,7 @@ void ImageRegion::setActive(bool activeArg) {
   this->active = activeArg;
 }
 
-bool ImageRegion::isActive() {
+bool ImageRegion::isActive() const {
   return active;
 }
 
@@ -274,14 +274,16 @@ Mat1d ImageRegion::getDistanceTransform(
 vec2 ImageRegion::getSpatialMean() const {
   vec2 mean = vec2::Zero();
 
-  if (points.empty())
+  if (points.empty()) {
     return mean;
+  }
 
   for (const vec2i& p : points) {
     mean[0] += p[0];
     mean[1] += p[1];
   }
-  return vec2(mean[0] / points.size(), mean[1] / points.size());
+  return vec2(mean[0] / static_cast<double>(points.size()),
+              mean[1] / static_cast<double>(points.size()));
 }
 
 void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
@@ -327,7 +329,7 @@ void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
     vec2 sample;
     bool stop = false;
     for (int32_t j = 0; (j < maxSamples) && (!stop); ++j) {
-      int32_t index;
+      int32_t index    = 0;
       int32_t nrTrials = 0;
       do {
         index = static_cast<int32_t>(distribution(generator));
@@ -385,7 +387,8 @@ void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
         int32_t xs2 = ::std::min(xs + cellSize1, wG - 1);
         int32_t ys2 = ::std::min(ys + cellSize1, hG - 1);
 
-        vec2 sample = {x + 0.5f * S, y + 0.5f * S};
+        vec2 sample = {static_cast<double>(x + S / 2),
+                       static_cast<double>(y + S / 2)};
         _superPixels.emplace_back(sample,
                                   _targetLab(static_cast<int32_t>(sample[1]),
                                              static_cast<int32_t>(sample[0])));
@@ -421,15 +424,16 @@ void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
       SuperPixel& cluster = _superPixels[i];
 
       vec2i can;
-      double cdist;
-      double ndist;
+      double cdist = 0.0;
+      double ndist = 0.0;
 
       for (int32_t x = static_cast<int32_t>(cluster._center[0]) - size;
            x <= static_cast<int32_t>(cluster._center[0]) + size; x++) {
         for (int32_t y = static_cast<int32_t>(cluster._center[1]) - size;
              y <= static_cast<int32_t>(cluster._center[1]) + size; y++) {
-          if (x < 0 || y < 0 || y >= distances.rows || x >= distances.cols)
+          if (x < 0 || y < 0 || y >= distances.rows || x >= distances.cols) {
             continue;
+          }
 
           if (_mask(y, x) == 0U ||
               (!_difference.empty() && (_difference(y, x) <= 0.0))) {
@@ -452,8 +456,8 @@ void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
     }
     error = computeStats(_superPixels, newLabels);
   }
-  int32_t newK;
-  _labels = segmentation_details::enforceLabelConnectivity(
+  int32_t newK = 0;
+  _labels      = segmentation_details::enforceLabelConnectivity(
     newLabels, newK, static_cast<int32_t>(double(N) / double(S * S)));
 }
 
@@ -476,8 +480,9 @@ void SuperpixelSegmentation::perturbClusterCenters(
          x_ <= static_cast<int32_t>(o[0]) + r; x_++) {
       for (int32_t y_ = static_cast<int32_t>(o[1]) - r;
            y_ <= static_cast<int32_t>(o[1]) + r; y_++) {
-        if (_mask(y_, x_) == 0U)
+        if (_mask(y_, x_) == 0U) {
           continue;
+        }
 
         int32_t x =
           std::min<int32_t>(_targetLab.cols - 1, std::max<int32_t>(0, x_));
@@ -513,8 +518,9 @@ double SuperpixelSegmentation::computeStats(
   for (int32_t x = 0; x < labels.cols; ++x) {
     for (int32_t y = 0; y < labels.rows; ++y) {
       int32_t clusterID = labels(y, x);
-      if (_mask(y, x) == 0U || clusterID == -1)
+      if (_mask(y, x) == 0U || clusterID == -1) {
         continue;
+      }
 
       SuperPixel& center = superPixels[static_cast<size_t>(clusterID)];
       center._meanColorT += _targetLab(y, x);
@@ -527,8 +533,9 @@ double SuperpixelSegmentation::computeStats(
 
   double error = 0.;
   for (auto& superPixel : superPixels) {
-    if (superPixel._area == 0)
+    if (superPixel._area == 0) {
       continue;
+    }
 
     const double f = 1.0 / superPixel._area;
     superPixel._meanColorT *= f;
@@ -564,20 +571,19 @@ double SuperpixelSegmentation::distance(
     superPixel._maxDiffDistT    = std::max(superPixel._maxDiffDistT, dd);
     superPixel._maxSpatialDistT = std::max(superPixel._maxSpatialDistT, ds);
     // SLICO
-    return std::sqrt(std::pow(dc / superPixel._maxColorDist, 2.0f) +
-                     std::pow(dd / superPixel._maxDiffDist, 2.0f) +
-                     std::pow(ds / superPixel._maxSpatialDist, 2.0f));
-  } else {
-    const double dc =
-      (superPixel._meanColor - _targetLab(pos2[1], pos2[0])).norm();
-    const double ds = (superPixel._center - vec2(pos2[0], pos2[1])).norm();
-
-    superPixel._maxColorDistT   = std::max(superPixel._maxColorDistT, dc);
-    superPixel._maxSpatialDistT = std::max(superPixel._maxSpatialDistT, ds);
-    // SLICO
-    return std::sqrt(std::pow(dc / superPixel._maxColorDist, 2.0) +
-                     std::pow(ds / superPixel._maxSpatialDist, 2.0));
+    return std::sqrt(std::pow(dc / superPixel._maxColorDist, 2.0F) +
+                     std::pow(dd / superPixel._maxDiffDist, 2.0F) +
+                     std::pow(ds / superPixel._maxSpatialDist, 2.0F));
   }
+  const double dc =
+    (superPixel._meanColor - _targetLab(pos2[1], pos2[0])).norm();
+  const double ds = (superPixel._center - vec2(pos2[0], pos2[1])).norm();
+
+  superPixel._maxColorDistT   = std::max(superPixel._maxColorDistT, dc);
+  superPixel._maxSpatialDistT = std::max(superPixel._maxSpatialDistT, ds);
+  // SLICO
+  return std::sqrt(std::pow(dc / superPixel._maxColorDist, 2.0) +
+                   std::pow(ds / superPixel._maxSpatialDist, 2.0));
 }
 
 const Mat1i& SuperpixelSegmentation::getRegions(

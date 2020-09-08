@@ -1,4 +1,4 @@
-# painty ![Bazel build and test](https://github.com/lindemeier/painty/workflows/bazel-tests/badge.svg) ![clang-format](https://github.com/lindemeier/painty/workflows/clang-format/badge.svg)
+# painty ![CMake build, test and lint](https://github.com/lindemeier/painty/workflows/CMake-build-lint-test/badge.svg) ![Bazel build and test](https://github.com/lindemeier/painty/workflows/bazel-tests/badge.svg) ![clang-format](https://github.com/lindemeier/painty/workflows/clang-format/badge.svg)
 
 Library containing several algorithms for:
 - Image processing.

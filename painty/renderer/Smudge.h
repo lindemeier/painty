@@ -73,16 +73,18 @@ class Smudge final {
       for (auto x = 0; x < _pickupMapDst.getCols(); x++) {
         for (auto y = 0; y < _pickupMapDst.getRows(); y++) {
           if (x < 0 || x >= _pickupMapDst.getCols() || y < 0 ||
-              y >= _pickupMapDst.getRows())
+              y >= _pickupMapDst.getRows()) {
             continue;
+          }
           vec<int32_t, 2> sp(x, y);
           vec<int32_t, 2> cp(x + roi_x, y + roi_y);
           vec<int32_t, 2> tp(static_cast<int32_t>(cp[0] - boundMin[0U]),
                              static_cast<int32_t>(cp[1] - boundMin[1U]));
 
           const auto dist = (center - cp.cast<double>()).norm();
-          if (dist > radius)
+          if (dist > radius) {
             continue;
+          }
 
           const auto D = thicknessMap(static_cast<int32_t>(tp[1]),
                                       static_cast<int32_t>(tp[0]));
@@ -158,7 +160,7 @@ class Smudge final {
 
     _pickupMapDst.copyTo(_pickupMapSrc);
 
-    vec2 center = {_maxSize / 2.f, _maxSize / 2.f};
+    vec2 center = {_maxSize / 2.0, _maxSize / 2.0};
 
     // update pickupmap
     for (auto x = 0; x < _maxSize; x++) {
@@ -235,8 +237,9 @@ class Smudge final {
       if (points.empty() || points.back() != vec<int32_t, 2UL>(p[0], p[1])) {
         points.push_back(vec<int32_t, 2UL>(p[0], p[1]));
       }
-      if (x0 == x1 && y0 == y1)
+      if (x0 == x1 && y0 == y1) {
         break;
+      }
       e2 = 2 * err;
       if (e2 >= dy) {
         err += dy;

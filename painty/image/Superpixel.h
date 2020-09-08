@@ -25,13 +25,13 @@ class ImageRegion {
  public:
   ImageRegion();
 
-  ImageRegion(const int32_t label, const Mat1i& labelsMap);
+  ImageRegion(int32_t label, const Mat1i& labelsMap);
 
-  void setLabel(const int32_t label);
+  void setLabel(int32_t label);
 
   void setActive(bool active);
 
-  bool isActive();
+  bool isActive() const;
 
   int32_t getLabel() const;
 
@@ -99,7 +99,7 @@ class ImageRegion {
     for (const vec2i& p : points) {
       m += data(p[1], p[0]);
     }
-    return (1.0 / points.size()) * m;
+    return (1.0 / static_cast<double>(points.size())) * m;
   }
 
   template <class T, int32_t Channels>
@@ -136,7 +136,6 @@ class SuperpixelSegmentation {
 
     void reset();
 
-   public:
     SuperPixel();
 
     SuperPixel(const vec2& center, const vec3& meanColor);
@@ -161,9 +160,8 @@ class SuperpixelSegmentation {
     GRID_SHUFFLED          = static_cast<uint8_t>(2U)
   };
 
- public:
   void extract(const Mat3d& targetLab, const Mat3d& canvasLab,
-               const Mat<uint8_t>& mask, const int32_t cellWidth);
+               const Mat<uint8_t>& mask, int32_t cellWidth);
 
   void getSegmentationOutlined(Mat3d& background) const;
 
@@ -181,7 +179,6 @@ class SuperpixelSegmentation {
 
   double distance(SuperPixel& superPixel, const vec2i& pos2) const;
 
- private:
   std::vector<SuperPixel> _superPixels;
   Mat3d _targetLab;
   Mat1d _difference;

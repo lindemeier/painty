@@ -33,8 +33,7 @@ static constexpr auto Pi = static_cast<Float>(
  */
 template <typename Float>
 typename std::enable_if<std::is_floating_point<Float>::value, bool>::type
-fuzzyCompare(const Float firstValue, const Float secondValue,
-             const Float epsilon) {
+fuzzyCompare(Float firstValue, Float secondValue, Float epsilon) {
   return std::fabs(firstValue - secondValue) < epsilon;
 }
 
@@ -80,7 +79,8 @@ Value generalizedBarycentricCoordinatesInterpolate(
 
   if (polygon.empty() || values.empty()) {
     throw std::invalid_argument("Polygon is empty");
-  } else if (polygon.size() != values.size()) {
+  }
+  if (polygon.size() != values.size()) {
     throw std::invalid_argument("Polygon size differs from values size");
   } else if (n == 1U) {
     return values.front();
@@ -142,9 +142,8 @@ Value generalizedBarycentricCoordinatesInterpolate(
   }
   if (!fuzzyCompare(W, 0.0, Eps)) {
     return f * (1.0 / W);
-  } else {
-    return values.front();
   }
+  return values.front();
 }
 
 /**
@@ -160,13 +159,12 @@ template <typename Float, typename std::enable_if_t<
 Float coth(const Float& x) {
   if (x > static_cast<Float>(20.0)) {
     return static_cast<Float>(1.0);
+  }
+  if (std::fabs(x) > static_cast<Float>(0.0)) {
+    const auto res = std::cosh(x) / std::sinh(x);
+    return std::isnan(res) ? static_cast<Float>(1.0) : res;
   } else {
-    if (std::fabs(x) > static_cast<Float>(0.0)) {
-      const auto res = std::cosh(x) / std::sinh(x);
-      return std::isnan(res) ? static_cast<Float>(1.0) : res;
-    } else {
-      return std::numeric_limits<Float>::infinity();
-    }
+    return std::numeric_limits<Float>::infinity();
   }
 }
 
@@ -187,11 +185,10 @@ Float acoth(const Float& x) {
         x, 1.0,
         static_cast<Float>(100.0) * std::numeric_limits<Float>::epsilon())) {
     return std::numeric_limits<Float>::infinity();
-  } else {
-    return std::log((x + static_cast<Float>(1.0)) /
-                    (x - static_cast<Float>(1.0))) /
-           static_cast<Float>(2.0);
   }
+  return std::log((x + static_cast<Float>(1.0)) /
+                  (x - static_cast<Float>(1.0))) /
+         static_cast<Float>(2.0);
 }
 
 template <
