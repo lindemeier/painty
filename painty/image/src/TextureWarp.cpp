@@ -10,7 +10,7 @@
 
 #include "painty/core/Math.h"
 
-painty::TextureWarp::TextureWarp() : _in(), _out() {}
+painty::TextureWarp::TextureWarp() {}
 
 void painty::TextureWarp::init(const std::vector<painty::vec2>& in,
                                const std::vector<painty::vec2>& out) {

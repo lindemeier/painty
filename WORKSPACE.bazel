@@ -47,7 +47,8 @@ http_archive(
    strip_prefix = "eigen-3.3.7-patched",
    # urls = ["https://gitlab.com/thomas.lindemeier/eigen/-/archive/3.3.7-patched/eigen-3.3.7-patched.tar.gz"],
    # usually the urls above should be used. However, bazel is not able to download from gitlab and I therefore use an url to a copy of the archive for now.
-   urls =["https://gist.github.com/lindemeier/e1c3506ea6b0e20a6b08d1ac142c8380/raw/ca1779dbb9964a5df4f950bfebd5833ad7f79528/eigen-3.3.7-patched.tar.gz"]
+   urls =["https://gist.github.com/lindemeier/e1c3506ea6b0e20a6b08d1ac142c8380/raw/ca1779dbb9964a5df4f950bfebd5833ad7f79528/eigen-3.3.7-patched.tar.gz"],
+   sha256 = "0be9ab513cd911d55a15b80b67c8ffa7f8168b00bbd8c1cd9359b3081b2df8c1"
 )
 
 # OpenCV source release
@@ -55,6 +56,7 @@ http_archive(
    name = "opencv",
    build_file_content = all_content,
    strip_prefix = "opencv-4.4.0",
+   sha256 = "7faa0991c74cda52313ee37ef73f3e451332a47e7aa36c2bb2240b69f5002d27",
    urls = ["https://github.com/opencv/opencv/archive/4.4.0.zip"],
 )
 
@@ -63,4 +65,12 @@ git_repository(
     name = "gtest",
     remote = "https://github.com/google/googletest",
     branch = "v1.10.x",
+)
+
+# dependency for generating compilation database
+http_archive(
+    name = "com_grail_bazel_compdb",
+    strip_prefix = "bazel-compilation-database-0.4.5",
+    urls = ["https://github.com/grailbio/bazel-compilation-database/archive/0.4.5.tar.gz"],
+    sha256 = "bcecfd622c4ef272fd4ba42726a52e140b961c4eac23025f18b346c968a8cfb4"
 )

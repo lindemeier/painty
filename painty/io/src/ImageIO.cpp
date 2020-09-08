@@ -10,7 +10,7 @@
 
 static std::string extractFiletype(const std::string& filename) {
   std::string res(filename);
-  size_t ls = res.find_last_of(".");
+  size_t ls = res.find_last_of('.');
   res       = res.substr(ls + 1, res.size() - ls - 1);
   return res;
 }
@@ -30,7 +30,7 @@ void painty::io::imRead(const std::string& filenameOriginal,
   cv::Mat cv_mat = cv::imread(filename, cv::IMREAD_ANYDEPTH | cv::IMREAD_COLOR);
 
   // if not loaded succesfully
-  if (!cv_mat.data) {
+  if (cv_mat.data == nullptr) {
     throw std::ios_base::failure(filenameOriginal);
   }
 
@@ -43,14 +43,15 @@ void painty::io::imRead(const std::string& filenameOriginal,
 
   // data scale
   double scale = 1.0;
-  if (cv_mat.depth() == CV_16U)
+  if (cv_mat.depth() == CV_16U) {
     scale = 1.0 / (0xffff);
-  else if (cv_mat.depth() == CV_32F)
+  } else if (cv_mat.depth() == CV_32F) {
     scale = 1.0;
-  else if (cv_mat.depth() == CV_8U)
+  } else if (cv_mat.depth() == CV_8U) {
     scale = 1.0 / (0xff);
-  else if (cv_mat.depth() == CV_64F)
+  } else if (cv_mat.depth() == CV_64F) {
     scale = 1.0 / (0xffffffff);
+  }
 
   // OpenCV has BGR
   cv::cvtColor(cv_mat, cv_mat, cv::COLOR_BGR2RGB);
@@ -83,20 +84,21 @@ void painty::io::imRead(const std::string& filenameOriginal, Mat<double>& gray,
     cv::imread(filename, cv::IMREAD_ANYDEPTH | cv::IMREAD_GRAYSCALE);
 
   // if not loaded succesfully
-  if (!cv_mat.data) {
+  if (cv_mat.data == nullptr) {
     throw std::ios_base::failure(filenameOriginal);
   }
 
   // data scale
   double scale = 1.0;
-  if (cv_mat.depth() == CV_16U)
+  if (cv_mat.depth() == CV_16U) {
     scale = 1.0 / 0xffff;
-  else if (cv_mat.depth() == CV_32F)
+  } else if (cv_mat.depth() == CV_32F) {
     scale = 1.0;
-  else if (cv_mat.depth() == CV_8U)
+  } else if (cv_mat.depth() == CV_8U) {
     scale = 1.0 / 0xff;
-  else if (cv_mat.depth() == CV_64F)
+  } else if (cv_mat.depth() == CV_64F) {
     scale = 1.0;
+  }
 
   // convert to right type
   cv_mat.convertTo(gray, CV_64FC1, scale);

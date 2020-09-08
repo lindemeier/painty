@@ -18,7 +18,6 @@ endif()
 
 # 3rdParty
 add_subdirectory(3rdParty/eigen)
-add_subdirectory(3rdParty/opencv)
 
 # modules
 add_subdirectory(painty/core)
