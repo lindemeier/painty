@@ -3,14 +3,14 @@ load("@com_justbuchanan_rules_qt//:qt.bzl", "qt_cc_library", "qt_ui_library")
 qt_cc_library(
     name = "paintyGuiLib",
     srcs = [
-        "DigitalCanvas.cpp",
-        "DigitalPaintMainWindow.cpp",
-        "KMVisualizeWidget.cpp",
+        "DigitalCanvas.cxx",
+        "DigitalPaintMainWindow.cxx",
+        "KMVisualizeWidget.cxx",
     ],
     hdrs = [
-        "DigitalCanvas.h",
-        "DigitalPaintMainWindow.h",
-        "KMVisualizeWidget.h",
+        "DigitalCanvas.hxx",
+        "DigitalPaintMainWindow.hxx",
+        "KMVisualizeWidget.hxx",
     ],
     copts = ["-fpic"],
     visibility = ["//visibility:public"],
@@ -29,7 +29,7 @@ qt_ui_library(
 
 cc_binary(
     name = "painty_gui",
-    srcs = ["DigitalPaint.cpp"],
+    srcs = ["DigitalPaint.cxx"],
     copts = ["-fpic"],
     deps = [
         ":paintyGuiLib",

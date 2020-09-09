@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.10.2)
 project(paintyIoTest)
 
 add_executable(${PROJECT_NAME}
-    ${PROJECT_SOURCE_DIR}/src/ImageIOTest.cpp
-    ${PROJECT_SOURCE_DIR}/src/main.cpp
+    ${PROJECT_SOURCE_DIR}/src/ImageIOTest.cxx
+    ${PROJECT_SOURCE_DIR}/src/main.cxx
   )
 
 target_link_libraries(${PROJECT_NAME}

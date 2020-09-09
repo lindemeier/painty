@@ -3,11 +3,11 @@ cmake_minimum_required(VERSION 3.10.2)
 project(paintyRendererTest)
 
 add_executable(${PROJECT_NAME}
-    ${PROJECT_SOURCE_DIR}/src/BrushStrokeSampleTest.cpp
-    ${PROJECT_SOURCE_DIR}/src/main.cpp
-    ${PROJECT_SOURCE_DIR}/src/CanvasTest.cpp
-    ${PROJECT_SOURCE_DIR}/src/PaintLayerTest.cpp
-    ${PROJECT_SOURCE_DIR}/src/TextureBrushTest.cpp
+    ${PROJECT_SOURCE_DIR}/src/BrushStrokeSampleTest.cxx
+    ${PROJECT_SOURCE_DIR}/src/main.cxx
+    ${PROJECT_SOURCE_DIR}/src/CanvasTest.cxx
+    ${PROJECT_SOURCE_DIR}/src/PaintLayerTest.cxx
+    ${PROJECT_SOURCE_DIR}/src/TextureBrushTest.cxx
   )
 
 target_link_libraries(${PROJECT_NAME}

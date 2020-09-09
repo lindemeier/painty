@@ -5,11 +5,11 @@ project(paintyImage)
 find_package(OpenCV REQUIRED core imgproc)
 
 add_library(${PROJECT_NAME} STATIC
-  ${PROJECT_SOURCE_DIR}/src/Convolution.cpp
-  ${PROJECT_SOURCE_DIR}/src/FlowBasedDoG.cpp
-  ${PROJECT_SOURCE_DIR}/src/TextureWarp.cpp
-  ${PROJECT_SOURCE_DIR}/src/EdgeTangentFlow.cpp
-  ${PROJECT_SOURCE_DIR}/src/Superpixel.cpp
+  ${PROJECT_SOURCE_DIR}/src/Convolution.cxx
+  ${PROJECT_SOURCE_DIR}/src/FlowBasedDoG.cxx
+  ${PROJECT_SOURCE_DIR}/src/TextureWarp.cxx
+  ${PROJECT_SOURCE_DIR}/src/EdgeTangentFlow.cxx
+  ${PROJECT_SOURCE_DIR}/src/Superpixel.cxx
 )
 
 target_include_directories(${PROJECT_NAME}
