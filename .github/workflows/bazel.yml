@@ -19,6 +19,7 @@ jobs:
     steps:
     - name: Install clang and qt
       run: |
+        sudo apt-get update
         sudo apt install clang-10 qt5-default qtbase5-dev
 
     - name: Checkout
