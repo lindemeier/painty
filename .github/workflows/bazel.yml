@@ -17,9 +17,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install clang
+    - name: Install clang and qt
       run: |
-        sudo apt install clang-10
+        sudo apt install clang-10 qt5-default qtbase5-dev
 
     - name: Checkout
       uses: actions/checkout@v1
