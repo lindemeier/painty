@@ -7,12 +7,12 @@
 #include <iostream>
 
 #include "DigitalPaintMainWindow.h"
+#include "apps/painty_gui/ui_DigitalPaintMainWindow.h"
 #include "painty/core/Color.h"
 #include "painty/core/KubelkaMunk.h"
 #include "painty/core/Spline.h"
 #include "painty/renderer/Canvas.h"
 #include "painty/renderer/Renderer.h"
-#include "ui_DigitalPaintMainWindow.h"
 
 std::shared_ptr<painty::Canvas<painty::vec3>> DigitalCanvas::getCanvas() const {
   return _canvasPtr;

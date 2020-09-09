@@ -6,9 +6,9 @@
 #include <QtWidgets/QProgressBar>
 
 #include "DigitalCanvas.h"
+#include "apps/painty_gui/ui_DigitalPaintMainWindow.h"
 #include "painty/io/ImageIO.h"
 #include "painty/renderer/Renderer.h"
-#include "ui_DigitalPaintMainWindow.h"
 
 DigitalPaintMainWindow::DigitalPaintMainWindow(QWidget* parent)
     : QMainWindow(parent),

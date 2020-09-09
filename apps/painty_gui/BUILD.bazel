@@ -17,6 +17,7 @@ qt_cc_library(
     deps = [
         "//painty/renderer:painty_renderer",
         "@qt//:qt_widgets",
+        ":paintyGuiWindow"
     ],
 )
 
@@ -35,4 +36,5 @@ cc_binary(
         ":paintyGuiWindow",
         "@qt//:qt_widgets",
     ],
+    data = ["//data:exported_texture_sample_0", "//data:exported_footprint"]
 )
