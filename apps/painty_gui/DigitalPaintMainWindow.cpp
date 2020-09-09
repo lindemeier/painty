@@ -1,9 +1,9 @@
 #include "DigitalPaintMainWindow.h"
 
-#include <QFileDialog>
-#include <QMainWindow>
-#include <QMessageBox>
-#include <QProgressBar>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QProgressBar>
 
 #include "DigitalCanvas.h"
 #include "painty/io/ImageIO.h"

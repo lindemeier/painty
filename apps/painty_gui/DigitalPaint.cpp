@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <QApplication>
-#include <QGraphicsView>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QGraphicsView>
 #include <memory>
 
 #include "DigitalPaintMainWindow.h"

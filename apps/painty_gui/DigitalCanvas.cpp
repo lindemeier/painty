@@ -1,9 +1,9 @@
 #include "DigitalCanvas.h"
 
-#include <QGraphicsPixmapItem>
-#include <QGraphicsSceneMouseEvent>
-#include <QKeyEvent>
-#include <QWheelEvent>
+#include <QtGui/QKeyEvent>
+#include <QtGui/QWheelEvent>
+#include <QtWidgets/QGraphicsPixmapItem>
+#include <QtWidgets/QGraphicsSceneMouseEvent>
 #include <iostream>
 
 #include "DigitalPaintMainWindow.h"

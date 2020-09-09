@@ -16,13 +16,13 @@ find_package(Qt5Widgets)
 
 #
 add_executable(${PROJECT_NAME}
-    src/DigitalPaint.cpp
-    src/DigitalCanvas.h
-    src/DigitalCanvas.cpp
-    src/DigitalPaintMainWindow.h
-    src/DigitalPaintMainWindow.cpp
-    src/KMVisualizeWidget.h
-    src/KMVisualizeWidget.cpp
+    DigitalPaint.cpp
+    DigitalCanvas.h
+    DigitalCanvas.cpp
+    DigitalPaintMainWindow.h
+    DigitalPaintMainWindow.cpp
+    KMVisualizeWidget.h
+    KMVisualizeWidget.cpp
     )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
@@ -38,10 +38,6 @@ add_dependencies(${PROJECT_NAME}
     paintyRenderer
     Qt5::Core
     Qt5::Widgets
-    )
-
-target_include_directories(${PROJECT_NAME}
-    PRIVATE src/
     )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)

@@ -1,9 +1,9 @@
 #ifndef EDAVID_DIGITAL_canvasPtr_H
 #define EDAVID_DIGITAL_canvasPtr_H
 
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QLabel>
+#include <QtWidgets/QGraphicsScene>
+#include <QtWidgets/QGraphicsView>
+#include <QtWidgets/QLabel>
 #include <memory>
 
 #include "painty/renderer/Canvas.h"
