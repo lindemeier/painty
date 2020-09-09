@@ -5,7 +5,7 @@ project(paintyIo)
 find_package(OpenCV REQUIRED core imgproc imgcodecs highgui)
 
 add_library(${PROJECT_NAME} STATIC
-  ${PROJECT_SOURCE_DIR}/src/ImageIO.cpp
+  ${PROJECT_SOURCE_DIR}/src/ImageIO.cxx
 )
 
 target_include_directories(${PROJECT_NAME}

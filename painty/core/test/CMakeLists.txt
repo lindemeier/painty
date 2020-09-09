@@ -3,11 +3,11 @@ cmake_minimum_required(VERSION 3.10.2)
 project(paintyCoreTest)
 
 add_executable(${PROJECT_NAME}
-    ${PROJECT_SOURCE_DIR}/src/main.cpp
-    ${PROJECT_SOURCE_DIR}/src/MathTest.cpp
-    ${PROJECT_SOURCE_DIR}/src/KubelkaMunkTest.cpp
-    ${PROJECT_SOURCE_DIR}/src/SplineTest.cpp
-    ${PROJECT_SOURCE_DIR}/src/VecTest.cpp
+    ${PROJECT_SOURCE_DIR}/src/main.cxx
+    ${PROJECT_SOURCE_DIR}/src/MathTest.cxx
+    ${PROJECT_SOURCE_DIR}/src/KubelkaMunkTest.cxx
+    ${PROJECT_SOURCE_DIR}/src/SplineTest.cxx
+    ${PROJECT_SOURCE_DIR}/src/VecTest.cxx
   )
 
 target_link_libraries(${PROJECT_NAME}
