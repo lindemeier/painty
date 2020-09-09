@@ -1,0 +1,40 @@
+load("@com_justbuchanan_rules_qt//:qt.bzl", "qt_cc_library", "qt_ui_library")
+
+qt_cc_library(
+    name = "paintyGuiLib",
+    srcs = [
+        "DigitalCanvas.cpp",
+        "DigitalPaintMainWindow.cpp",
+        "KMVisualizeWidget.cpp",
+    ],
+    hdrs = [
+        "DigitalCanvas.h",
+        "DigitalPaintMainWindow.h",
+        "KMVisualizeWidget.h",
+    ],
+    copts = ["-fpic"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//painty/renderer:painty_renderer",
+        "@qt//:qt_widgets",
+        ":paintyGuiWindow"
+    ],
+)
+
+qt_ui_library(
+    name = "paintyGuiWindow",
+    ui = "DigitalPaintMainWindow.ui",
+    deps = ["@qt//:qt_widgets"],
+)
+
+cc_binary(
+    name = "painty_gui",
+    srcs = ["DigitalPaint.cpp"],
+    copts = ["-fpic"],
+    deps = [
+        ":paintyGuiLib",
+        ":paintyGuiWindow",
+        "@qt//:qt_widgets",
+    ],
+    data = ["//data:exported_texture_sample_0", "//data:exported_footprint"]
+)

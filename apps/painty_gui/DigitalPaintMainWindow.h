@@ -1,7 +1,7 @@
 #ifndef DIGITALPAINTMAINWINDOW_H
 #define DIGITALPAINTMAINWINDOW_H
 
-#include <QMainWindow>
+#include <QtWidgets/QMainWindow>
 
 namespace Ui {
 class DigitalPaintMainWindow;

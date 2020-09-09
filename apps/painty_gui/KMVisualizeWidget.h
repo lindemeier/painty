@@ -1,7 +1,7 @@
 #ifndef KM_VISUALIZE_WIDGET_H
 #define KM_VISUALIZE_WIDGET_H
 
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
 class KMVisualizeWidget : public QWidget {
   Q_OBJECT

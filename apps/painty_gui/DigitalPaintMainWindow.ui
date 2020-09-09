@@ -354,7 +354,7 @@
   <customwidget>
    <class>KMVisualizeWidget</class>
    <extends>QWidget</extends>
-   <header>KMVisualizeWidget.h</header>
+   <header>apps/painty_gui/KMVisualizeWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

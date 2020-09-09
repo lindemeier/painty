@@ -1,7 +1,7 @@
 #include "KMVisualizeWidget.h"
 
-#include <QColorDialog>
-#include <QPainter>
+#include <QtGui/QPainter>
+#include <QtWidgets/QColorDialog>
 
 QColor KMVisualizeWidget::getRb() const {
   return Rb;
