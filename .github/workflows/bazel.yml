@@ -39,7 +39,7 @@ jobs:
 
     - name: Build
       run: |
-        "${GITHUB_WORKSPACE}/bin/bazel" build //painty/...
+        "${GITHUB_WORKSPACE}/bin/bazel" build //painty/... //apps/...
 
     - name: Test
       run: |
