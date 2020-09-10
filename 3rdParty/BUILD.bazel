@@ -4,6 +4,7 @@ cmake_external(
     name = "opencv",
     cmake_options = [
         # "-GNinja",
+        "-DWITH_OPENMP=TRUE",
         "-DCMAKE_BUILD_TYPE=Release",
         "-DBUILD_LIST=calib3d,core,features2d,flann,highgui,imgcodecs,imgproc,video,videoio",
     ],
