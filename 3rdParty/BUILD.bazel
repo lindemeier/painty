@@ -1,16 +1,6 @@
 load("@rules_foreign_cc//tools/build_defs:cmake.bzl", "cmake_external")
 
 cmake_external(
-    name = "eigen",
-    cache_entries = {
-    },
-    headers_only = True,
-    lib_source = "@com_github_eigen_eigen//:all",
-    out_include_dir = "include/eigen3",
-    visibility = ["//visibility:public"]
-)
-
-cmake_external(
     name = "opencv",
     cmake_options = [
         # "-GNinja",

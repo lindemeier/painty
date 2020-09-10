@@ -12,6 +12,7 @@
 namespace painty {
 
 void ExtractColorPaletteAharoni(const Mat<vec3>& sRGB,
-                                std::vector<vec3>& linearRGB_colors, uint32_t k);
+                                std::vector<vec3>& linearRGB_colors,
+                                uint32_t k);
 }  // namespace painty
 #endif  // PAINT_MIXER_COLOR_EXTRACTION_H
