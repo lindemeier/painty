@@ -48,10 +48,10 @@ rules_foreign_cc_dependencies(register_default_tools = True)
 
 # Eigen source code repository
 http_archive(
-    name = "eigen",
-    build_file_content = all_content,
+    name = "com_github_eigen_eigen",
     sha256 = "0be9ab513cd911d55a15b80b67c8ffa7f8168b00bbd8c1cd9359b3081b2df8c1",
     strip_prefix = "eigen-3.3.7-patched",
+    build_file = "//3rdParty:eigen.BUILD",
     # urls = ["https://gitlab.com/thomas.lindemeier/eigen/-/archive/3.3.7-patched/eigen-3.3.7-patched.tar.gz"],
     # usually the urls above should be used. However, bazel is not able to download from gitlab and I therefore use an url to a copy of the archive for now.
     urls = ["https://gist.github.com/lindemeier/e1c3506ea6b0e20a6b08d1ac142c8380/raw/ca1779dbb9964a5df4f950bfebd5833ad7f79528/eigen-3.3.7-patched.tar.gz"],
@@ -71,6 +71,39 @@ git_repository(
     name = "gtest",
     branch = "v1.10.x",
     remote = "https://github.com/google/googletest",
+)
+
+# nlohman json
+http_archive(
+    name = "com_github_nlohmann_json",
+    sha256 = "4cf0df69731494668bdd6460ed8cb269b68de9c19ad8c27abc24cd72605b2d5b",
+    strip_prefix = "json-3.9.1",
+    urls = ["https://github.com/nlohmann/json/archive/v3.9.1.tar.gz"],
+    build_file = "//3rdParty:nlohmann_json.BUILD"
+)
+
+# google logging for ceres solver
+http_archive(
+    name = "com_github_google_glog",
+    sha256 = "f28359aeba12f30d73d9e4711ef356dc842886968112162bc73002645139c39c",
+    strip_prefix = "glog-0.4.0",
+    urls = ["https://github.com/google/glog/archive/v0.4.0.tar.gz"],
+)
+
+# google flags for ceres solver
+http_archive(
+    name = "com_github_gflags_gflags",
+    sha256 = "34af2f15cf7367513b352bdcd2493ab14ce43692d2dcd9dfc499492966c64dcf",
+    strip_prefix = "gflags-2.2.2",
+    urls = ["https://github.com/gflags/gflags/archive/v2.2.2.tar.gz"],
+)
+
+# ceres solver
+http_archive(
+    name = "com_ceres-solver_ceres-solver",
+    sha256 = "1296330fcf1e09e6c2f926301916f64d4a4c5c0ff12d460a9bc5d4c48411518f",
+    strip_prefix = "ceres-solver-1.14.0",
+    urls = ["https://github.com/ceres-solver/ceres-solver/archive/1.14.0.tar.gz"],
 )
 
 # dependency for generating compilation database
@@ -93,4 +126,12 @@ new_local_repository(
     #  path = "/usr/include/qt", # May need configuring for your installation
     # For Qt5 on Ubuntu 16.04
     path = "/usr/include/x86_64-linux-gnu/qt5/",
+)
+
+
+# cxxopts for command line parsing
+git_repository(
+    name = "com_cxxopts",
+    branch = "master",
+    remote = "https://github.com/jarro2783/cxxopts.git",
 )

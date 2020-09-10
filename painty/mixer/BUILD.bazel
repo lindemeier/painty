@@ -1,0 +1,25 @@
+load("//:painty.bzl", "painty_cc_library", "painty_cc_test")
+
+painty_cc_library(
+    name = "painty_mixer",
+    srcs = glob(["src/*.cxx"]),
+    hdrs = glob(["*.hxx"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//painty/core:painty_core",
+        "//painty/image:painty_image",
+        "//painty/io:painty_io",
+        "@com_github_nlohmann_json//:json",
+        "@com_ceres-solver_ceres-solver//:ceres"
+    ],
+)
+
+painty_cc_test(
+    name = "test",
+    srcs = glob(["test/src/*.cxx"]),
+    deps = [
+        ":painty_mixer",
+        "@gtest",
+        "//painty/io:painty_io",
+    ]
+)

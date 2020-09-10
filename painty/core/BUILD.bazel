@@ -4,7 +4,7 @@ painty_cc_library(
     name = "painty_core",
     srcs = glob(["src/*.cxx"]),
     hdrs = glob(["*.hxx"]),
-    deps = ["//3rdParty:eigen"],
+    deps = ["@com_github_eigen_eigen//:eigen"],
     visibility = ["//visibility:public"]
 )
 

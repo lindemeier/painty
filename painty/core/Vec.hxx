@@ -14,7 +14,10 @@
 #include <ostream>
 #include <type_traits>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include "Eigen/Dense"
+#pragma clang diagnostic pop
 #include "painty/core/Types.hxx"
 
 namespace painty {
