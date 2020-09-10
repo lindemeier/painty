@@ -5,6 +5,7 @@ project(paintyImage)
 find_package(OpenCV REQUIRED core imgproc)
 
 add_library(${PROJECT_NAME} STATIC
+  ${PROJECT_SOURCE_DIR}/src/ColorExtraction.cxx
   ${PROJECT_SOURCE_DIR}/src/Convolution.cxx
   ${PROJECT_SOURCE_DIR}/src/FlowBasedDoG.cxx
   ${PROJECT_SOURCE_DIR}/src/TextureWarp.cxx
