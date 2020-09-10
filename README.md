@@ -30,6 +30,10 @@ Library containing several algorithms for:
 | :---:  | :---:  |
 |![Screenshot](data/test_images/flower.jpg)|![Screenshot](data/test_images/flower_oabf.jpg)|
 
+## Color Palette Extraction of Images
+
+[more detail](apps/palette_extraction/README.md)
+
 
 ## References
 
