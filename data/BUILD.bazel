@@ -15,11 +15,16 @@ filegroup(
     visibility = ["//visibility:public"]
 )
 
-
 filegroup(
     name = "exported_footprint",
+    srcs =  ["footprint/footprint.png"],
+    visibility = ["//visibility:public"]
+)
+
+filegroup(
+    name = "exported_palettes",
     srcs = glob([
-        "footprint/footprint.png"
+        "paint_palettes/*.json"
     ]),
     visibility = ["//visibility:public"]
 )
