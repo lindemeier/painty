@@ -16,7 +16,7 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
-#include "Eigen/Core"
+#include "Eigen/Dense"
 #pragma clang diagnostic pop
 #include "painty/core/Types.hxx"
 
