@@ -7,6 +7,8 @@
  * @date 2020-08-26
  *
  */
+#include <fstream>
+
 #include "gtest/gtest.h"
 #include "painty/mixer/Palette.hxx"
 #include "painty/mixer/Serialization.hxx"
@@ -22,7 +24,7 @@ TEST(SerializationTest, SaveLoadTest) {
    * */
   //    http://grail.cs.washington.edu/projects/watercolor/paper_small.pdf
 
-  painty::Palette palette;
+  painty::Palette palette = {};
   palette.push_back({{0.0, 0.5, 1.0}, {0.2, 0.3, 0.4}});
 
   //    “Quinacridone Rose”
@@ -60,4 +62,25 @@ TEST(SerializationTest, SaveLoadTest) {
 
   //    “Interference Lilac”
   palette.push_back({{0.08, 0.11, 0.07}, {1.25, 0.42, 1.43}});
+
+  auto fout = std::ofstream();
+  fout.open("/tmp/test_palette.json");
+  painty::SavePalette(fout, palette);
+  fout.close();
+
+  auto fin = std::ifstream();
+  fin.open("/tmp/test_palette.json");
+  painty::Palette palette_loaded = {};
+  painty::LoadPalette(fin, palette_loaded);
+  fin.close();
+  EXPECT_EQ(palette_loaded.size(), palette.size());
+  for (auto i = 0UL; i < palette.size(); i++) {
+    constexpr auto Eps = 10e-9;
+    EXPECT_NEAR(palette[i].K[0U], palette_loaded[i].K[0U], Eps);
+    EXPECT_NEAR(palette[i].K[1U], palette_loaded[i].K[1U], Eps);
+    EXPECT_NEAR(palette[i].K[2U], palette_loaded[i].K[2U], Eps);
+    EXPECT_NEAR(palette[i].S[0U], palette_loaded[i].S[0U], Eps);
+    EXPECT_NEAR(palette[i].S[1U], palette_loaded[i].S[1U], Eps);
+    EXPECT_NEAR(palette[i].S[2U], palette_loaded[i].S[2U], Eps);
+  }
 }
