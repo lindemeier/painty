@@ -21,11 +21,11 @@ void ExtractColorPaletteAharoni(const Mat<vec3>& sRGB,
                                 std::vector<vec3>& linearRGB_colors,
                                 uint32_t k) {
   // https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
-  const auto DistanceLinePoint = [](const vec2& v, const vec2& w,
-                                    const vec2& p) {
+  const auto DistanceLinePoint = [](const vec2f& v, const vec2f& w,
+                                    const vec2f& p) {
     // Return minimum distance between line segment vw and point p
     const auto l2 = (v - w).squaredNorm();  // i.e. |w-v|^2 -  avoid a sqrt
-    if (std::fabs(l2) < std::numeric_limits<double>::epsilon()) {
+    if (std::fabs(l2) < std::numeric_limits<float>::epsilon()) {
       return (p - v).norm();  // v == w case
     }
 
@@ -34,8 +34,8 @@ void ExtractColorPaletteAharoni(const Mat<vec3>& sRGB,
     // It falls where t = [(p-v) . (w-v)] / |w-v|^2
     // We clamp t from [0,1] to handle points outside the segment vw.
     const auto t =
-      std::max<double>(0., std::min<double>(1., (p - v).dot(w - v) / l2));
-    const vec2 projection = v + t * (w - v);  // Projection falls on the segment
+      std::max<float>(0., std::min<float>(1.0F, (p - v).dot(w - v) / l2));
+    const auto projection = v + t * (w - v);  // Projection falls on the segment
 
     return (p - projection).norm();
   };
@@ -67,7 +67,7 @@ void ExtractColorPaletteAharoni(const Mat<vec3>& sRGB,
   }
 
   // list of colors in ab plane
-  std::vector<vec2> inputPoints;
+  std::vector<vec2f> inputPoints;
   std::vector<vec3> inputColors;
   std::vector<int32_t> indices;
   inputPoints.reserve(Lab.size());
@@ -79,7 +79,8 @@ void ExtractColorPaletteAharoni(const Mat<vec3>& sRGB,
     // colors, and compute the convex hull of the remaining colors in the
     // image.
     if (e[0] > (L_min + L_down) && e[0] < (L_max - L_up)) {
-      inputPoints.push_back({e[1], e[2]});
+      inputPoints.push_back(
+        {static_cast<float>(e[1]), static_cast<float>(e[2])});
       inputColors.push_back(e);
       indices.push_back(index++);
     }
@@ -115,12 +116,12 @@ void ExtractColorPaletteAharoni(const Mat<vec3>& sRGB,
    * */
   while (indices.size() > k) {
     // first point
-    vec2 p_1 = inputPoints[static_cast<size_t>(indices.back())];
-    vec2 p0  = inputPoints[static_cast<size_t>(indices.front())];
-    vec2 p1  = inputPoints[static_cast<size_t>(indices[1U])];
+    auto p_1 = inputPoints[static_cast<size_t>(indices.back())];
+    auto p0  = inputPoints[static_cast<size_t>(indices.front())];
+    auto p1  = inputPoints[static_cast<size_t>(indices[1U])];
 
     int32_t removeIndex = 0;
-    double md           = DistanceLinePoint(p_1, p1, p0);
+    auto md             = DistanceLinePoint(p_1, p1, p0);
 
     // inner points
     for (auto l = 1UL; l < indices.size() - 1; l++) {
@@ -132,7 +133,7 @@ void ExtractColorPaletteAharoni(const Mat<vec3>& sRGB,
       p0  = inputPoints[static_cast<size_t>(i0)];
       p1  = inputPoints[static_cast<size_t>(i1)];
 
-      double d = DistanceLinePoint(p_1, p1, p0);
+      const auto d = DistanceLinePoint(p_1, p1, p0);
       if (d < md) {
         md          = d;
         removeIndex = static_cast<int32_t>(l);
@@ -140,10 +141,10 @@ void ExtractColorPaletteAharoni(const Mat<vec3>& sRGB,
     }
 
     // last point
-    p_1      = inputPoints[static_cast<size_t>(*(indices.cend() - 2))];
-    p0       = inputPoints[static_cast<size_t>(indices.back())];
-    p1       = inputPoints[static_cast<size_t>(indices.front())];
-    double d = DistanceLinePoint(p_1, p1, p0);
+    p_1          = inputPoints[static_cast<size_t>(*(indices.cend() - 2))];
+    p0           = inputPoints[static_cast<size_t>(indices.back())];
+    p1           = inputPoints[static_cast<size_t>(indices.front())];
+    const auto d = DistanceLinePoint(p_1, p1, p0);
     if (d < md) {
       removeIndex = static_cast<int32_t>(indices.size()) - 1;
     }

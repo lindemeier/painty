@@ -127,3 +127,11 @@ new_local_repository(
     # For Qt5 on Ubuntu 16.04
     path = "/usr/include/x86_64-linux-gnu/qt5/",
 )
+
+
+# cxxopts for command line parsing
+git_repository(
+    name = "com_cxxopts",
+    branch = "master",
+    remote = "https://github.com/jarro2783/cxxopts.git",
+)

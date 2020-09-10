@@ -1,0 +1,10 @@
+
+
+cc_binary(
+    name = "palette_extraction",
+    srcs = ["main.cxx"],
+    deps = [
+        "//painty/mixer:painty_mixer",
+        "@com_cxxopts//:cxxopts",
+    ],
+)
