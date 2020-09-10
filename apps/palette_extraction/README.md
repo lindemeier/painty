@@ -24,7 +24,7 @@ This is a collection of base pigments whose absorption and scattering coefficien
 * Titanium White
 
 
-![](doc/palette_extraction/pexels-photo-977737-extractedPalette.json.basePigments.jpg)
+![](doc/../../../doc/palette_extraction/pexels-photo-977737-extractedPalette.json.basePigments.jpg)
 
 **Figure 1:** This is a visualization of the pigments and their resulting reflectance on black and white background.
 
@@ -36,13 +36,13 @@ Command to extract a pallete of size 6 from a input image:
  ./palette_extraction -b ../palettes/BasePigments/AcrylicsBasePigments.json -i ../doc/palette_extraction/pexels-photo-977737.jpeg -n 6 -o ../doc/palette_extraction/pexels-photo-977737-extractedPalette.json
 ```
 
-![](doc/palette_extraction/pexels-photo-977737.jpeg)
+![](doc/../../../doc/palette_extraction/pexels-photo-977737.jpeg)
 
 **Figure 2:** The input image [2] we will extract a palette from using the pigments from Figure 1 .
 
 
 
-![](doc/palette_extraction/pexels-photo-977737-extractedPalette.json.jpg)
+![](doc/../../../doc/palette_extraction/pexels-photo-977737-extractedPalette.json.jpg)
 
 **Figure 3:** The extracted palette rendered on black and white background.
 
