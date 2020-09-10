@@ -5,7 +5,7 @@ cmake_external(
     cache_entries = {
     },
     headers_only = True,
-    lib_source = "@eigen//:all",
+    lib_source = "@com_github_eigen_eigen//:all",
     out_include_dir = "include/eigen3",
     visibility = ["//visibility:public"]
 )
@@ -14,6 +14,7 @@ cmake_external(
     name = "opencv",
     cmake_options = [
         # "-GNinja",
+        "-DCMAKE_BUILD_TYPE=Release",
         "-DBUILD_LIST=calib3d,core,features2d,flann,highgui,imgcodecs,imgproc,video,videoio",
     ],
     lib_source = "@opencv//:all",
