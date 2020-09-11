@@ -6,6 +6,9 @@
  */
 #include "painty/image/Convolution.hxx"
 
+#include "painty/image/EdgeTangentFlow.hxx"
+#include "painty/image/FlowBasedDoG.hxx"
+
 namespace painty {
 
 Mat1d createGauss1stDerivativeKernel(const double sigma, const double theta,
@@ -76,5 +79,18 @@ Mat<double> createGaborKernel(double lambda, double theta, double gamma,
   }
 
   return kernel;
+}
+
+auto smoothOABF(const Mat3d& labSource, const Mat1d& mask,
+                const double sigmaSpatial, const double sigmaColor,
+                const double sigmaFlow, const uint32_t nIterations) -> Mat3d {
+  if ((sigmaColor <= 0.0) || (sigmaSpatial <= 0.0)) {
+    return labSource.clone();
+  }
+  const auto etf = ComputeEdgeTangentFlow(
+    tensor::ComputeTensors(labSource, mask, 0.0, sigmaFlow));
+
+  return FlowBasedDoG::filterBilateralOrientationAligned(
+    labSource, etf, sigmaSpatial, sigmaColor, nIterations);
 }
 }  // namespace painty

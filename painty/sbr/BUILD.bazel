@@ -1,0 +1,29 @@
+load("//:painty.bzl", "painty_cc_library", "painty_cc_test")
+
+painty_cc_library(
+    name = "painty_sbr",
+    srcs = glob(["src/*.cxx"]),
+    hdrs = glob(["*.hxx"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//painty/core:painty_core",
+        "//painty/image:painty_image",
+        "//painty/io:painty_io",
+        "//painty/mixer:painty_mixer",
+        "//painty/renderer:painty_renderer",
+    ],
+)
+
+painty_cc_test(
+    name = "test",
+    srcs = glob(["test/src/*.cxx"]),
+    data = [
+        "//data:exported_footprint",
+        "//data:exported_palettes",
+        "//data:exported_texture_sample_0",
+    ],
+    deps = [
+        ":painty_sbr",
+        "@gtest",
+    ],
+)

@@ -283,7 +283,7 @@ static constexpr auto Eps = 10e-6;
  * @param basePalette the underlying base palette.
  */
 PaintMixer::PaintMixer(const Palette& basePalette)
-    : mBasePalette(basePalette) {}
+    : _basePalette(basePalette) {}
 
 /**
  * @brief Mix a palette from an input RGB image. The image is analyzed using a
@@ -326,7 +326,7 @@ Palette PaintMixer::mixFromInputPicture(const Mat<vec3>& sRGBPicture,
  */
 PaintCoeff PaintMixer::mixSinglePaint(
   const std::vector<CoeffPrecision>& weights) const {
-  if (weights.size() != mBasePalette.size()) {
+  if (weights.size() != _basePalette.size()) {
     throw std::invalid_argument("Palette size does not match underlying size.");
   }
   auto norm = 1.0;
@@ -345,10 +345,10 @@ PaintCoeff PaintMixer::mixSinglePaint(
     p.S[i] = 0.0;
   }
 
-  for (auto l = 0U; l < mBasePalette.size(); l++) {
+  for (auto l = 0U; l < _basePalette.size(); l++) {
     for (auto i = 0U; i < CoeffSamplesCount; i++) {
-      p.K[i] += norm * weights[l] * mBasePalette[l].K[i];
-      p.S[i] += norm * weights[l] * mBasePalette[l].S[i];
+      p.K[i] += norm * weights[l] * _basePalette[l].K[i];
+      p.S[i] += norm * weights[l] * _basePalette[l].S[i];
     }
   }
   return p;
@@ -363,7 +363,7 @@ PaintCoeff PaintMixer::mixSinglePaint(
  */
 std::vector<CoeffPrecision> PaintMixer::getWeightsForMixingTargetPaint(
   const PaintCoeff& paint) const {
-  const auto k = mBasePalette.size();
+  const auto k = _basePalette.size();
 
   std::vector<CoeffPrecision> weights(k);
 
@@ -374,7 +374,7 @@ std::vector<CoeffPrecision> PaintMixer::getWeightsForMixingTargetPaint(
   ceres::Problem problem;
 
   ::ceres::CostFunction* dataCostFunction =
-    MixSolver::CostFunction_MixPaint::Create(mBasePalette, paint);
+    MixSolver::CostFunction_MixPaint::Create(_basePalette, paint);
   problem.AddResidualBlock(dataCostFunction, nullptr, weights.data());
 
   ::ceres::CostFunction* sumCostFunction =
@@ -445,7 +445,7 @@ std::vector<CoeffPrecision> PaintMixer::getWeightsForMixingTargetPaint(
 std::vector<CoeffPrecision> PaintMixer::getMixtureWeightsForReflectance(
   const vec3& targetReflectance, const vec3& backgroundReflectance,
   double& layerThickness) const {
-  const auto k = mBasePalette.size();
+  const auto k = _basePalette.size();
 
   std::vector<CoeffPrecision> weights(k);
 
@@ -457,7 +457,7 @@ std::vector<CoeffPrecision> PaintMixer::getMixtureWeightsForReflectance(
   ceres::Problem problem;
   ::ceres::CostFunction* dataCostFunction =
     MixSolver::CostFunction_E_data::Create(
-      mBasePalette,
+      _basePalette,
       vec3(backgroundReflectance[0], backgroundReflectance[1],
            backgroundReflectance[2]),
       vec3(targetReflectance[0], targetReflectance[1], targetReflectance[2]));
@@ -521,7 +521,7 @@ std::vector<CoeffPrecision> PaintMixer::getMixtureWeightsForReflectance(
  * @return const Palette&
  */
 const Palette& PaintMixer::getUnderlyingPalette() const {
-  return mBasePalette;
+  return _basePalette;
 }
 
 /**
@@ -530,7 +530,7 @@ const Palette& PaintMixer::getUnderlyingPalette() const {
  * @param palette
  */
 void PaintMixer::setUnderlyingPalette(const Palette& palette) {
-  mBasePalette = palette;
+  _basePalette = palette;
 }
 
 }  // namespace painty

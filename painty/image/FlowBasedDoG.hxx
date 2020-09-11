@@ -10,7 +10,8 @@
 
 namespace painty {
 /**
- * @brief
+ * @brief Implementation of the paper:
+ * Kyprianidis, J. E., and Kang, H. Image and video abstraction by coherence-enhancing filtering. Computer Graphics Forum 30, 2 (Apr. 2011), 593–602
  *
  */
 class FlowBasedDoG {

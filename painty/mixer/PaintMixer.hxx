@@ -46,7 +46,7 @@ class PaintMixer {
    * other Paints and Palettes.
    *
    */
-  Palette mBasePalette;
+  Palette _basePalette;
 };
 
 }  // namespace painty

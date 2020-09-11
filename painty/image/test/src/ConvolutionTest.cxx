@@ -30,5 +30,7 @@ TEST(ConvolutionTest, Convolve2dTest) {
   auto computeGaborEnergy =
     painty::computeGaborEnergy(channels.front(), 3.0, 4);
 
+  const auto oabf = painty::smoothOABF(Lab);
+
   // TODO compare to serialized results
 }

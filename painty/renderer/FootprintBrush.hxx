@@ -23,8 +23,6 @@ class FootprintBrush final {
   static constexpr auto N = DataType<vector_type>::dim;
 
  public:
-  FootprintBrush() = default;
-
   FootprintBrush(const double radius)
       : _sizeMap(0),
         _footprint(0, 0),
@@ -32,8 +30,6 @@ class FootprintBrush final {
         _snapshotBuffer(0, 0)
 
   {
-    io::imRead("./data/footprint/footprint.png", _footprintFullSize, true);
-
     setRadius(radius);
   }
 
@@ -45,6 +41,8 @@ class FootprintBrush final {
    * @param radius
    */
   void setRadius(const double radius) {
+    io::imRead("./data/footprint/footprint.png", _footprintFullSize, true);
+
     _radius          = radius;
     const auto width = static_cast<int32_t>(2.0 * std::ceil(radius) + 1.0);
     _sizeMap         = static_cast<int32_t>(std::ceil(std::sqrt(2.0) * width));

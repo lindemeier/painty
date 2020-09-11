@@ -1,5 +1,5 @@
 /**
- * @file EdgeTangentFlow.h
+ * @file EdgeTangentFlow.hxx
  * @author Thomas Lindemeier
  * @brief
  *

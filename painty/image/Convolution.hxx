@@ -128,4 +128,21 @@ Mat<T> computeGaborEnergy(const Mat<T>& source, const double lambda,
   }
   return superposition;
 }
+
+/**
+ * @brief Smoothes an image using the orientation aligned bilateral filter.
+ * (Kyprianidis, J. E., and Kang, H. Image and video abstraction by coherence-enhancing filtering. Computer Graphics Forum 30, 2 (Apr. 2011), 593–602)
+ *
+ * @param labSource input image in CIELab color space.
+ * @param sigmaSpatial the sigma for the spatial blur
+ * @param sigmaColor sigma for the color blur
+ * @param sigmaFlow sigma for the flow field blur
+ * @param nIterations number of iterations to run
+ * @return Mat3d
+ */
+auto smoothOABF(const Mat3d& labSource, const Mat1d& mask = Mat1d(),
+                const double sigmaSpatial = 3.0, const double sigmaColor = 4.25,
+                const double sigmaFlow = 3.0, const uint32_t nIterations = 5U)
+  -> Mat3d;
+
 }  // namespace painty
