@@ -11,21 +11,36 @@
 
 namespace painty {
 
-SbrPainter::SbrPainter(const std::shared_ptr<Canvas<vec3>>& canvasPtr,
-                       const Palette& palette)
-    : _mixer(palette),
-      _canvasPtr(canvasPtr),
-      _brush(0.0) {}
+SbrPainterBase::SbrPainterBase() {}
 
-void SbrPainter::setBrushRadius(const double radius) {
-  _brush.setRadius(radius);
+SbrPainterBase::~SbrPainterBase() = default;
+
+SbrPainterTextureBrush::SbrPainterTextureBrush()
+    : SbrPainterBase(),
+      _brushPtr(std::make_unique<TextureBrush<vec3>>("data/sample_0")) {}
+
+SbrPainterFootprintBrush::SbrPainterFootprintBrush()
+    : SbrPainterBase(),
+      _brushPtr(std::make_unique<FootprintBrush<vec3>>(0.0)) {}
+
+void SbrPainterTextureBrush::setBrushRadius(const double radius) {
+  _brushPtr->setRadius(radius);
 }
 
-void SbrPainter::dipBrush(const std::array<vec3, 2UL>& paint) {
-  _brush.dip(paint);
+void SbrPainterFootprintBrush::setBrushRadius(const double radius) {
+  _brushPtr->setRadius(radius);
 }
 
-void SbrPainter::paintStroke(const std::vector<vec2>& path) {
+void SbrPainterTextureBrush::dipBrush(const std::array<vec3, 2UL>& paint) {
+  _brushPtr->dip(paint);
+}
+
+void SbrPainterFootprintBrush::dipBrush(const std::array<vec3, 2UL>& paint) {
+  _brushPtr->dip(paint);
+}
+
+void SbrPainterFootprintBrush::paintStroke(const std::vector<vec2>& path,
+                                           Canvas<vec3>& canvas) {
   // /**
   //   * @author Zingl Alois
   //   * @date 22.08.2016
@@ -79,12 +94,18 @@ void SbrPainter::paintStroke(const std::vector<vec2>& path) {
 
     for (int32_t pd = 1; pd <= static_cast<int32_t>(dist); pd++) {
       const auto t = static_cast<double>(pd) / dist;
-      // TODO implement theta
-      const auto dir = painty::CubicDerivativeFirst(p_pre, p_0, p_1, p_next, t);
-      _brush.imprint(painty::Cubic(p_pre, p_0, p_1, p_next, t),
-                     std::atan2(dir[1U], dir[0U]), *_canvasPtr);
+
+      const auto dir =
+        painty::CatmullRomDerivativeFirst(p_pre, p_0, p_1, p_next, t);
+      _brushPtr->imprint(painty::CatmullRom(p_pre, p_0, p_1, p_next, t),
+                         std::atan2(dir[1U], dir[0U]), canvas);
     }
   }
+}
+
+void SbrPainterTextureBrush::paintStroke(const std::vector<vec2>& path,
+                                         Canvas<vec3>& canvas) {
+  _brushPtr->applyTo(path, canvas);
 }
 
 }  // namespace painty

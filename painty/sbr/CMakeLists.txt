@@ -1,24 +1,31 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project(paintyIoTest)
+project(paintySbr)
 
-add_executable(${PROJECT_NAME}
-  ${PROJECT_SOURCE_DIR}/src/ImageIOTest.cxx
-  ${PROJECT_SOURCE_DIR}/src/main.cxx
+
+add_library(${PROJECT_NAME} STATIC
+  ${PROJECT_SOURCE_DIR}/src/PathTracer.cxx
+  ${PROJECT_SOURCE_DIR}/src/PictureTargetSbrPainter.cxx
+  ${PROJECT_SOURCE_DIR}/src/SbrPainter.cxx
 )
 
-add_test(
-  NAME ${PROJECT_NAME}
- COMMAND ${PROJECT_NAME}
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+target_include_directories(${PROJECT_NAME}
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+  PUBLIC $<INSTALL_INTERFACE:include/>
 )
 
 target_link_libraries(${PROJECT_NAME}
-  gtest
-  paintyIo
+  paintyCore
+  paintyImage
+  paintyMixer
+  paintyRenderer
 )
+
 add_dependencies(${PROJECT_NAME}
-  paintyIo
+  paintyCore
+  paintyImage
+  paintyMixer
+  paintyRenderer
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
@@ -33,4 +40,9 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # using Visual Studio C++
   target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+endif()
+
+
+if(RUN_TESTS)
+  add_subdirectory(test)
 endif()

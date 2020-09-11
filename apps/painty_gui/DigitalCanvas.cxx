@@ -116,9 +116,9 @@ void DigitalCanvas::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
     // don't imprint at previous point
     for (int32_t pd = 1; pd <= static_cast<int32_t>(dist); pd++) {
       const double t = static_cast<double>(pd) / dist;
-
-      const auto point = painty::CatmullRom(p0, p1, p2, p2, t);
-      _brushFootprintPtr->imprint(point, 0.0, *_canvasPtr);
+      const auto dir = painty::CatmullRomDerivativeFirst(p0, p1, p2, p2, t);
+      _brushFootprintPtr->imprint(painty::CatmullRom(p0, p1, p2, p2, t),
+                                  std::atan2(dir[1U], dir[0U]), *_canvasPtr);
     }
     updateCanvas();
   }

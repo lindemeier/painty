@@ -93,10 +93,10 @@ class TextureBrush final {
 
     for (auto i = 0U; i < vertices.size(); ++i) {
       T u          = static_cast<T>(i) / static_cast<T>(vertices.size() - 1);
-      const auto c = spineSpline.cubic(u);
+      const auto c = spineSpline.catmullRom(u);
 
       // spine tangent vector
-      auto t = spineSpline.cubicDerivative(u, 1).normalized();
+      auto t = spineSpline.catmullRomDerivativeFirst(u).normalized();
 
       // compute perpendicular vector to spine
       const vec2 d = {-t[1], t[0]};

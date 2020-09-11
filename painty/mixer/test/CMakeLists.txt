@@ -1,24 +1,24 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project(paintyIoTest)
+project(paintyMixerTest)
 
 add_executable(${PROJECT_NAME}
-  ${PROJECT_SOURCE_DIR}/src/ImageIOTest.cxx
-  ${PROJECT_SOURCE_DIR}/src/main.cxx
-)
+    ${PROJECT_SOURCE_DIR}/src/SerializationTest.cxx
+    ${PROJECT_SOURCE_DIR}/src/main.cxx
+  )
 
 add_test(
   NAME ${PROJECT_NAME}
- COMMAND ${PROJECT_NAME}
+  COMMAND ${PROJECT_NAME}
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
 target_link_libraries(${PROJECT_NAME}
   gtest
-  paintyIo
+  paintyMixer
 )
 add_dependencies(${PROJECT_NAME}
-  paintyIo
+  paintyMixer
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)

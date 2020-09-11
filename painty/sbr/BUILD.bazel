@@ -20,6 +20,7 @@ painty_cc_test(
     data = [
         "//data:exported_footprint",
         "//data:exported_palettes",
+        "//data:exported_test_images",
         "//data:exported_texture_sample_0",
     ],
     deps = [

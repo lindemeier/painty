@@ -1,13 +1,16 @@
 #include <fstream>
 #include <iostream>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include "cxxopts.hpp"
+#pragma clang diagnostic pop
 #include "painty/io/ImageIO.hxx"
 #include "painty/mixer/PaintMixer.hxx"
 #include "painty/mixer/Palette.hxx"
 #include "painty/mixer/Serialization.hxx"
 
-int main(int argc, const char* argv[]) {
+int main(int argc, char* argv[]) {
   cxxopts::Options options(argv[0], " - Paint mixer command line options");
   options.positional_help("[optional args]").show_positional_help();
 
@@ -75,7 +78,7 @@ int main(int argc, const char* argv[]) {
 
   try {
     const auto palette =
-      mixer.mixFromInputPicture(image, result["n"].as<int32_t>());
+      mixer.mixFromInputPicture(image, result["n"].as<uint32_t>());
 
     const auto outputFile = result["output"].as<std::string>();
     std::ofstream ostream(outputFile);

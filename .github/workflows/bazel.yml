@@ -40,7 +40,7 @@ jobs:
 
     - name: Build
       run: |
-        "${GITHUB_WORKSPACE}/bin/bazel" build //painty/... //apps/...
+        "${GITHUB_WORKSPACE}/bin/bazel" build --compilation_mode=opt //painty/... //apps/...
 
     - name: Test
       run: |

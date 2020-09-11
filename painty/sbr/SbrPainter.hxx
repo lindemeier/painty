@@ -11,26 +11,50 @@
 #include "painty/mixer/Palette.hxx"
 #include "painty/renderer/Canvas.hxx"
 #include "painty/renderer/FootprintBrush.hxx"
+#include "painty/renderer/TextureBrush.hxx"
 
 namespace painty {
-class SbrPainter final {
+class SbrPainterBase {
  public:
-  SbrPainter(const std::shared_ptr<Canvas<vec3>>& canvasPtr,
-             const Palette& palette);
+  SbrPainterBase();
 
-  void setBrushRadius(const double radius);
+  virtual ~SbrPainterBase();
 
-  void paintStroke(const std::vector<vec2>& path);
+  virtual void setBrushRadius(const double radius) = 0;
 
-  void dipBrush(const std::array<vec3, 2UL>& paint);
+  virtual void paintStroke(const std::vector<vec2>& path,
+                           Canvas<vec3>& canvas) = 0;
+
+  virtual void dipBrush(const std::array<vec3, 2UL>& paint) = 0;
+};
+
+class SbrPainterTextureBrush final : public SbrPainterBase {
+ public:
+  SbrPainterTextureBrush();
+
+  ~SbrPainterTextureBrush() override = default;
+
+  void setBrushRadius(const double radius) override;
+  void paintStroke(const std::vector<vec2>& path,
+                   Canvas<vec3>& canvas) override;
+  void dipBrush(const std::array<vec3, 2UL>& paint) override;
 
  private:
-  SbrPainter() = delete;
+  std::unique_ptr<TextureBrush<vec3>> _brushPtr = nullptr;
+};
 
-  PaintMixer _mixer;
+class SbrPainterFootprintBrush final : public SbrPainterBase {
+ public:
+  SbrPainterFootprintBrush();
 
-  std::shared_ptr<Canvas<vec3>> _canvasPtr = nullptr;
+  ~SbrPainterFootprintBrush() override = default;
 
-  FootprintBrush<vec3> _brush;
+  void setBrushRadius(const double radius) override;
+  void dipBrush(const std::array<vec3, 2UL>& paint) override;
+  void paintStroke(const std::vector<vec2>& path,
+                   Canvas<vec3>& canvas) override;
+
+ private:
+  std::unique_ptr<FootprintBrush<vec3>> _brushPtr = nullptr;
 };
 }  // namespace painty

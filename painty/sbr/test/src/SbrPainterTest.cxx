@@ -13,6 +13,7 @@
 #include "gtest/gtest.h"
 #include "painty/mixer/Serialization.hxx"
 #include "painty/renderer/Renderer.hxx"
+#include "painty/sbr/PictureTargetSbrPainter.hxx"
 #include "painty/sbr/SbrPainter.hxx"
 
 TEST(SbrPainterTest, Construct) {
@@ -28,13 +29,22 @@ TEST(SbrPainterTest, Construct) {
 
   auto canvasPtr = std::make_shared<painty::Canvas<painty::vec3>>(768, 1024);
 
-  painty::SbrPainter painter(canvasPtr, palette);
+  auto painterPtr = std::make_shared<painty::SbrPainterTextureBrush>();
 
-  painter.setBrushRadius(13.0);
-  painter.dipBrush({palette.front().K, palette.front().S});
-  painter.paintStroke({{100.0, 100.0}, {200.0, 200.0}, {300.0, 300.0}});
+  painterPtr->setBrushRadius(13.0);
+  painterPtr->dipBrush({palette.front().K, palette.front().S});
+  painterPtr->paintStroke({{100.0, 100.0}, {200.0, 200.0}, {300.0, 300.0}},
+                          *canvasPtr);
 
   painty::Renderer<painty::vec3> renderer;
   painty::io::imSave("/tmp/canvasComposed.png", renderer.compose(*canvasPtr),
                      true);
+
+  painty::PictureTargetSbrPainter picturePainter(
+    canvasPtr, std::make_shared<painty::PaintMixer>(palette), painterPtr);
+
+  painty::Mat3d image;
+  painty::io::imRead("./data/test_images/field.jpg", image, false);
+
+  picturePainter.paintImage(image);
 }

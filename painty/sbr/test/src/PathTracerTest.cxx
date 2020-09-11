@@ -25,30 +25,29 @@ TEST(PathTracerTest, Construct) {
   tracer.setStep(5);
   tracer.setFc(0.5);
 
-{
-  tracer.setStep(1);
-  const auto path = tracer.trace({500.0, 500.0});
-  EXPECT_EQ(path.size(), len);
-}
+  {
+    tracer.setStep(1);
+    const auto path = tracer.trace({500.0, 500.0});
+    EXPECT_EQ(path.size(), len);
+  }
 
-{
-  tracer.setStep(5);
-  const auto path = tracer.trace({500.0, 500.0});
-  EXPECT_EQ(path.size(), len);
-}
+  {
+    tracer.setStep(5);
+    const auto path = tracer.trace({500.0, 500.0});
+    EXPECT_EQ(path.size(), len);
+  }
 
-{
-  tracer.setStep(5);
-  tracer.setFc(0.1);
-  const auto path = tracer.trace({500.0, 500.0});
-  EXPECT_EQ(path.size(), len);
-}
+  {
+    tracer.setStep(5);
+    tracer.setFc(0.1);
+    const auto path = tracer.trace({500.0, 500.0});
+    EXPECT_EQ(path.size(), len);
+  }
 
-{
-  tracer.setStep(5);
-  tracer.setFc(0.9);
-  const auto path = tracer.trace({500.0, 500.0});
-  EXPECT_EQ(path.size(), len);
-}
-
+  {
+    tracer.setStep(5);
+    tracer.setFc(0.9);
+    const auto path = tracer.trace({500.0, 500.0});
+    EXPECT_EQ(path.size(), len);
+  }
 }
