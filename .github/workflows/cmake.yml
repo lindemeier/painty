@@ -43,13 +43,23 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_C_COMPILER=/usr/bin/clang-10 -DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -GNinja
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_C_COMPILER=/usr/bin/clang-10 -DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -GNinja
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE
+
+    # - name: clang-tidy
+    #   uses: ZedThree/clang-tidy-review@v0.2.0
+    #   id: review
+    #   with:
+    #     # build_dir: ${{runner.workspace}}/build
+    #     clang_tidy_version: 10
+    # # If there are any comments, fail the check
+    # # - if: steps.review.outputs.total_comments > 0
+    # #   run: exit 1
 
     - name: Test
       working-directory: ${{runner.workspace}}/build

@@ -33,6 +33,9 @@ class FlowBasedDoG {
                                   double sigma_e, double sigma_r, double tau,
                                   double sigmaSmoothing);
 
+  static void smoothAlongFlow(const Mat1d& img, Mat1d& dst, const Mat2d& tfm,
+                              double sigma_m);
+
  private:
   // orientation aligned bilateral filter
   double _oabfSigma_d      = 3.0;

@@ -6,7 +6,6 @@ project(paintySbr)
 add_library(${PROJECT_NAME} STATIC
   ${PROJECT_SOURCE_DIR}/src/PathTracer.cxx
   ${PROJECT_SOURCE_DIR}/src/PictureTargetSbrPainter.cxx
-  ${PROJECT_SOURCE_DIR}/src/SbrPainter.cxx
 )
 
 target_include_directories(${PROJECT_NAME}

@@ -147,7 +147,7 @@ void DigitalCanvas::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
       cubicPoints.push_back(spline.cubic(t));
     }
 
-    _brushTexturePtr->applyTo(cubicPoints, *_canvasPtr);
+    _brushTexturePtr->paintStroke(cubicPoints, *_canvasPtr);
     updateCanvas();
   }
 

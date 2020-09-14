@@ -32,8 +32,8 @@ TEST(SuperPixelTest, SuperPixelExecuteTest) {
   for (auto& a : gImage) {
     a = {0.0, 0.0, 0.0};
   }
-  segmentation.extract(labImage, gImage,
-                       painty::Mat<uint8_t>(labImage.size(), 255U), 30.0);
+  segmentation.extract(labImage, gImage, painty::Mat1d(labImage.size(), 1.0),
+                       30.0);
 
   segmentation.getSegmentationOutlined(image);
 

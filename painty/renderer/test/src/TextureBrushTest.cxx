@@ -29,7 +29,7 @@ TEST(TextureBrushTest, Construct) {
   path.emplace_back(400.0, 250.0);
   path.emplace_back(750.0, 250.0);
 
-  brush.applyTo(path, canvas);
+  brush.paintStroke(path, canvas);
 
   painty::Renderer<painty::vec3> renderer;
 

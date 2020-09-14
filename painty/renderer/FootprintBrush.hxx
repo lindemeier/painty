@@ -12,15 +12,18 @@
 #include <iostream>
 #include <random>
 
+#include "painty/core/Spline.hxx"
 #include "painty/io/ImageIO.hxx"
+#include "painty/renderer/BrushBase.hxx"
 #include "painty/renderer/Canvas.hxx"
 #include "painty/renderer/PaintLayer.hxx"
 
 namespace painty {
 template <class vector_type>
-class FootprintBrush final {
-  using T                 = typename DataType<vector_type>::channel_type;
-  static constexpr auto N = DataType<vector_type>::dim;
+class FootprintBrush final : public BrushBase<vector_type> {
+  using T                 = typename BrushBase<vector_type>::T;
+  static constexpr auto N = BrushBase<vector_type>::N;
+  static constexpr auto MinVolume = 0.001;
 
  public:
   FootprintBrush(const double radius)
@@ -33,27 +36,30 @@ class FootprintBrush final {
     setRadius(radius);
   }
 
-  ~FootprintBrush() = default;
+  ~FootprintBrush() override = default;
 
   /**
    * @brief Change the radius of the brush.
    *
    * @param radius
    */
-  void setRadius(const double radius) {
-    io::imRead("./data/footprint/footprint.png", _footprintFullSize, true);
+  void setRadius(const double radius) override {
+    constexpr auto Eps = 0.5;
+    if (!fuzzyCompare(_radius, radius, Eps)) {
+      io::imRead("./data/footprint/footprint.png", _footprintFullSize, true);
 
-    _radius          = radius;
-    const auto width = static_cast<int32_t>(2.0 * std::ceil(radius) + 1.0);
-    _sizeMap         = static_cast<int32_t>(std::ceil(std::sqrt(2.0) * width));
+      _radius          = radius;
+      const auto width = static_cast<int32_t>(2.0 * std::ceil(radius) + 1.0);
+      _sizeMap = static_cast<int32_t>(std::ceil(std::sqrt(2.0) * width));
 
-    // resize the footprint to the radius and pad to cover all rotations.
-    const auto pad = (_sizeMap - width) / 2;
-    _footprint     = PaddedMat(ScaledMat(_footprintFullSize, width, width), pad,
-                           pad, pad, pad, 0.0);
+      // resize the footprint to the radius and pad to cover all rotations.
+      const auto pad = (_sizeMap - width) / 2;
+      _footprint = PaddedMat(ScaledMat(_footprintFullSize, width, width), pad,
+                             pad, pad, pad, 0.0);
 
-    _pickupMap = PaintLayer<vector_type>(_sizeMap, _sizeMap);
-    _pickupMap.clear();
+      _pickupMap = PaintLayer<vector_type>(_sizeMap, _sizeMap);
+      _pickupMap.clear();
+    }
   }
 
   /**
@@ -141,7 +147,7 @@ class FootprintBrush final {
    *
    * @param paint
    */
-  void dip(const std::array<vector_type, 2UL>& paint) {
+  void dip(const std::array<vector_type, 2UL>& paint) override {
     clean();
 
     _paintIntrinsic = paint;
@@ -195,6 +201,70 @@ class FootprintBrush final {
 
   void setUseSnapshotBuffer(const bool use) {
     _useSnapshot = use;
+  }
+
+  void paintStroke(const std::vector<vec2>& path,
+                   Canvas<vector_type>& canvas) override {
+    // /**
+    //   * @author Zingl Alois
+    //   * @date 22.08.2016
+    //   * @version 1.2
+    //   */
+    // const auto bresenham = [](vec2i p0, vec2i p1) -> std::vector<vec2i> {
+    //   std::vector<vec2i> points;
+    //   int32_t dx = std::abs(p1[0U] - p0[0U]), sx = p0[0U] < p1[0U] ? 1 : -1;
+    //   int32_t dy = -std::abs(p1[1U] - p0[1U]), sy = p0[1U] < p1[1U] ? 1 : -1;
+    //   int32_t err = dx + dy, e2;
+
+    //   for (;;) {
+    //     vec2i p = p0;
+    //     if (points.empty() || (points.back() != p)) {
+    //       points.push_back(p);
+    //     }
+    //     if ((p0[0U] == p1[0U]) && (p0[1U] == p1[1U])) {
+    //       break;
+    //     }
+    //     e2 = 2 * err;
+    //     if (e2 >= dy) {
+    //       err += dy;
+    //       p0[0U] += sx;
+    //     }
+    //     if (e2 <= dx) {
+    //       err += dx;
+    //       p0[1U] += sy;
+    //     }
+    //   }
+    //   return points;
+    // };
+
+    // for (auto i = 1UL; (i < path.size()); i++) {
+    //   const auto p0 = path[i - 1UL].cast<int32_t>();
+    //   const auto p1 = path[i].cast<int32_t>();
+
+    //   const auto sampled_path = bresenham(p0, p1);
+
+    //   for (const auto& p : sampled_path) {
+    //     // TODO implement theta
+    //     _brush.imprint(p.cast<double>(), 0.0, *_canvasPtr);
+    //   }
+    // }
+    for (auto i = 0UL; (i < (path.size() - 1UL)); i++) {
+      const auto p_pre  = path[std::max(i - 1UL, 0UL)];
+      const auto p_0    = path[i];
+      const auto p_1    = path[i + 1UL];
+      const auto p_next = path[std::min(i + 2UL, path.size() - 1UL)];
+
+      const auto dist = (p_1 - p_0).norm();
+
+      for (int32_t pd = 1; pd <= static_cast<int32_t>(dist); pd++) {
+        const auto t = static_cast<double>(pd) / dist;
+
+        const auto dir =
+          painty::CatmullRomDerivativeFirst(p_pre, p_0, p_1, p_next, t);
+        imprint(painty::CatmullRom(p_pre, p_0, p_1, p_next, t),
+                std::atan2(dir[1U], dir[0U]), canvas);
+      }
+    }
   }
 
  private:
@@ -260,11 +330,10 @@ class FootprintBrush final {
    */
   template <class Type>
   Type blend(const T v_a, const Type& a, const T v_b, const Type& b) const {
-    constexpr auto Eps = static_cast<T>(0.0000001);
     const T vTotal     = v_a + v_b;
 
     auto res = a;
-    if (vTotal > Eps) {
+    if (vTotal > MinVolume) {
       res = (v_a * a + v_b * b) / vTotal;
     }
     return res;
@@ -293,7 +362,7 @@ class FootprintBrush final {
       const auto v_canvasLeave = _pickupRate * v_canvasIs * footprintHeight;
 
       // transfer paint to pickup map from canvas
-      if (v_canvasLeave > 0.0) {
+      if (v_canvasLeave > MinVolume) {
         // update volume on canvas
         const auto v_canvasRemain = v_canvasIs - v_canvasLeave;
         canvasLayer.getV_buffer()(xy_canvas[1U], xy_canvas[0U]) =
@@ -402,10 +471,10 @@ class FootprintBrush final {
   PaintLayer<vector_type> _snapshotBuffer;
 
   /**
-   * @brief Whether to use the snapshot buffer or directly pickuo from the canvas.
+   * @brief Whether to use the snapshot buffer or directly pickup from the canvas.
    *
    */
-  bool _useSnapshot = false;
+  bool _useSnapshot = true;
 
   /**
    * @brief Max capacity of the pickup map.

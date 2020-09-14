@@ -27,11 +27,9 @@ static void run_oabf(uint32_t pass, const Mat3d& sourceLab, Mat3d& target,
       if (std::abs(t[0U]) >= std::abs(t[1U])) {
         t[1U] = t[1U] / t[0U];
         t[0U] = 1.0;
-        t[2U] = 0.;
       } else {
         t[0U] = t[0U] / t[1U];
         t[1U] = 1.0;
-        t[2U] = 0;
       }
 
       const auto center = Interpolate(sourceLab, uv);
@@ -139,8 +137,10 @@ static void fdogAlongGradient(const Mat1d& img, Mat1d& dst, const Mat2d& tfm,
   }
 }
 
-static void smoothAlongFlow(const Mat1d& img, Mat1d& dst, const Mat2d& tfm,
-                            const double sigma_m) {
+}  // namespace detail
+
+void FlowBasedDoG::smoothAlongFlow(const Mat1d& img, Mat1d& dst,
+                                   const Mat2d& tfm, const double sigma_m) {
   struct lic_t {
     vec2 p    = {0.0, 0.0};
     vec2 t    = {0.0, 0.0};
@@ -207,8 +207,6 @@ static void smoothAlongFlow(const Mat1d& img, Mat1d& dst, const Mat2d& tfm,
     }
   }
 }
-
-}  // namespace detail
 
 Mat3d FlowBasedDoG::execute(const Mat3d& rgbLinear) const {
   const auto Lab =
@@ -289,7 +287,7 @@ Mat1d FlowBasedDoG::filterFlowBasedDoG(const Mat1d& img, const Mat2d& tfm,
 
   // smooth along etf
   Mat1d outSmooth(img.rows, img.cols);
-  detail::smoothAlongFlow(out, outSmooth, tfm, sigmaSmoothing);
+  smoothAlongFlow(out, outSmooth, tfm, sigmaSmoothing);
 
   return outSmooth;
 }
