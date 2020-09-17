@@ -30,9 +30,23 @@ Library containing several algorithms for:
 | :---:  | :---:  |
 |![Screenshot](data/test_images/flower.jpg)|![Screenshot](data/test_images/flower_oabf.jpg)|
 
-## Color Palette Extraction of Images
+## Color Palette Extraction of Images 
 
-[more detail](apps/palette_extraction/README.md)
+Extract color palettes from images based on base pigments. The solver esimates absoprtion and scattering coefficients of each paint as a mixture from the base pigments.
+
+![](doc/palette_extraction/pexels-photo-977737.jpeg)
+![](doc/palette_extraction/pexels-photo-977737-extractedPalette.json.jpg)
+
+| Primary Magenta | Carmine Red| Cadmium Red Medium| Raw Umber| Cadmium Orange Hue| Cadmium Yellow Hue| Primary Yellow| Leaf Green| Phthalo Green| Cobalt Blue Tone Deep| Ultramarine Blue| Lilac| Lamp Black | Titanium White |
+|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|:-------------:|
+| 0      |0      | 0      | 0      | 0     | 0      |0    | 0.0947 | 0.262 | 0.0903 | 0.215  | 0      |0.337  | 0        |
+| 0      |0      | 0      | 0      | 0     | 0      |0    | 0      | 0     | 0      | 0      | 0.019  |0      | 0.981    |
+| 0      |0      | 0      | 0      | 0     | 0.00757|0    | 0.192  | 0.59  | 0.139  | 0.0424 | 0      |0      | 0.0292   |
+| 0      |0      | 0.0854 | 0      | 0.171 | 0.0692 |0.674| 0      | 0     | 0      | 0      | 0      |0      | 0        |
+| 0.146  |0.211  | 0.437  | 0      | 0.206 | 0      |0    | 0      | 0     | 0      | 0      | 0      |0      | 0        |
+| 0      |0      | 0      | 0.0063 | 0     | 0      |0    | 0.0369 | 0.212 | 0.216  | 0.259  | 0.0625 |0.206  | 0        |
+
+[more details](apps/palette_extraction/README.md)
 
 
 ## References
