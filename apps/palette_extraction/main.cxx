@@ -10,7 +10,7 @@
 #include "painty/mixer/Palette.hxx"
 #include "painty/mixer/Serialization.hxx"
 
-int main(int argc, char* argv[]) {
+int main(int argc, const char* argv[]) {
   cxxopts::Options options(argv[0], " - Paint mixer command line options");
   options.positional_help("[optional args]").show_positional_help();
 

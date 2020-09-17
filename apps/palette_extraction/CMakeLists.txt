@@ -8,7 +8,7 @@ set(CXXOPTS_ENABLE_INSTALL OFF CACHE INTERNAL "")
 FetchContent_Declare(
   cxxopts
   GIT_REPOSITORY https://github.com/jarro2783/cxxopts.git
-  GIT_TAG       v2.2.1
+  GIT_TAG        master
 )
 FetchContent_MakeAvailable(cxxopts)
 #

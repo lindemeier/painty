@@ -129,7 +129,6 @@ new_local_repository(
     path = "/usr/include/x86_64-linux-gnu/qt5/",
 )
 
-
 # cxxopts for command line parsing
 git_repository(
     name = "com_cxxopts",
