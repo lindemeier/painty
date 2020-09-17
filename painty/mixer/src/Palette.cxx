@@ -7,8 +7,8 @@
  */
 #include "painty/mixer/Palette.hxx"
 
-#include <thread>
 #include <fstream>
+#include <thread>
 
 #include "ceres/ceres.h"
 #include "opencv2/imgproc/imgproc.hpp"

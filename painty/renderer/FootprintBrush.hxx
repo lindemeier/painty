@@ -21,8 +21,8 @@
 namespace painty {
 template <class vector_type>
 class FootprintBrush final : public BrushBase<vector_type> {
-  using T                 = typename BrushBase<vector_type>::T;
-  static constexpr auto N = BrushBase<vector_type>::N;
+  using T                         = typename BrushBase<vector_type>::T;
+  static constexpr auto N         = BrushBase<vector_type>::N;
   static constexpr auto MinVolume = 0.001;
 
  public:
@@ -330,7 +330,7 @@ class FootprintBrush final : public BrushBase<vector_type> {
    */
   template <class Type>
   Type blend(const T v_a, const Type& a, const T v_b, const Type& b) const {
-    const T vTotal     = v_a + v_b;
+    const T vTotal = v_a + v_b;
 
     auto res = a;
     if (vTotal > MinVolume) {

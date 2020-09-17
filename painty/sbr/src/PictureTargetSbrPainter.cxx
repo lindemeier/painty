@@ -271,14 +271,14 @@ auto PictureTargetSbrPainter::paint() -> bool {
   // mix palette for the image from the painters base pigments
   auto palette = _basePigmentsMixerPtr->mixFromInputPicture(
     _paramsInput.inputSRGB, _paramsInput.nrColors);
-    // make the paints thinner
-    {
-      const auto thinner = getThinningMedium();
-      for (auto& paint : palette)
-      {
-        paint = _basePigmentsMixerPtr->mixed(paint, 1.0, thinner, _paramsInput.thinningVolume);
-      }
+  // make the paints thinner
+  {
+    const auto thinner = getThinningMedium();
+    for (auto& paint : palette) {
+      paint = _basePigmentsMixerPtr->mixed(paint, 1.0, thinner,
+                                           _paramsInput.thinningVolume);
     }
+  }
   painty::io::imSave("/tmp/targetImagePalette.jpg",
                      VisualizePalette(palette, 1.0), false);
 
