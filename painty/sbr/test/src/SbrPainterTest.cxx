@@ -32,15 +32,15 @@ TEST(SbrPainterTest, Construct) {
 
   painty::Mat3d image;
   painty::io::imRead("./data/test_images/field.jpg", image, false);
-  image = painty::ScaledMat(image, image.rows, image.cols);
+  image = painty::ScaledMat(image, image.rows / 4, image.cols / 4);
 
   auto brushPtr =
     std::make_shared<painty::TextureBrush<painty::vec3>>("data/sample_0");
 
   // auto brushPtr = std::make_shared<painty::FootprintBrush<painty::vec3>>(120.0);
 
-  auto canvasPtr = std::make_shared<painty::Canvas<painty::vec3>>(
-    image.rows * 2, image.cols * 2);
+  auto canvasPtr =
+    std::make_shared<painty::Canvas<painty::vec3>>(image.rows, image.cols);
   painty::PictureTargetSbrPainter picturePainter(
     canvasPtr, std::make_shared<painty::PaintMixer>(palette), brushPtr);
 

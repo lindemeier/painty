@@ -21,7 +21,7 @@ class BrushBase {
 
   virtual ~BrushBase() = default;
 
-  virtual void setRadius(const double radius) = 0;
+  virtual void setRadius(double radius) = 0;
 
   virtual void dip(const std::array<vector_type, 2UL>& paint) = 0;
 

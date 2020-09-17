@@ -269,8 +269,16 @@ auto PictureTargetSbrPainter::paint() -> bool {
   std::cout << "Extract color palette from image using base pigments"
             << std::endl;
   // mix palette for the image from the painters base pigments
-  const auto palette = _basePigmentsMixerPtr->mixFromInputPicture(
+  auto palette = _basePigmentsMixerPtr->mixFromInputPicture(
     _paramsInput.inputSRGB, _paramsInput.nrColors);
+    // make the paints thinner
+    {
+      const auto thinner = getThinningMedium();
+      for (auto& paint : palette)
+      {
+        paint = _basePigmentsMixerPtr->mixed(paint, 1.0, thinner, _paramsInput.thinningVolume);
+      }
+    }
   painty::io::imSave("/tmp/targetImagePalette.jpg",
                      VisualizePalette(palette, 1.0), false);
 
@@ -326,8 +334,8 @@ auto PictureTargetSbrPainter::paint() -> bool {
             vertex[1U] *= ys;
           }
           _brushPtr->setRadius(((xs + ys) * 0.5) * brushStroke.radius);
-          std::cout << "brush path length: " << brushStroke.path.size()
-                    << std::endl;
+          // std::cout << "brush path length: " << brushStroke.path.size()
+          //           << std::endl;
           _brushPtr->paintStroke(brushStroke.path, *_canvasPtr);
         }
       }

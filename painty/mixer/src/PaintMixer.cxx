@@ -533,4 +533,18 @@ void PaintMixer::setUnderlyingPalette(const Palette& palette) {
   _basePalette = palette;
 }
 
+auto PaintMixer::mixed(const PaintCoeff& paint, const double paintVolume,
+                       const PaintCoeff& other, const double otherVolume)
+  -> PaintCoeff {
+  PaintCoeff mixed;
+
+  const auto totalV    = paintVolume + otherVolume;
+  const auto totalVInv = 1.0 / totalV;
+
+  mixed.K = ((paintVolume * paint.K) + (otherVolume * other.K)) * totalVInv;
+  mixed.S = ((paintVolume * paint.S) + (otherVolume * other.S)) * totalVInv;
+
+  return mixed;
+}
+
 }  // namespace painty

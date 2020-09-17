@@ -156,10 +156,14 @@ class TextureBrush final : public BrushBase<vector_type> {
         // retrieve the height of the sample at uv
         const auto Vtex = _brushStrokeSample.getSampleAtUV(canvasUV);
         if (Vtex > 0.0) {
-          canvas.checkDry(x, y, now);
-          thicknessMap(y - static_cast<int32_t>(boundMin[1U]),
-                       x - static_cast<int32_t>(boundMin[0U])) = Vtex;
-          pixels.emplace_back(x, y);
+          const auto s = x - static_cast<int32_t>(boundMin[0U]);
+          const auto t = y - static_cast<int32_t>(boundMin[1U]);
+          if ((s >= 0) && (t >= 0) && (s < thicknessMap.cols) &&
+              (t < thicknessMap.rows)) {
+            canvas.checkDry(x, y, now);
+            thicknessMap(t, s) = Vtex;
+            pixels.emplace_back(x, y);
+          }
         }
       }
     }
@@ -167,13 +171,17 @@ class TextureBrush final : public BrushBase<vector_type> {
     _smudge.smudge(canvas, boundMin, spineSpline, length, thicknessMap);
 
     for (const auto& p : pixels) {
-      const auto x    = p[0U];
-      const auto y    = p[1U];
+      auto& vBuffer = canvas.getPaintLayer().getV_buffer();
+      const auto x  = p[0U];
+      const auto y  = p[1U];
+      if ((x < 0) || (y < 0) || (x >= vBuffer.cols) || (y >= vBuffer.rows)) {
+        continue;
+      }
       const auto Vtex = thicknessMap(
         clamp(0, y - static_cast<int32_t>(boundMin[1U]), thicknessMap.rows - 1),
         clamp(0, x - static_cast<int32_t>(boundMin[0U]),
               thicknessMap.cols - 1));
-      const auto Vcan = canvas.getPaintLayer().getV_buffer()(y, x);
+      const auto Vcan = vBuffer(y, x);
 
       const auto Vsum = Vcan + Vtex;
       if (Vsum > static_cast<T>(0.0)) {
@@ -181,7 +189,7 @@ class TextureBrush final : public BrushBase<vector_type> {
 
         auto& K = canvas.getPaintLayer().getK_buffer()(y, x);
         auto& S = canvas.getPaintLayer().getS_buffer()(y, x);
-        auto& V = canvas.getPaintLayer().getV_buffer()(y, x);
+        auto& V = vBuffer(y, x);
 
         K = (Vcan * K + Vtex * _paintStored[0U]) * sc;
         S = (Vcan * S + Vtex * _paintStored[1U]) * sc;
