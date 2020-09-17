@@ -271,7 +271,7 @@ inline T lerp(const T& p0, const T& p1, T c) {
 
 template <class T>
 inline T sgn(T val) {
-  return (T(0) < val) - (val < T(0));
+  return (static_cast<T>(0) < val) - (val < static_cast<T>(0));
 }
 
 template <class T>

@@ -9,6 +9,11 @@ add_executable(${PROJECT_NAME}
     ${PROJECT_SOURCE_DIR}/src/PaintLayerTest.cxx
     ${PROJECT_SOURCE_DIR}/src/TextureBrushTest.cxx
   )
+add_test(
+  NAME ${PROJECT_NAME}
+ COMMAND ${PROJECT_NAME}
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
 
 target_link_libraries(${PROJECT_NAME}
   gtest

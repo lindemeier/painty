@@ -38,6 +38,9 @@ class PaintMixer {
   const Palette& getUnderlyingPalette() const;
   void setUnderlyingPalette(const Palette& palette);
 
+  auto mixed(const PaintCoeff& paint, const double paintVolume,
+             const PaintCoeff& other, const double otherVolume) -> PaintCoeff;
+
  private:
   PaintMixer() = delete;
 
@@ -46,7 +49,7 @@ class PaintMixer {
    * other Paints and Palettes.
    *
    */
-  Palette mBasePalette;
+  Palette _basePalette;
 };
 
 }  // namespace painty

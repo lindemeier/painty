@@ -6,7 +6,9 @@ compilation_database(
         "//painty/core:painty_core",
         "//painty/image:painty_image",
         "//painty/io:painty_io",
-        "//painty/renderer:painty_renderer"
+        "//painty/renderer:painty_renderer",
+        "//painty/mixer:painty_mixer",
+        "//painty/sbr:painty_sbr",
     ],
     # [Optional]
     # If your exec root (value returned by `bazel info execution_root`)

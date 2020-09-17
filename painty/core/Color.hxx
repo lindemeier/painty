@@ -771,10 +771,10 @@ class ColorConverter {
                                 const vec<Scalar, N>& lab2) {
     static constexpr Scalar d0 = 100.;
     Scalar d                   = ColorDifferenceCIEDE2000(lab1, lab2);
-    if (d >= 0 && d <= d0) {
+    if (d >= 0.0 && d <= d0) {
       return d / d0;
     }
-    return 1.;
+    return 1.0;
   }
 
  private:

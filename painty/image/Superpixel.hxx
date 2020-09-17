@@ -60,14 +60,14 @@ class ImageRegion {
   template <class T>
   T computeRms(const Mat<T>& diff) const {
     if (points.empty()) {
-      return T(0.);
+      return static_cast<T>(0.0);
     }
-    T s = T(0.);
+    T s = static_cast<T>(0.0);
     for (const vec2i& p : points) {
-      s += std::pow(diff(p[1], p[0]), 2.);
+      s += std::pow(diff(p[1], p[0]), static_cast<T>(2.0));
     }
 
-    return std::sqrt(s /= points.size());
+    return std::sqrt(s /= static_cast<T>(points.size()));
   }
 
   template <class T>
@@ -99,7 +99,7 @@ class ImageRegion {
     for (const vec2i& p : points) {
       m += data(p[1], p[0]);
     }
-    return (1.0 / static_cast<double>(points.size())) * m;
+    return (1.0 / static_cast<T>(points.size())) * m;
   }
 
   template <class T, int32_t Channels>
@@ -108,7 +108,7 @@ class ImageRegion {
     for (const vec2i& p : points) {
       m += data(p[1], p[0]);
     }
-    return (1.0 / points.size()) * m;
+    return (1.0 / static_cast<T>(points.size())) * m;
   }
 
   Mat1d getDistanceTransform(const cv::Rect2i& boundingRectangle) const;
@@ -161,7 +161,7 @@ class SuperpixelSegmentation {
   };
 
   void extract(const Mat3d& targetLab, const Mat3d& canvasLab,
-               const Mat<uint8_t>& mask, int32_t cellWidth);
+               const Mat1d& mask, int32_t cellWidth);
 
   void getSegmentationOutlined(Mat3d& background) const;
 
@@ -183,7 +183,7 @@ class SuperpixelSegmentation {
   Mat3d _targetLab;
   Mat1d _difference;
   Mat<int32_t> _labels;
-  Mat<uint8_t> _mask;
+  Mat1d _mask;
 
   ExtractionStrategy _extractionStrategy =
     ExtractionStrategy::SLICO_POISSON_WEIGHTED;

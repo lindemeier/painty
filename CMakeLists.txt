@@ -20,10 +20,13 @@ endif()
 add_subdirectory(painty/core)
 add_subdirectory(painty/image)
 add_subdirectory(painty/io)
+add_subdirectory(painty/mixer)
 add_subdirectory(painty/renderer)
+add_subdirectory(painty/sbr)
 
 # apps
 option(BUILD_APPS "Build apps" ON)
 if(BUILD_APPS)
   add_subdirectory(apps/painty_gui)
+  add_subdirectory(apps/palette_extraction)
 endif()

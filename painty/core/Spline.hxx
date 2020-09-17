@@ -29,16 +29,45 @@ inline T CatmullRom(const T& p_1, const T& p0, const T& p1, const T& p2,
                     typename DataType<T>::channel_type t) {
   using Float = typename DataType<T>::channel_type;
 
-  Float t2 = t * t;
-  Float t3 = t2 * t;
+  constexpr auto tau = static_cast<Float>(0.5);
 
-  Float b1 = static_cast<Float>(0.5) * (-t3 + static_cast<Float>(2) * t2 - t);
-  Float b2 = static_cast<Float>(0.5) *
-             (static_cast<Float>(3) * t3 - static_cast<Float>(5) * t2 +
-              static_cast<Float>(2));
-  Float b3 = static_cast<Float>(0.5) *
-             (static_cast<Float>(-3) * t3 + static_cast<Float>(4) * t2 + t);
-  Float b4 = static_cast<Float>(0.5) * (t3 - t2);
+  const Float t2 = t * t;
+  const Float t3 = t2 * t;
+
+  const Float b1 = -tau * t + static_cast<Float>(2.0) * tau * t2 - tau * t3;
+  const Float b2 = static_cast<Float>(1.0) +
+                   (tau - static_cast<Float>(3.0)) * t2 +
+                   (static_cast<Float>(2.0) - tau) * t3;
+  const Float b3 =
+    tau * t + (static_cast<Float>(3.0) - static_cast<Float>(2.0) * tau) * t2 +
+    (tau - static_cast<Float>(2.0)) * t3;
+  const Float b4 = -tau * t2 + tau * t3;
+
+  return (p_1 * b1 + p0 * b2 + p1 * b3 + p2 * b4);
+}
+
+template <class T>
+inline T CatmullRomDerivativeFirst(const T& p_1, const T& p0, const T& p1,
+                                   const T& p2,
+                                   typename DataType<T>::channel_type t) {
+  using Float = typename DataType<T>::channel_type;
+
+  constexpr auto tau = static_cast<Float>(0.5);
+
+  const Float t2 = t * t;
+
+  const Float b1 =
+    tau * (-static_cast<Float>(3.0) * t2 + static_cast<Float>(4.0) * t -
+           static_cast<Float>(1.0));
+  const Float b2 =
+    -t * (-static_cast<Float>(2.0) * tau +
+          static_cast<Float>(3.0) * (tau - static_cast<Float>(2.0)) * t +
+          static_cast<Float>(6.0));
+  const Float b3 =
+    (t - static_cast<Float>(1.0)) *
+    (static_cast<Float>(3.0) * (tau - static_cast<Float>(2.0)) * t - tau);
+  const Float b4 =
+    tau * t * (static_cast<Float>(3.0) * t - static_cast<Float>(2.0));
 
   return (p_1 * b1 + p0 * b2 + p1 * b3 + p2 * b4);
 }
@@ -158,6 +187,15 @@ class SplineEval {
     return CatmullRom(getIndexClamped(index - 1), getIndexClamped(index),
                       getIndexClamped(index + 1), getIndexClamped(index + 2),
                       t);
+  }
+
+  value_type catmullRomDerivativeFirst(value u) {
+    int32_t index = 0;
+    value t;
+    getControl(u, index, t);
+    return CatmullRomDerivativeFirst(
+      getIndexClamped(index - 1), getIndexClamped(index),
+      getIndexClamped(index + 1), getIndexClamped(index + 2), t);
   }
 
  private:

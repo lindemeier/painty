@@ -11,7 +11,10 @@
 #include <istream>
 #include <ostream>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include "nlohmann/json.hpp"
+#pragma clang diagnostic pop
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgcodecs/imgcodecs.hpp"
 #include "opencv2/imgproc/imgproc.hpp"

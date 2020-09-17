@@ -10,7 +10,8 @@
 
 namespace painty {
 /**
- * @brief
+ * @brief Implementation of the paper:
+ * Kyprianidis, J. E., and Kang, H. Image and video abstraction by coherence-enhancing filtering. Computer Graphics Forum 30, 2 (Apr. 2011), 593–602
  *
  */
 class FlowBasedDoG {
@@ -31,6 +32,9 @@ class FlowBasedDoG {
   static Mat1d filterFlowBasedDoG(const Mat1d& img, const Mat2d& tfm,
                                   double sigma_e, double sigma_r, double tau,
                                   double sigmaSmoothing);
+
+  static void smoothAlongFlow(const Mat1d& img, Mat1d& dst, const Mat2d& tfm,
+                              double sigma_m);
 
  private:
   // orientation aligned bilateral filter

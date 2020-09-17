@@ -10,18 +10,16 @@
 #pragma once
 
 #include "painty/core/Spline.hxx"
+#include "painty/renderer/BrushBase.hxx"
 #include "painty/renderer/BrushStrokeSample.hxx"
 #include "painty/renderer/Canvas.hxx"
 #include "painty/renderer/Smudge.hxx"
 
 namespace painty {
 template <class vector_type>
-class TextureBrush final {
- private:
-  using T                 = typename DataType<vector_type>::channel_type;
-  static constexpr auto N = DataType<vector_type>::dim;
-
-  using KS = std::array<vector_type, 2UL>;
+class TextureBrush final : public BrushBase<vector_type> {
+  using T                 = typename BrushBase<vector_type>::T;
+  static constexpr auto N = BrushBase<vector_type>::N;
 
  public:
   TextureBrush(const std::string& sampleDir)
@@ -32,10 +30,12 @@ class TextureBrush final {
     }
   }
 
-  void setRadius(const double radius) {
-    _radius = radius;
-
-    _smudge = Smudge<vector_type>(static_cast<int32_t>(2.0 * radius));
+  void setRadius(const double radius) override {
+    constexpr auto Eps = 0.5;
+    if (!fuzzyCompare(_radius, radius, Eps)) {
+      _radius = radius;
+      _smudge = Smudge<vector_type>(static_cast<int32_t>(2.0 * radius));
+    }
   }
 
   /**
@@ -43,12 +43,13 @@ class TextureBrush final {
    *
    * @param paint
    */
-  void dip(const KS& paint) {
+  void dip(const std::array<vector_type, 2UL>& paint) override {
     _paintStored = paint;
   }
 
-  void applyTo(const std::vector<vec2>& vertices, Canvas<vector_type>& canvas) {
-    if (vertices.empty()) {
+  void paintStroke(const std::vector<vec2>& vertices,
+                   Canvas<vector_type>& canvas) override {
+    if (vertices.size() < 2UL) {
       return;
     }
 
@@ -93,10 +94,10 @@ class TextureBrush final {
 
     for (auto i = 0U; i < vertices.size(); ++i) {
       T u          = static_cast<T>(i) / static_cast<T>(vertices.size() - 1);
-      const auto c = spineSpline.cubic(u);
+      const auto c = spineSpline.catmullRom(u);
 
       // spine tangent vector
-      auto t = spineSpline.cubicDerivative(u, 1).normalized();
+      auto t = spineSpline.catmullRomDerivativeFirst(u).normalized();
 
       // compute perpendicular vector to spine
       const vec2 d = {-t[1], t[0]};
@@ -155,10 +156,14 @@ class TextureBrush final {
         // retrieve the height of the sample at uv
         const auto Vtex = _brushStrokeSample.getSampleAtUV(canvasUV);
         if (Vtex > 0.0) {
-          canvas.checkDry(x, y, now);
-          thicknessMap(y - static_cast<int32_t>(boundMin[1U]),
-                       x - static_cast<int32_t>(boundMin[0U])) = Vtex;
-          pixels.emplace_back(x, y);
+          const auto s = x - static_cast<int32_t>(boundMin[0U]);
+          const auto t = y - static_cast<int32_t>(boundMin[1U]);
+          if ((s >= 0) && (t >= 0) && (s < thicknessMap.cols) &&
+              (t < thicknessMap.rows)) {
+            canvas.checkDry(x, y, now);
+            thicknessMap(t, s) = Vtex;
+            pixels.emplace_back(x, y);
+          }
         }
       }
     }
@@ -166,11 +171,17 @@ class TextureBrush final {
     _smudge.smudge(canvas, boundMin, spineSpline, length, thicknessMap);
 
     for (const auto& p : pixels) {
-      const auto x    = p[0U];
-      const auto y    = p[1U];
-      const auto Vtex = thicknessMap(y - static_cast<int32_t>(boundMin[1U]),
-                                     x - static_cast<int32_t>(boundMin[0U]));
-      const auto Vcan = canvas.getPaintLayer().getV_buffer()(y, x);
+      auto& vBuffer = canvas.getPaintLayer().getV_buffer();
+      const auto x  = p[0U];
+      const auto y  = p[1U];
+      if ((x < 0) || (y < 0) || (x >= vBuffer.cols) || (y >= vBuffer.rows)) {
+        continue;
+      }
+      const auto Vtex = thicknessMap(
+        clamp(0, y - static_cast<int32_t>(boundMin[1U]), thicknessMap.rows - 1),
+        clamp(0, x - static_cast<int32_t>(boundMin[0U]),
+              thicknessMap.cols - 1));
+      const auto Vcan = vBuffer(y, x);
 
       const auto Vsum = Vcan + Vtex;
       if (Vsum > static_cast<T>(0.0)) {
@@ -178,7 +189,7 @@ class TextureBrush final {
 
         auto& K = canvas.getPaintLayer().getK_buffer()(y, x);
         auto& S = canvas.getPaintLayer().getS_buffer()(y, x);
-        auto& V = canvas.getPaintLayer().getV_buffer()(y, x);
+        auto& V = vBuffer(y, x);
 
         K = (Vcan * K + Vtex * _paintStored[0U]) * sc;
         S = (Vcan * S + Vtex * _paintStored[1U]) * sc;
@@ -198,7 +209,7 @@ class TextureBrush final {
    * @brief The current paint the brush stores.
    *
    */
-  KS _paintStored;
+  std::array<vector_type, 2UL> _paintStored;
 
   /**
    * @brief

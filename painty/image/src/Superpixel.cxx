@@ -7,11 +7,12 @@
  *
  *
  */
+#include "painty/image/Superpixel.hxx"
+
 #include <random>
 
 #include "math.h"
 #include "painty/core/Color.hxx"
-#include "painty/image/Superpixel.hxx"
 
 namespace segmentation_details {
 static void drawContoursAroundSegments(painty::Mat3d& image,
@@ -133,6 +134,8 @@ static painty::Mat<int32_t> enforceLabelConnectivity(
 }  // namespace segmentation_details
 
 namespace painty {
+
+constexpr auto EpsMask = (std::numeric_limits<double>::epsilon() * 100.0);
 
 SuperpixelSegmentation::SuperPixel::SuperPixel(const vec2& center,
                                                const vec3& meanColor)
@@ -265,9 +268,11 @@ Mat1d ImageRegion::getDistanceTransform(
   for (const auto& p : points) {
     seg(p[1] - boundingRectangle.y, p[0] - boundingRectangle.x) = 255;
   }
-  Mat1d distances(boundingRectangle.size());
+  Mat1f distances(boundingRectangle.size());
   cv::distanceTransform(seg, distances, cv::NORM_L1, 5);
-  return distances;
+  Mat1d distancesScaled;
+  distances.convertTo(distancesScaled, CV_64FC1);
+  return distancesScaled;
 }
 
 vec2 ImageRegion::getSpatialMean() const {
@@ -287,10 +292,11 @@ vec2 ImageRegion::getSpatialMean() const {
 
 void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
                                      const Mat3d& canvasLabArg,
-                                     const Mat<uint8_t>& maskArg,
+                                     const Mat1d& maskArg,
                                      const int32_t cellWidth) {
   _targetLab = targetLabArg;
-  _mask      = maskArg;
+  _mask =
+    (maskArg.empty()) ? Mat1d(_targetLab.rows, _targetLab.cols, 1.0) : maskArg;
 
   if (!canvasLabArg.empty()) {
     _useDiffWeight = true;
@@ -340,7 +346,7 @@ void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
       if (p(index) > 0.0) {
         sample << index % p.cols, index / p.cols;
 
-        if (_mask(index) > 0U) {
+        if (_mask(index) > 0.0) {
           // add poisson disc
           cv::circle(p,
                      cv::Point(static_cast<int32_t>(sample[0]),
@@ -410,10 +416,11 @@ void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
   Mat<int32_t> newLabels(_targetLab.size(), -1);
   Mat1d distances(_targetLab.size(), std::numeric_limits<double>::max());
 
-  double error = std::numeric_limits<double>::max();
-
-  int32_t iteration = 0;
-  while (error > 0.001 && iteration++ < 100) {
+  auto error                   = std::numeric_limits<double>::max();
+  auto iteration               = 0U;
+  constexpr auto MaxIterations = 100U;
+  constexpr auto MaxError      = 0.001;
+  while ((error > MaxError) && (iteration++ < MaxIterations)) {
     for (auto& c : _superPixels) {
       c.reset();
     }
@@ -434,7 +441,7 @@ void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
             continue;
           }
 
-          if (_mask(y, x) == 0U ||
+          if (fuzzyCompare(_mask(y, x), 0.0, EpsMask) ||
               (!_difference.empty() && (_difference(y, x) <= 0.0))) {
             newLabels(y, x) = -1;
             distances(y, x) = std::numeric_limits<double>::max();
@@ -479,7 +486,7 @@ void SuperpixelSegmentation::perturbClusterCenters(
          x_ <= static_cast<int32_t>(o[0]) + r; x_++) {
       for (int32_t y_ = static_cast<int32_t>(o[1]) - r;
            y_ <= static_cast<int32_t>(o[1]) + r; y_++) {
-        if (_mask(y_, x_) == 0U) {
+        if (fuzzyCompare(_mask(y_, x_), 0.0, EpsMask)) {
           continue;
         }
 
@@ -517,7 +524,7 @@ double SuperpixelSegmentation::computeStats(
   for (int32_t x = 0; x < labels.cols; ++x) {
     for (int32_t y = 0; y < labels.rows; ++y) {
       int32_t clusterID = labels(y, x);
-      if (_mask(y, x) == 0U || clusterID == -1) {
+      if (fuzzyCompare(_mask(y, x), 0.0, EpsMask) || clusterID == -1) {
         continue;
       }
 
