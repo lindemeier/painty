@@ -34,7 +34,7 @@ class PictureTargetSbrPainter {
   };
 
   struct ParamsStroke {
-    std::vector<double> brushSizes = {120.0, 60.0, 20.0, 10.0, 5.0};
+    std::vector<double> brushSizes = {60.0, 30.0, 10.0};
     uint32_t minLen                = 5U;  // min number of stroke control points
     uint32_t maxLen = 12U;                // max number of stroke control points
     double stepSize =
@@ -47,7 +47,7 @@ class PictureTargetSbrPainter {
   };
 
   struct ParamsConvergence {
-    uint32_t maxIterations = 5U;  // maximum number of layers
+    uint32_t maxIterations = 2U;  // maximum number of layers
     double rms_local =
       0.1;  // maximum root mean square error for evaluation regions
     double rms_global = 0.0;  // maximum root mean square error the whole image

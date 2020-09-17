@@ -32,7 +32,7 @@ TEST(SbrPainterTest, Construct) {
 
   painty::Mat3d image;
   painty::io::imRead("./data/test_images/field.jpg", image, false);
-  image = painty::ScaledMat(image, image.rows / 4, image.cols / 4);
+  image = painty::ScaledMat(image, image.rows / 8, image.cols / 8);
 
   auto brushPtr =
     std::make_shared<painty::TextureBrush<painty::vec3>>("data/sample_0");
