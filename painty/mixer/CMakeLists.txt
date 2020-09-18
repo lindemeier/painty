@@ -5,18 +5,6 @@ project(paintyMixer)
 # ceres solver library
 find_package(Ceres REQUIRED)
 
-include(FetchContent)
-set(JSON_BuildTests OFF CACHE INTERNAL "")
-FetchContent_Declare(json
-  GIT_REPOSITORY https://github.com/nlohmann/json.git
-  GIT_TAG v3.9.1
-)
-FetchContent_GetProperties(json)
-if(NOT json_POPULATED)
-  FetchContent_Populate(json)
-  add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
-
 add_library(${PROJECT_NAME} STATIC
   ${PROJECT_SOURCE_DIR}/src/Palette.cxx
   ${PROJECT_SOURCE_DIR}/src/PaintCoeff.cxx

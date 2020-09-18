@@ -34,7 +34,9 @@ class TextureBrush final : public BrushBase<vector_type> {
     constexpr auto Eps = 0.5;
     if (!fuzzyCompare(_radius, radius, Eps)) {
       _radius = radius;
-      _smudge = Smudge<vector_type>(static_cast<int32_t>(2.0 * radius));
+      if (_useSmudge) {
+        _smudge = Smudge<vector_type>(static_cast<int32_t>(2.0 * radius));
+      }
     }
   }
 
@@ -168,7 +170,9 @@ class TextureBrush final : public BrushBase<vector_type> {
       }
     }
 
-    _smudge.smudge(canvas, boundMin, spineSpline, length, thicknessMap);
+    if (_useSmudge) {
+      _smudge.smudge(canvas, boundMin, spineSpline, length, thicknessMap);
+    }
 
     for (const auto& p : pixels) {
       auto& vBuffer = canvas.getPaintLayer().getV_buffer();
@@ -198,6 +202,10 @@ class TextureBrush final : public BrushBase<vector_type> {
     }
   }
 
+  void enableSmudge(const bool enable) {
+    _useSmudge = enable;
+  }
+
  private:
   /**
    * @brief Brush stroke texture sample that can be warped along a trajectory or list of vertices.
@@ -222,5 +230,7 @@ class TextureBrush final : public BrushBase<vector_type> {
    *
    */
   Smudge<vector_type> _smudge;
+
+  bool _useSmudge = true;
 };
 }  // namespace painty

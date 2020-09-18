@@ -102,7 +102,7 @@ auto PictureTargetSbrPainter::generateBrushStrokes(
   PathTracer tracer(tensors);
   tracer.setMinLen(_paramsStroke.minLen);
   tracer.setMaxLen(_paramsStroke.maxLen);
-  tracer.setStep((_paramsStroke.stepSize <= 0.0) ? brushRadius
+  tracer.setStep((_paramsStroke.stepSize <= 0.0) ? (brushRadius * 0.5)
                                                  : _paramsStroke.stepSize);
   tracer.setFrame(cv::Rect2i(0, 0, target_Lab.cols, target_Lab.rows));
   tracer.setFc(_paramsStroke.curvatureAlpha);

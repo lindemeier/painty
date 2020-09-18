@@ -1,0 +1,16 @@
+
+
+cc_binary(
+    name = "sbr_painter",
+    srcs = ["main.cxx"],
+    deps = [
+        "//painty/sbr:painty_sbr",
+        "@com_cxxopts//:cxxopts",
+    ],
+)
+
+filegroup(
+    name = "exported_sbr_config",
+    srcs =  ["sbr_config.json"],
+    visibility = ["//visibility:public"]
+)

@@ -16,6 +16,29 @@ if(RUN_TESTS)
     enable_testing()
 endif()
 
+set(CXXOPTS_BUILD_EXAMPLES OFF CACHE INTERNAL "")
+set(CXXOPTS_BUILD_TESTS OFF CACHE INTERNAL "")
+set(CXXOPTS_ENABLE_INSTALL OFF CACHE INTERNAL "")
+FetchContent_Declare(
+  cxxopts
+  GIT_REPOSITORY https://github.com/jarro2783/cxxopts.git
+  GIT_TAG        master
+)
+FetchContent_MakeAvailable(cxxopts)
+#
+
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+FetchContent_Declare(json
+  GIT_REPOSITORY https://github.com/nlohmann/json.git
+  GIT_TAG v3.9.1
+)
+FetchContent_GetProperties(json)
+if(NOT json_POPULATED)
+  FetchContent_Populate(json)
+  add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
+
 # modules
 add_subdirectory(painty/core)
 add_subdirectory(painty/image)
@@ -29,4 +52,5 @@ option(BUILD_APPS "Build apps" ON)
 if(BUILD_APPS)
   add_subdirectory(apps/painty_gui)
   add_subdirectory(apps/palette_extraction)
+  add_subdirectory(apps/sbr_painter)
 endif()
