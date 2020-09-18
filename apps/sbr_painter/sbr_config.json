@@ -11,7 +11,7 @@
     "sigmaColor": 2.25,
     "sigmaSpatial": 2.0,
     "smoothIterations": 3,
-    "thinningVolume": 7.0
+    "thinningVolume": 5.0
   },
   "orientation_params": {
     "innerBlurScale": 0.0,

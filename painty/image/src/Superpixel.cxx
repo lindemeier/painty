@@ -486,6 +486,10 @@ void SuperpixelSegmentation::perturbClusterCenters(
          x_ <= static_cast<int32_t>(o[0]) + r; x_++) {
       for (int32_t y_ = static_cast<int32_t>(o[1]) - r;
            y_ <= static_cast<int32_t>(o[1]) + r; y_++) {
+        if ((x_ < 0) || (x_ >= _targetLab.cols) || (y_ < 0) ||
+            (y_ >= _targetLab.rows)) {
+          continue;
+        }
         if (fuzzyCompare(_mask(y_, x_), 0.0, EpsMask)) {
           continue;
         }
