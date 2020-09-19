@@ -16,6 +16,7 @@ TEST(FDoGTest, FDoGTestFunc) {
   painty::Mat3d image;
   // load an image as linear rgb
   painty::io::imRead("./data/test_images/field.jpg", image, true);
+  image = painty::ScaledMat(image, image.rows / 8, image.cols / 8);
 
   painty::FlowBasedDoG fdog;
   const auto fdogRes = fdog.execute(image);
