@@ -30,7 +30,7 @@ Library containing several algorithms for:
 | :---:  | :---:  |
 |![Screenshot](data/test_images/flower.jpg)|![Screenshot](data/test_images/flower_oabf.jpg)|
 
-## Color Palette Extraction of Images 
+## Color Palette Extraction from RGB Images 
 
 Extract color palettes from images based on base pigments. The solver esimates absoprtion and scattering coefficients of each paint as a mixture from the base pigments.
 
