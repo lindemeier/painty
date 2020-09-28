@@ -4,10 +4,10 @@
   "convergence_params": {
     "maxIterations": 10,
     "rms_global": 0.0,
-    "rms_local": 0.01
+    "rms_local": 0.1
   },
   "image_params": {
-    "nrColors": 4,
+    "nrColors": 12,
     "sigmaColor": 2.25,
     "sigmaSpatial": 2.0,
     "smoothIterations": 3,
@@ -27,10 +27,10 @@
       2.0
     ],
     "clampBrushRadius": true,
-    "curvatureAlpha": 0.75,
+    "curvatureAlpha": 0.5,
     "maxLen": 12,
     "minLen": 5,
     "stepSize": 0.0,
-    "thicknessScale": 2.0
+    "thicknessScale": 10.0
   }
 }

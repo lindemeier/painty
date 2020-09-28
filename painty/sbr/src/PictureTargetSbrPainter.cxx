@@ -7,6 +7,7 @@
  */
 #include "painty/sbr/PictureTargetSbrPainter.hxx"
 
+#include <future>
 #include <random>
 
 #include "painty/core/Color.hxx"
@@ -87,18 +88,8 @@ auto PictureTargetSbrPainter::generateBrushStrokes(
   std::map<int32_t, ImageRegion>& regions, const Mat3d& target_Lab,
   const Mat3d& canvasCurrentLab, const Mat1d& /*difference*/,
   const double brushRadius, const Palette& palette, const Mat<int32_t>& labels,
-  const Mat1d& mask) const
+  const Mat1d& mask, const Mat3d& tensors) const
   -> PictureTargetSbrPainter::ColorIndexBrushStrokeMap {
-  std::cout << "Computing structure tensor field" << std::endl;
-  // compute structure tensor field
-  const auto tensors =
-    tensor::ComputeTensors(target_Lab, _paramsInput.mask,
-                           brushRadius * _paramsOrientations.innerBlurScale,
-                           brushRadius * _paramsOrientations.outerBlurScale);
-  painty::io::imSave("/tmp/targetImageOrientation.jpg",
-                     lineIntegralConv(ComputeEdgeTangentFlow(tensors), 10.),
-                     false);
-
   PathTracer tracer(tensors);
   tracer.setMinLen(_paramsStroke.minLen);
   tracer.setMaxLen(_paramsStroke.maxLen);
@@ -289,6 +280,19 @@ auto PictureTargetSbrPainter::paint() -> bool {
 
     _brushPtr->setThicknessScale(_paramsStroke.thicknessScale);
 
+    std::cout << "Computing structure tensor field" << std::endl;
+    // compute structure tensor field
+    const auto tensors =
+      tensor::ComputeTensors(target_Lab, _paramsInput.mask,
+                             brushRadius * _paramsOrientations.innerBlurScale,
+                             brushRadius * _paramsOrientations.outerBlurScale);
+
+    std::async(std::launch::async, [tensors]() {
+      painty::io::imSave("/tmp/targetImageOrientation.jpg",
+                         lineIntegralConv(ComputeEdgeTangentFlow(tensors), 10.),
+                         false);
+    });
+
     std::cout << "Iterating layers" << std::endl;
 
     for (uint32_t iteration = 0U; iteration < _paramsConvergence.maxIterations;
@@ -318,9 +322,9 @@ auto PictureTargetSbrPainter::paint() -> bool {
         return true;
       }
 
-      auto brushStrokeMap =
-        generateBrushStrokes(regions, target_Lab, canvasCurrentLab, difference,
-                             brushRadius, palette, labels, _paramsInput.mask);
+      auto brushStrokeMap = generateBrushStrokes(
+        regions, target_Lab, canvasCurrentLab, difference, brushRadius, palette,
+        labels, _paramsInput.mask, tensors);
       std::cout << "Rendering strokes" << std::endl;
       const auto xs = static_cast<double>(_canvasPtr->getR0().cols) /
                       static_cast<double>(target_Lab.cols);

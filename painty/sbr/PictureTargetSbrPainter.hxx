@@ -106,7 +106,7 @@ class PictureTargetSbrPainter {
                             const Mat3d& canvasCurrentLab,
                             const Mat1d& difference, double brushRadius,
                             const Palette& palette, const Mat<int32_t>& labels,
-                            const Mat1d& mask) const
+                            const Mat1d& mask, const Mat3d& tensors) const
     -> ColorIndexBrushStrokeMap;
 
   static auto findBestPaintIndex(const vec3& R_target, const vec3& R0,
