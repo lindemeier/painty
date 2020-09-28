@@ -12,6 +12,7 @@
 #include "painty/io/ImageIO.hxx"
 #include "painty/mixer/Palette.hxx"
 #include "painty/mixer/Serialization.hxx"
+#include "painty/renderer/FootprintBrush.hxx"
 #include "painty/renderer/Renderer.hxx"
 #include "painty/renderer/TextureBrush.hxx"
 #include "painty/sbr/PictureTargetSbrPainter.hxx"
@@ -140,6 +141,8 @@ int main(int argc, const char* argv[]) {
   auto brushPtr =
     std::make_shared<painty::TextureBrush<painty::vec3>>("data/sample_0");
   brushPtr->enableSmudge(j.value("enableSmudge", true));
+
+  // auto brushPtr = std::make_shared<painty::FootprintBrush<painty::vec3>>(0.0);
 
   auto canvasPtr =
     std::make_shared<painty::Canvas<painty::vec3>>(height, width);

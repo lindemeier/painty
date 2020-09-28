@@ -131,7 +131,7 @@ auto PictureTargetSbrPainter::generateBrushStrokes(
     con.lab2rgb(R0, R0);
     con.lab2rgb(Rt, Rt);
     const auto closestPaint = PaintMixer(palette).mixClosestFit(R0, Rt);
-    auto currentPaintIndex = findBestPaintIndex(Rt, R0, palette);
+    auto currentPaintIndex  = findBestPaintIndex(Rt, R0, palette);
     if (!currentPaintIndex) {
       currentPaintIndex = 0;
     }
@@ -241,7 +241,7 @@ auto PictureTargetSbrPainter::computeDifference(const Mat3d& target_Lab,
     differencesOfGaussians(canvasCurrentLab, brushRadius);
 
   constexpr auto derivMaxNorm = 20.0;
-  auto difference = Mat1d(target_Lab.size());
+  auto difference             = Mat1d(target_Lab.size());
   for (auto i = 0; i < static_cast<int32_t>(target_Lab.total()); i++) {
     difference(i) =
       _paramsInput.alphaDiff * ColorConverter<double>::ColorDifference(
