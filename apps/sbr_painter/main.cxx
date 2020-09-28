@@ -142,6 +142,8 @@ int main(int argc, const char* argv[]) {
 
   auto canvasPtr =
     std::make_shared<painty::Canvas<painty::vec3>>(height, width);
+  const uint32_t dringTimeMillis = j.value("dryingTimeMillis", 1000U * 60U);
+  canvasPtr->setDryingTime(std::chrono::milliseconds(dringTimeMillis));
   painty::PictureTargetSbrPainter picturePainter(
     canvasPtr, std::make_shared<painty::PaintMixer>(palette), brushPtr);
 

@@ -1,5 +1,6 @@
 {
-  "enableSmudge": false,
+  "enableSmudge": true,
+  "dryingTimeMillis": 60000,
   "base_pigments": "lindemeier-measured.json",
   "convergence_params": {
     "maxIterations": 10,
@@ -7,11 +8,11 @@
     "rms_local": 0.1
   },
   "image_params": {
-    "nrColors": 12,
+    "nrColors": 8,
     "sigmaColor": 2.25,
     "sigmaSpatial": 2.0,
     "smoothIterations": 3,
-    "thinningVolume": 5.0
+    "thinningVolume": 0.0
   },
   "orientation_params": {
     "innerBlurScale": 0.0,
@@ -31,6 +32,6 @@
     "maxLen": 12,
     "minLen": 5,
     "stepSize": 0.0,
-    "thicknessScale": 10.0
+    "thicknessScale": 1.0
   }
 }
