@@ -156,7 +156,8 @@ class TextureBrush final : public BrushBase<vector_type> {
         }
 
         // retrieve the height of the sample at uv
-        const auto Vtex = _brushStrokeSample.getSampleAtUV(canvasUV);
+        const auto Vtex = BrushBase<vector_type>::getThicknessScale() *
+                          _brushStrokeSample.getSampleAtUV(canvasUV);
         if (Vtex > 0.0) {
           const auto s = x - static_cast<int32_t>(boundMin[0U]);
           const auto t = y - static_cast<int32_t>(boundMin[1U]);

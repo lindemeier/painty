@@ -41,6 +41,7 @@ static void from_json(const nlohmann::json& j,
   p.curvatureAlpha      = j.value("curvatureAlpha", 1.0);
   p.blockVisitedRegions = j.value("blockVisitedRegions", true);
   p.clampBrushRadius    = j.value("clampBrushRadius", true);
+  p.thicknessScale      = j.value("thicknessScale", 2.0);
 }
 
 static void from_json(const nlohmann::json& j,
@@ -134,9 +135,11 @@ int main(int argc, const char* argv[]) {
   }
   std::cout << "Creating renderer with width=" << width
             << " and height=" << height << std::endl;
+
   auto brushPtr =
     std::make_shared<painty::TextureBrush<painty::vec3>>("data/sample_0");
   brushPtr->enableSmudge(j.value("enableSmudge", true));
+
   auto canvasPtr =
     std::make_shared<painty::Canvas<painty::vec3>>(height, width);
   painty::PictureTargetSbrPainter picturePainter(

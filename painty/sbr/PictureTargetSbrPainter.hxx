@@ -44,6 +44,7 @@ class PictureTargetSbrPainter {
     bool blockVisitedRegions =
       true;  // block regions from stroke seeding when the have been visited by another, previously generated stroke
     bool clampBrushRadius = true;  //
+    double thicknessScale = 2.0;
   };
 
   struct ParamsConvergence {

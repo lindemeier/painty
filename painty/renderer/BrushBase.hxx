@@ -27,5 +27,21 @@ class BrushBase {
 
   virtual void paintStroke(const std::vector<vec2>& path,
                            Canvas<vector_type>& canvas) = 0;
+
+  void setThicknessScale(const T scale) {
+    _thicknessScale = scale;
+  }
+
+  auto getThicknessScale() const -> T {
+    return _thicknessScale;
+  }
+
+ private:
+  /**
+   * @brief Factor that scales the thickness of applied paint layers.
+   * Factoring the height map.
+   *
+   */
+  T _thicknessScale = 1.0;
 };
 }  // namespace painty

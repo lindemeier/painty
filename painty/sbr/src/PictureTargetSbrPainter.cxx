@@ -287,6 +287,8 @@ auto PictureTargetSbrPainter::paint() -> bool {
     std::cout << "Switching to brush size: " << brushSize << std::endl;
     const double brushRadius = brushSize / 2.0;
 
+    _brushPtr->setThicknessScale(_paramsStroke.thicknessScale);
+
     std::cout << "Iterating layers" << std::endl;
 
     for (uint32_t iteration = 0U; iteration < _paramsConvergence.maxIterations;

@@ -30,6 +30,7 @@
     "curvatureAlpha": 0.75,
     "maxLen": 12,
     "minLen": 5,
-    "stepSize": 0.0
+    "stepSize": 0.0,
+    "thicknessScale": 2.0
   }
 }
