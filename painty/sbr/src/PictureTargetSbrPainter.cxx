@@ -58,14 +58,15 @@ auto PictureTargetSbrPainter::extractRegions(const Mat3d& target_Lab,
 
 auto PictureTargetSbrPainter::checkConvergence(
   const Mat1d& difference, std::map<int32_t, ImageRegion>& regions,
-  Mat<int32_t>& labels) const -> bool {
+  Mat<int32_t>& labels, const double epsFac) const -> bool {
   auto globalRMS = 0.0;
   std::cout << "filtering evaluation regions for finished regions" << std::endl;
   auto nrActiveRegions = 0UL;
+  const auto localRms  = epsFac * _paramsConvergence.rms_local;
   for (auto iter = regions.begin(); iter != regions.end(); iter++) {
     auto rms = iter->second.computeRms(difference);
 
-    if (rms >= _paramsConvergence.rms_local) {
+    if (rms >= localRms) {
       iter->second.setActive(true);
       globalRMS += rms;
       nrActiveRegions++;
@@ -73,7 +74,7 @@ auto PictureTargetSbrPainter::checkConvergence(
       iter->second.setActive(false);
       iter->second.fill(labels, -1);
       std::cout << "Region " << iter->first << " set inactive with rms " << rms
-                << " < " << _paramsConvergence.rms_local << std::endl;
+                << " < " << localRms << std::endl;
     }
   }
   globalRMS /= static_cast<double>(nrActiveRegions);
@@ -130,9 +131,10 @@ auto PictureTargetSbrPainter::generateBrushStrokes(
     ColorConverter<double> con;
     con.lab2rgb(R0, R0);
     con.lab2rgb(Rt, Rt);
+    const auto closestPaint = PaintMixer(palette).mixClosestFit(R0, Rt);
     auto currentPaintIndex = findBestPaintIndex(Rt, R0, palette);
     if (!currentPaintIndex) {
-      continue;
+      currentPaintIndex = 0;
     }
 
     tracer.setEvaluatePositionFun([&](const vec2& p) -> PathTracer::NextAction {
@@ -158,8 +160,7 @@ auto PictureTargetSbrPainter::generateBrushStrokes(
       vec3 R0_test;
       converter.lab2rgb(LabCanvas, R0_test);
       const auto R1 = ComputeReflectance(
-        palette[currentPaintIndex.value()].K,
-        palette[currentPaintIndex.value()].S, R0_test,
+        closestPaint.K, closestPaint.S, R0_test,
         AssumedAvgThickness * _brushPtr->getThicknessScale());
 
       vec3 Lab1;
@@ -191,7 +192,9 @@ auto PictureTargetSbrPainter::generateBrushStrokes(
     }
 
     if (!path.empty()) {
-      brushStrokes[currentPaintIndex.value()].push_back({path, usedRadius});
+      PaintMixer mixer(palette);
+      brushStrokes[currentPaintIndex.value()].push_back(
+        {path, usedRadius, closestPaint});
     }
   }
   return brushStrokes;
@@ -275,7 +278,11 @@ auto PictureTargetSbrPainter::paint() -> bool {
   painty::io::imSave("/tmp/targetImagePalette.jpg",
                      VisualizePalette(palette, 1.0), false);
 
+  std::cout << "coating canvas" << std::endl;
+  paintCoatCanvas(palette[1U]);
+
   // for every brush
+  auto itBrush = 1;
   for (const auto brushSize : _paramsStroke.brushSizes) {
     std::cout << "Switching to brush size: " << brushSize << std::endl;
     const double brushRadius = brushSize / 2.0;
@@ -301,6 +308,10 @@ auto PictureTargetSbrPainter::paint() -> bool {
          iteration++) {
       std::cout << "Iteration: " << iteration << std::endl;
 
+      const double epsFac =
+        (itBrush++ / static_cast<double>(_paramsConvergence.maxIterations *
+                                         _paramsStroke.brushSizes.size()));
+
       std::cout << "Getting current state of the canvas" << std::endl;
       const auto canvasCurrentRGBLinear = Renderer<vec3>().compose(*_canvasPtr);
       painty::io::imSave("/tmp/canvasCurrent.jpg", canvasCurrentRGBLinear,
@@ -320,7 +331,7 @@ auto PictureTargetSbrPainter::paint() -> bool {
         extractRegions(target_Lab, canvasCurrentLab, difference, brushSize);
 
       // discard already close enough regions
-      if (checkConvergence(difference, regions, labels)) {
+      if (checkConvergence(difference, regions, labels, epsFac)) {
         return true;
       }
 
@@ -334,13 +345,13 @@ auto PictureTargetSbrPainter::paint() -> bool {
                       static_cast<double>(target_Lab.rows);
       for (auto& element : brushStrokeMap) {
         const auto paint = palette[element.first];
-        std::cout << "Changing paint to: " << element.first << std::endl;
-        _brushPtr->dip({paint.K, paint.S});
+        // std::cout << "Changing paint to: " << element.first << std::endl;
         for (auto& brushStroke : element.second) {
           for (auto& vertex : brushStroke.path) {
             vertex[0U] *= xs;
             vertex[1U] *= ys;
           }
+          _brushPtr->dip({brushStroke.paint.K, brushStroke.paint.S});
           _brushPtr->setRadius(((xs + ys) * 0.5) * brushStroke.radius);
           // std::cout << "brush path length: " << brushStroke.path.size()
           //           << std::endl;
@@ -351,6 +362,21 @@ auto PictureTargetSbrPainter::paint() -> bool {
   }
 
   return true;
+}
+
+void PictureTargetSbrPainter::paintCoatCanvas(const PaintCoeff& paint) {
+  const auto step = static_cast<double>(_canvasPtr->get_h().rows) / 10.0;
+
+  _brushPtr->dip({paint.K, paint.S});
+  _brushPtr->setRadius(step * 0.8);
+
+  for (auto u = step * 0.5; u < static_cast<double>(_canvasPtr->get_h().rows);
+       u += step) {
+    std::vector<vec2> path = {
+      {-2.0 * step, u},
+      {static_cast<double>(_canvasPtr->get_h().cols) + 2.0 * step, u}};
+    _brushPtr->paintStroke(path, *_canvasPtr);
+  }
 }
 
 }  // namespace painty

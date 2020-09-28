@@ -89,6 +89,7 @@ class PictureTargetSbrPainter {
   struct BrushStroke {
     std::vector<vec2> path = {};
     double radius          = 0.0;
+    PaintCoeff paint;
   };
 
   using ColorIndexBrushStrokeMap = std::map<size_t, std::vector<BrushStroke>>;
@@ -99,7 +100,8 @@ class PictureTargetSbrPainter {
 
   auto checkConvergence(const Mat1d& difference,
                         std::map<int32_t, ImageRegion>& regions,
-                        Mat<int32_t>& labels) const -> bool;
+                        Mat<int32_t>& labels, const double epsFac) const
+    -> bool;
 
   auto generateBrushStrokes(std::map<int32_t, ImageRegion>& regions,
                             const Mat3d& target_Lab,
@@ -112,6 +114,8 @@ class PictureTargetSbrPainter {
   auto findBestPaintIndex(const vec3& R_target, const vec3& R0,
                           const Palette& palette) const
     -> std::optional<size_t>;
+
+  void paintCoatCanvas(const PaintCoeff& paint);
 
   static auto computeDifference(const Mat3d& target_Lab,
                                 const Mat3d& canvasCurrentLab) -> Mat1d;
