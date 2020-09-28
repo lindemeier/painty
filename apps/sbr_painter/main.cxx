@@ -24,6 +24,7 @@ static void from_json(const nlohmann::json& j,
   p.smoothIterations = j.value("smoothIterations", 5U);
   p.nrColors         = j.value("nrColors", 6U);
   p.thinningVolume   = j.value("thinningVolume", 1.0);
+  p.alphaDiff        = j.value("alphaDiff", 1.0);
 }
 
 static void from_json(const nlohmann::json& j,

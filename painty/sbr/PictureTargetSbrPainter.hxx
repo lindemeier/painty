@@ -25,6 +25,8 @@ class PictureTargetSbrPainter {
     uint32_t smoothIterations = 5U;    // bilateral filter color sigma
     uint32_t nrColors         = 6U;
     double thinningVolume     = 2.0;
+    double alphaDiff =
+      0.75;  // weight color diff in contrast to derivative diff
   };
 
   struct ParamsOrientations {
@@ -94,8 +96,8 @@ class PictureTargetSbrPainter {
 
   using ColorIndexBrushStrokeMap = std::map<size_t, std::vector<BrushStroke>>;
 
-  auto extractRegions(const Mat3d& target_Lab, const Mat3d& canvasCurrentLab,
-                      const Mat1d& difference, double brushSize) const
+  auto extractRegions(const Mat3d& target_Lab, const Mat1d& difference,
+                      double brushSize) const
     -> std::pair<Mat<int32_t>, std::map<int32_t, ImageRegion>>;
 
   auto checkConvergence(const Mat1d& difference,
@@ -117,8 +119,8 @@ class PictureTargetSbrPainter {
 
   void paintCoatCanvas(const PaintCoeff& paint);
 
-  static auto computeDifference(const Mat3d& target_Lab,
-                                const Mat3d& canvasCurrentLab) -> Mat1d;
+  auto computeDifference(const Mat3d& target_Lab, const Mat3d& canvasCurrentLab,
+                         const double brushRadius) const -> Mat1d;
 
   std::shared_ptr<Canvas<vec3>> _canvasPtr          = nullptr;
   std::shared_ptr<PaintMixer> _basePigmentsMixerPtr = nullptr;

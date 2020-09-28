@@ -28,7 +28,6 @@ PictureTargetSbrPainter::PictureTargetSbrPainter(
       _brushPtr(painterPtr) {}
 
 auto PictureTargetSbrPainter::extractRegions(const Mat3d& target_Lab,
-                                             const Mat3d& canvasCurrentLab,
                                              const Mat1d& difference,
                                              double brushSize) const
   -> std::pair<Mat<int32_t>, std::map<int32_t, ImageRegion>> {
@@ -40,8 +39,8 @@ auto PictureTargetSbrPainter::extractRegions(const Mat3d& target_Lab,
   SuperpixelSegmentation seg;
   seg.setUseDiffWeight(_paramsRegionExtraction.useDiffWeights);
   seg.setExtractionStrategy(_paramsRegionExtraction.extractionStrategy);
-  seg.extract(target_Lab, canvasCurrentLab, _paramsInput.mask,
-              static_cast<int32_t>(brushSize));
+  seg.extractWithDiff(target_Lab, difference, _paramsInput.mask,
+                      static_cast<int32_t>(brushSize));
   labels = seg.getRegions(regions);
   for (auto j = 0; j < static_cast<int32_t>(segDiffImage.total()); ++j) {
     segDiffImage(j)[0] = difference(j);
@@ -234,13 +233,23 @@ auto PictureTargetSbrPainter::findBestPaintIndex(const vec3& R_target,
 }
 
 auto PictureTargetSbrPainter::computeDifference(const Mat3d& target_Lab,
-                                                const Mat3d& canvasCurrentLab)
+                                                const Mat3d& canvasCurrentLab,
+                                                const double brushRadius) const
   -> Mat1d {
+  const auto derivTarget = differencesOfGaussians(target_Lab, brushRadius);
+  const auto derivCanvas =
+    differencesOfGaussians(canvasCurrentLab, brushRadius);
+
+  constexpr auto derivMaxNorm = 20.0;
   auto difference = Mat1d(target_Lab.size());
   for (auto i = 0; i < static_cast<int32_t>(target_Lab.total()); i++) {
-    difference(i) = ColorConverter<double>::ColorDifference(
-      target_Lab(i), canvasCurrentLab(i));
+    difference(i) =
+      _paramsInput.alphaDiff * ColorConverter<double>::ColorDifference(
+                                 target_Lab(i), canvasCurrentLab(i)) +
+      (1.0 - _paramsInput.alphaDiff) *
+        ((derivTarget(i) - derivCanvas(i)).norm() / derivMaxNorm);
   }
+
   painty::io::imSave("/tmp/difference.jpg", difference, false);
   return difference;
 }
@@ -322,13 +331,14 @@ auto PictureTargetSbrPainter::paint() -> bool {
         target_Lab.rows, target_Lab.cols);
 
       std::cout << "Compute difference of target and canvas" << std::endl;
-      auto difference = computeDifference(target_Lab, canvasCurrentLab);
+      auto difference =
+        computeDifference(target_Lab, canvasCurrentLab, brushRadius);
 
       std::cout << "Extracting superpixels" << std::endl;
       std::map<int32_t, ImageRegion> regions;
       Mat<int32_t> labels;
       std::tie(labels, regions) =
-        extractRegions(target_Lab, canvasCurrentLab, difference, brushSize);
+        extractRegions(target_Lab, difference, brushSize);
 
       // discard already close enough regions
       if (checkConvergence(difference, regions, labels, epsFac)) {

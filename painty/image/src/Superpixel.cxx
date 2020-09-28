@@ -290,24 +290,14 @@ vec2 ImageRegion::getSpatialMean() const {
               mean[1] / static_cast<double>(points.size()));
 }
 
-void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
-                                     const Mat3d& canvasLabArg,
-                                     const Mat1d& maskArg,
-                                     const int32_t cellWidth) {
+void SuperpixelSegmentation::extractWithDiff(const Mat3d& targetLabArg,
+                                             const Mat1d& difference,
+                                             const Mat1d& maskArg,
+                                             int32_t cellWidth) {
+  _difference = difference;
   _targetLab = targetLabArg;
   _mask =
     (maskArg.empty()) ? Mat1d(_targetLab.rows, _targetLab.cols, 1.0) : maskArg;
-
-  if (!canvasLabArg.empty()) {
-    _useDiffWeight = true;
-    _difference    = Mat1d(_targetLab.size());
-    for (int32_t i = 0; i < static_cast<int32_t>(_targetLab.total()); i++) {
-      _difference(i) =
-        ColorConverter<double>::ColorDifference(_targetLab(i), canvasLabArg(i));
-    }
-  } else {
-    _useDiffWeight = false;
-  }
 
   const int32_t N = _targetLab.cols * _targetLab.rows;
   const int32_t K = static_cast<int32_t>(N / (std::pow(cellWidth, 2)));
@@ -465,6 +455,24 @@ void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
   int32_t newK = 0;
   _labels      = segmentation_details::enforceLabelConnectivity(
     newLabels, newK, static_cast<int32_t>(double(N) / double(S * S)));
+}
+
+void SuperpixelSegmentation::extract(const Mat3d& targetLabArg,
+                                     const Mat3d& canvasLabArg,
+                                     const Mat1d& maskArg,
+                                     const int32_t cellWidth) {
+  Mat1d difference;
+  if (!canvasLabArg.empty()) {
+    _useDiffWeight = true;
+    difference     = Mat1d(_targetLab.size());
+    for (int32_t i = 0; i < static_cast<int32_t>(_targetLab.total()); i++) {
+      difference(i) =
+        ColorConverter<double>::ColorDifference(_targetLab(i), canvasLabArg(i));
+    }
+  } else {
+    _useDiffWeight = false;
+  }
+  extractWithDiff(targetLabArg, difference, maskArg, cellWidth);
 }
 
 void SuperpixelSegmentation::getSegmentationOutlined(Mat3d& background) const {
