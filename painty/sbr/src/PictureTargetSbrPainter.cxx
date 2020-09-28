@@ -157,9 +157,10 @@ auto PictureTargetSbrPainter::generateBrushStrokes(
       ColorConverter<double> converter;
       vec3 R0_test;
       converter.lab2rgb(LabCanvas, R0_test);
-      const auto R1 = ComputeReflectance(palette[currentPaintIndex.value()].K,
-                                         palette[currentPaintIndex.value()].S,
-                                         R0_test, AssumedAvgThickness);
+      const auto R1 = ComputeReflectance(
+        palette[currentPaintIndex.value()].K,
+        palette[currentPaintIndex.value()].S, R0_test,
+        AssumedAvgThickness * _brushPtr->getThicknessScale());
 
       vec3 Lab1;
       converter.rgb2lab(R1, Lab1);
@@ -213,7 +214,8 @@ auto PictureTargetSbrPainter::findBestPaintIndex(const vec3& R_target,
   for (size_t i = 0UL; (i < palette.size()); i++) {
     vec3 R_Lab;
     con.rgb2lab(
-      ComputeReflectance(palette[i].K, palette[i].S, R0, AssumedAvgThickness),
+      ComputeReflectance(palette[i].K, palette[i].S, R0,
+                         AssumedAvgThickness * _brushPtr->getThicknessScale()),
       R_Lab);
 
     const auto ld = (R_Lab - R_target_Lab).squaredNorm();
