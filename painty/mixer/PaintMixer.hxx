@@ -23,23 +23,26 @@ class PaintMixer {
  public:
   PaintMixer(const Palette& basePalette);
 
-  Palette mixFromInputPicture(const Mat<vec3>& sRGBPicture,
-                              uint32_t count) const;
+  auto mixFromInputPicture(const Mat<vec3>& sRGBPicture, uint32_t count) const
+    -> Palette;
 
-  PaintCoeff mixSinglePaint(const std::vector<CoeffPrecision>& weights) const;
+  auto mixSinglePaint(const std::vector<CoeffPrecision>& weights) const
+    -> PaintCoeff;
 
-  std::vector<CoeffPrecision> getWeightsForMixingTargetPaint(
-    const PaintCoeff& paint) const;
+  auto getWeightsForMixingTargetPaint(const PaintCoeff& paint) const
+    -> std::vector<CoeffPrecision>;
 
-  std::vector<CoeffPrecision> getMixtureWeightsForReflectance(
+  auto getMixtureWeightsForReflectance(
     const vec3& targetReflectance, const vec3& backgroundReflectance,
-    double& layerThickness) const;
+    double& layerThickness) const -> std::vector<CoeffPrecision>;
 
-  const Palette& getUnderlyingPalette() const;
+  auto getUnderlyingPalette() const -> const Palette&;
   void setUnderlyingPalette(const Palette& palette);
 
   auto mixed(const PaintCoeff& paint, const double paintVolume,
              const PaintCoeff& other, const double otherVolume) -> PaintCoeff;
+
+  auto mixClosestFit(const vec3& R0, const vec3& target) -> PaintCoeff;
 
  private:
   PaintMixer() = delete;

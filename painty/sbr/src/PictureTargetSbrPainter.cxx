@@ -199,7 +199,7 @@ auto PictureTargetSbrPainter::generateBrushStrokes(
 
 auto PictureTargetSbrPainter::findBestPaintIndex(const vec3& R_target,
                                                  const vec3& R0,
-                                                 const Palette& palette)
+                                                 const Palette& palette) const
   -> std::optional<size_t> {
   ColorConverter<double> con;
   vec3 R_target_Lab;
