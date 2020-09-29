@@ -305,7 +305,7 @@ auto PictureTargetSbrPainter::paint() -> bool {
                              brushRadius * _paramsOrientations.innerBlurScale,
                              brushRadius * _paramsOrientations.outerBlurScale);
 
-    std::async(std::launch::async, [tensors]() {
+    const auto future = std::async(std::launch::async, [tensors]() {
       painty::io::imSave("/tmp/targetImageOrientation.jpg",
                          lineIntegralConv(ComputeEdgeTangentFlow(tensors), 10.),
                          false);
@@ -369,6 +369,8 @@ auto PictureTargetSbrPainter::paint() -> bool {
         }
       }
     }
+
+    future.wait();
   }
 
   return true;

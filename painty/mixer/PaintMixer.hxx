@@ -32,9 +32,10 @@ class PaintMixer {
   auto getWeightsForMixingTargetPaint(const PaintCoeff& paint) const
     -> std::vector<CoeffPrecision>;
 
-  auto getMixtureWeightsForReflectance(
-    const vec3& targetReflectance, const vec3& backgroundReflectance,
-    double& layerThickness) const -> std::vector<CoeffPrecision>;
+  auto getMixtureWeightsForReflectance(const vec3& targetReflectance,
+                                       const vec3& backgroundReflectance,
+                                       double& layerThickness) const
+    -> std::vector<CoeffPrecision>;
 
   auto getUnderlyingPalette() const -> const Palette&;
   void setUnderlyingPalette(const Palette& palette);
