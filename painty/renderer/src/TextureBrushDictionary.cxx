@@ -25,7 +25,7 @@ int32_t TextureBrushDictionaryEntry::getTexLength() const {
 }
 
 TextureBrushDictionary::TextureBrushDictionary() {
-  createBrushTexturesFromFolder("brushTextures");
+  createBrushTexturesFromFolder("data/textures");
 }
 
 auto TextureBrushDictionary::lookup(const std::vector<vec2>& path,
@@ -107,15 +107,17 @@ void TextureBrushDictionary::createBrushTexturesFromFolder(
 
   _entries.clear();
 
-  std::string line;
   int32_t radiusC = -1;
   int32_t lengthC = -1;
   int32_t i0      = -1;
   int32_t i1      = -1;
 
   for (auto& p : std::filesystem::directory_iterator(folder)) {
-    const std::string filepath = p.path();
-    const std::string filename = split(line, '.').front();
+    const auto filepath = p.path();
+    std::cout << filepath << std::endl;
+
+    const std::string filename =
+      split(split(filepath, '.').front(), '/').back();
 
     std::vector<std::string> tokens = split(filename, '_');
     const std::string radius        = tokens[0];

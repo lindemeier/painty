@@ -17,6 +17,7 @@ target_link_libraries(${PROJECT_NAME}
   paintyCore
   paintyImage
   paintyIo
+  stdc++fs
 )
 
 add_dependencies(${PROJECT_NAME}

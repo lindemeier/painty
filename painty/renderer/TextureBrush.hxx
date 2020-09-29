@@ -14,6 +14,7 @@
 #include "painty/renderer/BrushStrokeSample.hxx"
 #include "painty/renderer/Canvas.hxx"
 #include "painty/renderer/Smudge.hxx"
+#include "painty/renderer/TextureBrushDictionary.hxx"
 
 namespace painty {
 template <class vector_type>
@@ -28,6 +29,8 @@ class TextureBrush final : public BrushBase<vector_type> {
     for (auto& c : _paintStored) {
       c.fill(static_cast<T>(0.1));
     }
+
+    TextureBrushDictionary dict;
   }
 
   void setRadius(const double radius) override {
