@@ -112,6 +112,40 @@ void painty::io::imRead(const std::string& filenameOriginal, Mat<double>& gray,
   }
 }
 
+void painty::io::imRead(const std::vector<uint8_t>& buffer, Mat<double>& gray,
+                        bool convertFrom_sRGB) {
+  cv::Mat cv_mat =
+    cv::imdecode(buffer, cv::IMREAD_ANYDEPTH | cv::IMREAD_GRAYSCALE);
+
+  // if not loaded succesfully
+  if (cv_mat.data == nullptr) {
+    throw std::ios_base::failure("could not read buffer");
+  }
+
+  // data scale
+  double scale = 1.0;
+  if (cv_mat.depth() == CV_16U) {
+    scale = 1.0 / 0xffff;
+  } else if (cv_mat.depth() == CV_32F) {
+    scale = 1.0;
+  } else if (cv_mat.depth() == CV_8U) {
+    scale = 1.0 / 0xff;
+  } else if (cv_mat.depth() == CV_64F) {
+    scale = 1.0;
+  }
+
+  // convert to right type
+  cv_mat.convertTo(gray, CV_64FC1, scale);
+
+  if (convertFrom_sRGB) {
+    // convert from sRGB to linear rgb
+    ColorConverter<double> converter;
+    for (auto& v : gray) {
+      converter.srgb2rgb(v, v);
+    }
+  }
+}
+
 /**
  * @brief Write images to file.
  *
@@ -197,4 +231,27 @@ bool painty::io::imSave(const std::string& filenameOriginal,
   params.push_back(cv::IMWRITE_PNG_COMPRESSION);
   params.push_back(0);
   return cv::imwrite(filename, m, params);
+}
+
+bool painty::io::imSave(std::vector<uint8_t>& buffer, const Mat<double>& gray,
+                        bool convertTo_sRGB) {
+  ColorConverter<double> converter;
+  Mat<double> out(gray.size());
+  if (convertTo_sRGB) {
+    for (int32_t i = 0; i < static_cast<int32_t>(gray.total()); i++) {
+      converter.rgb2srgb(gray(i), out(i));
+    }
+  } else {
+    out = gray;
+  }
+
+  cv::Mat m;
+  out.convertTo(m, CV_MAKETYPE(CV_8U, 1), static_cast<double>(0xff));
+
+  std::vector<int32_t> params;
+  params.push_back(cv::IMWRITE_JPEG_QUALITY);
+  params.push_back(100);
+  params.push_back(cv::IMWRITE_PNG_COMPRESSION);
+  params.push_back(0);
+  return cv::imencode("png", m, buffer, params);
 }
