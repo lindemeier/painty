@@ -25,12 +25,11 @@ class TextureBrush final : public BrushBase<vector_type> {
  public:
   TextureBrush(const std::string& sampleDir)
       : _brushStrokeSample(sampleDir),
-        _smudge(static_cast<int32_t>(2.0 * _radius)) {
+        _smudge(static_cast<int32_t>(2.0 * _radius)),
+        _textureBrushDictionary() {
     for (auto& c : _paintStored) {
       c.fill(static_cast<T>(0.1));
     }
-
-    TextureBrushDictionary dict;
   }
 
   void setRadius(const double radius) override {
@@ -57,6 +56,9 @@ class TextureBrush final : public BrushBase<vector_type> {
     if (vertices.size() < 2UL) {
       return;
     }
+    const auto brushWidth = 2.0 * _radius;
+    _brushStrokeSample.generateFromTexture(
+      _textureBrushDictionary.lookup(vertices, brushWidth), brushWidth);
 
     // compute bounding rectangle
     auto boundMin = vertices.front();
@@ -236,5 +238,11 @@ class TextureBrush final : public BrushBase<vector_type> {
   Smudge<vector_type> _smudge;
 
   bool _useSmudge = true;
+
+  /**
+   * @brief Retrieve brush textures according to brush radii and path length.
+   *
+   */
+  TextureBrushDictionary _textureBrushDictionary;
 };
 }  // namespace painty

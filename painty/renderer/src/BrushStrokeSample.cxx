@@ -89,6 +89,35 @@ double painty::BrushStrokeSample::getLength() const {
   return _length;
 }
 
+void painty::BrushStrokeSample::generateFromTexture(const Mat1d& texture,
+                                                    const double brushWidth) {
+  _txy_l.clear();
+  _puv_l.clear();
+  _txy_c.clear();
+  _puv_c.clear();
+  _txy_r.clear();
+  _puv_r.clear();
+  const auto sampleSize = static_cast<double>(texture.cols) / brushWidth;
+  constexpr auto lu     = -1.0;
+  constexpr auto cu     = 0.0;
+  constexpr auto ru     = 1.0;
+  constexpr auto lt     = 0.0;
+  const auto rt         = static_cast<double>(texture.rows - 1);
+  const auto ct         = rt * 0.5;
+  for (auto t = 0.0; t < static_cast<double>(texture.cols); t += sampleSize) {
+    const auto u = t / static_cast<double>(texture.cols - 1);
+
+    addCorr_l({t, lt}, {u, lu});
+    addCorr_c({t, ct}, {u, cu});
+    addCorr_r({t, rt}, {u, ru});
+  }
+  addCorr_l({static_cast<double>(texture.cols - 1), lt}, {1.0, lu});
+  addCorr_c({static_cast<double>(texture.cols - 1), ct}, {1.0, cu});
+  addCorr_r({static_cast<double>(texture.cols - 1), rt}, {1.0, ru});
+
+  createWarper();
+}
+
 /**
  * @brief
  *
@@ -135,6 +164,13 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir) {
   }
   ifile.close();
 
+  createWarper();
+
+  // load thickness map
+  io::imRead(sampleDir + "/thickness_map.png", _thickness_map, true);
+}
+
+void painty::BrushStrokeSample::createWarper() {
   // create texture warper from spine
   {
     std::vector<vec2> uv;
@@ -149,9 +185,6 @@ void painty::BrushStrokeSample::loadSample(const std::string& sampleDir) {
     t.insert(t.end(), _txy_r.rbegin(), _txy_r.rend());
     _warper.init(uv, t);
   }
-
-  // load thickness map
-  io::imRead(sampleDir + "/thickness_map.png", _thickness_map, true);
 
   // scan through points and find the maximum width
   _widthMax = 0.0;

@@ -10,19 +10,13 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <random>
 
 #include "painty/io/ImageIO.hxx"
 
 namespace painty {
 
-int32_t TextureBrushDictionaryEntry::getTexSize() const {
-  return texture.rows;
-}
-
-int32_t TextureBrushDictionaryEntry::getTexLength() const {
-  return texture.cols;
-}
 
 TextureBrushDictionary::TextureBrushDictionary() {
   createBrushTexturesFromFolder("data/textures");
@@ -58,38 +52,29 @@ auto TextureBrushDictionary::lookup(const std::vector<vec2>& path,
     }
   }
 
-  const auto& candidates = _entries[i0][i1];
+  const auto& candidates = _brushTexturesBySizeByLength[i0][i1];
+
+  if (candidates.empty()) {
+    throw std::runtime_error("no candidate found");
+  }
 
   static std::random_device rd;
   static std::mt19937 gen(rd());
   std::uniform_int_distribution<std::size_t> dis(
     static_cast<std::size_t>(0UL),
     candidates.size() - static_cast<std::size_t>(1UL));
+  const auto index = dis(gen);
 
-  return candidates[dis(gen)].texture;
+  return candidates[index];
 }
 
 auto TextureBrushDictionary::loadHeightMap(const std::string& file) const
   -> Mat1d {
-  std::ifstream heightMapStream(file, std::ios::binary);
-  heightMapStream.seekg(0, std::ios::end);
-  const auto fileSize = static_cast<std::size_t>(heightMapStream.tellg());
-  heightMapStream.seekg(0, std::ios::beg);
-  std::vector<uint8_t> data(fileSize);
-  heightMapStream.read(reinterpret_cast<char*>(data.data()),
-                       static_cast<std::streamsize>(fileSize));
-
-  auto hm = loadHeightMap(data);
-
-  cv::normalize(hm, hm, 0.0, 1.0, cv::NORM_MINMAX);
-
-  return hm;
-}
-
-auto TextureBrushDictionary::loadHeightMap(
-  const std::vector<uint8_t>& data) const -> Mat1d {
   Mat1d gray;
-  io::imRead(data, gray, false);
+  io::imRead(file, gray, false);
+
+  cv::normalize(gray, gray, 0.0, 1.0, cv::NORM_MINMAX);
+
   return gray;
 }
 
@@ -105,14 +90,9 @@ void TextureBrushDictionary::createBrushTexturesFromFolder(
     return elems;
   };
 
-  _entries.clear();
+  std::map<uint32_t, std::map<uint32_t, std::vector<Mat1d>>> textureMap;
 
-  int32_t radiusC = -1;
-  int32_t lengthC = -1;
-  int32_t i0      = -1;
-  int32_t i1      = -1;
-
-  for (auto& p : std::filesystem::directory_iterator(folder)) {
+  for (const auto& p : std::filesystem::directory_iterator(folder)) {
     const auto filepath = p.path();
     std::cout << filepath << std::endl;
 
@@ -120,62 +100,65 @@ void TextureBrushDictionary::createBrushTexturesFromFolder(
       split(split(filepath, '.').front(), '/').back();
 
     std::vector<std::string> tokens = split(filename, '_');
-    const std::string radius        = tokens[0];
-    const std::string length        = tokens[1];
-    const std::string id            = tokens[2];
+    const auto radius = static_cast<uint32_t>(std::stoi(tokens[0]));
+    const auto length = static_cast<uint32_t>(std::stoi(tokens[1]));
+    // const auto id     = static_cast<uint32_t>(std::stoi(tokens[2]));
 
-    TextureBrushDictionaryEntry entry;
-    entry.radiusNr = std::stoi(radius);
-    entry.lengthNr = std::stoi(length);
-    entry.id       = std::stoi(id);
-    entry.texture  = loadHeightMap(filepath);
-
-    if (entry.radiusNr != radiusC) {
-      i0++;
-      radiusC = entry.radiusNr;
-      lengthC = -1;
-      i1      = -1;
-    }
-
-    if (entry.lengthNr != lengthC) {
-      i1++;
-      lengthC = entry.lengthNr;
-    }
-
-    while (i0 >= static_cast<int32_t>(_entries.size())) {
-      _entries.push_back(
-        std::vector<std::vector<TextureBrushDictionaryEntry> >());
-    }
-
-    while (i1 >= static_cast<int32_t>(
-                   _entries[static_cast<std::size_t>(i0)].size())) {
-      _entries[static_cast<std::size_t>(i0)].push_back(
-        std::vector<TextureBrushDictionaryEntry>());
-    }
-
-    _entries[static_cast<std::size_t>(i0)][static_cast<std::size_t>(i1)]
-      .push_back(entry);
+    textureMap[radius][length].push_back(loadHeightMap(filepath));
   }
-  // update sizes and ratios
-  _avgSizes.resize(_entries.size());
-  _avgTexLength.resize(_entries.size());
-  for (auto i = 0U; i < _entries.size(); i++) {
-    _avgTexLength[i].resize(_entries[i].size());
-    _avgSizes[i] = 0.0;
-    int32_t ar   = 0;
-    for (auto j = 0U; j < _entries[i].size(); j++) {
-      _avgTexLength[i][j] = 0.0;
-      int32_t rr          = 0;
-      for (auto k = 0U; k < _entries[i][j].size(); k++) {
-        _avgSizes[i] += _entries[i][j][k].getTexSize();
-        _avgTexLength[i][j] += _entries[i][j][k].getTexLength();
-        ar++;
-        rr++;
+
+  _brushTexturesBySizeByLength.clear();
+  for (const auto& e : textureMap) {
+    _brushTexturesBySizeByLength.push_back(std::vector<std::vector<Mat1d>>());
+    for (const auto& a : e.second) {
+      _brushTexturesBySizeByLength.back().push_back(std::vector<Mat1d>());
+      for (const auto& tex : a.second) {
+        _brushTexturesBySizeByLength.back().back().push_back(tex);
       }
-      _avgTexLength[i][j] /= rr;
     }
-    _avgSizes[i] /= ar;
   }
-}  // namespace painty
+
+  _avgSizes.resize(_brushTexturesBySizeByLength.size());
+  for (auto& e : _avgSizes) {
+    e = 0.0;
+  }
+  std::vector<uint32_t> brushSizesCounters(_brushTexturesBySizeByLength.size(),
+                                           0U);
+  for (auto i = 0U; i < _brushTexturesBySizeByLength.size(); i++) {
+    for (auto j = 0U; j < _brushTexturesBySizeByLength[i].size(); j++) {
+      for (const auto& texture : _brushTexturesBySizeByLength[i][j]) {
+        _avgSizes[i] += static_cast<double>(texture.rows);
+        brushSizesCounters[i]++;
+      }
+    }
+  }
+  for (auto i = 0U; i < _avgSizes.size(); i++) {
+    _avgSizes[i] *= (1.0 / static_cast<double>(brushSizesCounters[i]));
+  }
+
+  _avgTexLength.resize(_brushTexturesBySizeByLength.size());
+  std::vector<std::vector<uint32_t>> brushLengthCounters(
+    _brushTexturesBySizeByLength.size());
+  for (auto i = 0U; i < _brushTexturesBySizeByLength.size(); i++) {
+    _avgTexLength[i] =
+      std::vector<double>(_brushTexturesBySizeByLength[i].size(), 0.0);
+    brushLengthCounters[i] =
+      std::vector<uint32_t>(_brushTexturesBySizeByLength[i].size(), 0U);
+  }
+  for (auto i = 0U; i < _brushTexturesBySizeByLength.size(); i++) {
+    for (auto j = 0U; j < _brushTexturesBySizeByLength[i].size(); j++) {
+      for (const auto& texture : _brushTexturesBySizeByLength[i][j]) {
+        _avgTexLength[i][j] += static_cast<double>(texture.cols);
+        brushLengthCounters[i][j]++;
+      }
+    }
+  }
+  for (auto i = 0U; i < _avgTexLength.size(); i++) {
+    for (auto j = 0U; j < _avgTexLength[i].size(); j++) {
+      _avgTexLength[i][j] *=
+        (1.0 / static_cast<double>(brushLengthCounters[i][j]));
+    }
+  }
+}
 
 }  // namespace painty

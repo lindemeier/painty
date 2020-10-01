@@ -35,7 +35,11 @@ class BrushStrokeSample final {
   double getWidth() const;
   double getLength() const;
 
+  void generateFromTexture(const Mat1d& texture, const double brushWidth);
+
  private:
+  void createWarper();
+
   Mat<double> _thickness_map;
 
   // texture coordinates
