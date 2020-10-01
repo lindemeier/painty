@@ -20,10 +20,6 @@ class BrushStrokeSample final {
  public:
   BrushStrokeSample(const std::string& sampleDir);
 
-  void addCorr_l(const vec2& texPos, const vec2& uv);
-  void addCorr_c(const vec2& texPos, const vec2& uv);
-  void addCorr_r(const vec2& texPos, const vec2& uv);
-
   const Mat<double>& getThicknessMap() const;
   void setThicknessMap(const Mat<double>& thicknessMap);
 
@@ -35,7 +31,7 @@ class BrushStrokeSample final {
   double getWidth() const;
   double getLength() const;
 
-  void generateFromTexture(const Mat1d& texture, const double brushWidth);
+  void generateFromTexture(const Mat1d& texture);
 
  private:
   void createWarper();

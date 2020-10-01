@@ -17,21 +17,6 @@ painty::BrushStrokeSample::BrushStrokeSample(const std::string& sampleDir) {
   loadSample(sampleDir);
 }
 
-void painty::BrushStrokeSample::addCorr_l(const vec2& texPos, const vec2& uv) {
-  _txy_l.push_back(texPos);
-  _puv_l.push_back(uv);
-}
-
-void painty::BrushStrokeSample::addCorr_c(const vec2& texPos, const vec2& uv) {
-  _txy_c.push_back(texPos);
-  _puv_c.push_back(uv);
-}
-
-void painty::BrushStrokeSample::addCorr_r(const vec2& texPos, const vec2& uv) {
-  _txy_r.push_back(texPos);
-  _puv_r.push_back(uv);
-}
-
 const painty::Mat<double>& painty::BrushStrokeSample::getThicknessMap() const {
   return _thickness_map;
 }
@@ -89,32 +74,37 @@ double painty::BrushStrokeSample::getLength() const {
   return _length;
 }
 
-void painty::BrushStrokeSample::generateFromTexture(const Mat1d& texture,
-                                                    const double brushWidth) {
+void painty::BrushStrokeSample::generateFromTexture(const Mat1d& texture) {
   _txy_l.clear();
   _puv_l.clear();
   _txy_c.clear();
   _puv_c.clear();
   _txy_r.clear();
   _puv_r.clear();
-  const auto sampleSize = static_cast<double>(texture.cols) / brushWidth;
+
   constexpr auto lu     = -1.0;
   constexpr auto cu     = 0.0;
   constexpr auto ru     = 1.0;
-  constexpr auto lt     = 0.0;
-  const auto rt         = static_cast<double>(texture.rows - 1);
-  const auto ct         = rt * 0.5;
-  for (auto t = 0.0; t < static_cast<double>(texture.cols); t += sampleSize) {
-    const auto u = t / static_cast<double>(texture.cols - 1);
 
-    addCorr_l({t, lt}, {u, lu});
-    addCorr_c({t, ct}, {u, cu});
-    addCorr_r({t, rt}, {u, ru});
-  }
-  addCorr_l({static_cast<double>(texture.cols - 1), lt}, {1.0, lu});
-  addCorr_c({static_cast<double>(texture.cols - 1), ct}, {1.0, cu});
-  addCorr_r({static_cast<double>(texture.cols - 1), rt}, {1.0, ru});
+  constexpr auto lt = -0.1;
+  const auto ct     = static_cast<double>(texture.rows) * 0.5;
+  const auto rt     = static_cast<double>(texture.rows);
 
+  const auto et = static_cast<double>(texture.cols - 1);
+
+  _txy_l.emplace_back(0.0, lt);
+  _txy_l.emplace_back(et, lt);
+  _txy_c.emplace_back(0.0, ct);
+  _txy_c.emplace_back(et, ct);
+  _txy_r.emplace_back(0.0, rt);
+  _txy_r.emplace_back(et, rt);
+
+  _puv_l.emplace_back(0.0, lu);
+  _puv_l.emplace_back(1.0, lu);
+  _puv_c.emplace_back(0.0, cu);
+  _puv_c.emplace_back(1.0, cu);
+  _puv_r.emplace_back(0.0, ru);
+  _puv_r.emplace_back(1.0, ru);
   createWarper();
 }
 

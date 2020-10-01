@@ -51,14 +51,24 @@ class TextureBrush final : public BrushBase<vector_type> {
     _paintStored = paint;
   }
 
-  void paintStroke(const std::vector<vec2>& vertices,
+  void paintStroke(const std::vector<vec2>& verticesArg,
                    Canvas<vector_type>& canvas) override {
-    if (vertices.size() < 2UL) {
+    if (verticesArg.size() < 2UL) {
       return;
     }
-    const auto brushWidth = 2.0 * _radius;
+
+    auto vertices = std::vector<vec2>();
+    vertices.push_back(verticesArg.front() -
+                       (verticesArg[1U] - verticesArg.front()).normalized() *
+                         _radius);
+    vertices.insert(vertices.end(), verticesArg.cbegin(), verticesArg.cend());
+    vertices.push_back(
+      verticesArg.back() +
+      (verticesArg.back() - verticesArg[verticesArg.size() - 2U]).normalized() *
+        _radius);
+
     _brushStrokeSample.generateFromTexture(
-      _textureBrushDictionary.lookup(vertices, brushWidth), brushWidth);
+      _textureBrushDictionary.lookup(vertices, 2.0 * _radius));
 
     // compute bounding rectangle
     auto boundMin = vertices.front();
