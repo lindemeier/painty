@@ -65,6 +65,10 @@ auto TextureBrushDictionary::lookup(const std::vector<vec2>& path,
     candidates.size() - static_cast<std::size_t>(1UL));
   const auto index = dis(gen);
 
+  std::cout << "Brush stroke with size: " << brushSize << " and length  "
+            << length << " lookup -> " << i0 << ":" << i1 << ":" << index
+            << std::endl;
+
   return candidates[index];
 }
 

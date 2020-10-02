@@ -121,7 +121,7 @@ int main(int argc, const char* argv[]) {
   painty::Mat3d image;
   painty::io::imRead(result["image"].as<std::string>(), image, false);
 
-  constexpr auto OptimRenderSize = 1024;
+  constexpr auto OptimRenderSize = 2048;
   auto width                     = OptimRenderSize;
   auto height                    = OptimRenderSize / 2;
   if (image.cols > image.rows) {

@@ -3,13 +3,13 @@
   "dryingTimeMillis": 60000,
   "base_pigments": "lindemeier-measured.json",
   "convergence_params": {
-    "maxIterations": 20,
+    "maxIterations": 15,
     "rms_global": 0.0,
     "rms_local": 0.05
   },
   "image_params": {
-    "nrColors": 6,
-    "sigmaColor": 1.25,
+    "nrColors": 4,
+    "sigmaColor": 0.75,
     "sigmaSpatial": 1.0,
     "smoothIterations": 2,
     "thinningVolume": 0.0,
@@ -22,6 +22,7 @@
   "stroke_params": {
     "blockVisitedRegions": true,
     "brushSizes": [
+      120.0,
       60.0,
       30.0,
       20.0
@@ -29,8 +30,8 @@
     "clampBrushRadius": true,
     "curvatureAlpha": 0.5,
     "maxLen": 15,
-    "minLen": 5,
+    "minLen": 3,
     "stepSize": 0.0,
-    "thicknessScale": 1.0
+    "thicknessScale": 10.0
   }
 }
