@@ -82,9 +82,9 @@ void painty::BrushStrokeSample::generateFromTexture(const Mat1d& texture) {
   _txy_r.clear();
   _puv_r.clear();
 
-  constexpr auto lu     = -1.0;
-  constexpr auto cu     = 0.0;
-  constexpr auto ru     = 1.0;
+  constexpr auto lu = -1.0;
+  constexpr auto cu = 0.0;
+  constexpr auto ru = 1.0;
 
   constexpr auto lt = 0.0;
   const auto ct     = static_cast<double>(texture.rows) * 0.5;
