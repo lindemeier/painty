@@ -1,35 +1,37 @@
 {
-  "enableSmudge": false,
+  "enableSmudge": true,
+  "coatCanvas": false,
+  "dryingTimeMillis": 60000,
   "base_pigments": "lindemeier-measured.json",
   "convergence_params": {
-    "maxIterations": 10,
+    "maxIterations": 5,
     "rms_global": 0.0,
-    "rms_local": 0.01
+    "rms_local": 0.05
   },
   "image_params": {
-    "nrColors": 4,
-    "sigmaColor": 2.25,
-    "sigmaSpatial": 2.0,
-    "smoothIterations": 3,
-    "thinningVolume": 7.0
+    "nrColors": 8,
+    "sigmaColor": 0.75,
+    "sigmaSpatial": 1.0,
+    "smoothIterations": 2,
+    "thinningVolume": 0.0,
+    "alphaDiff": 0.75
   },
   "orientation_params": {
     "innerBlurScale": 0.0,
-    "outerBlurScale": 0.5
+    "outerBlurScale": 0.25
   },
   "stroke_params": {
     "blockVisitedRegions": true,
     "brushSizes": [
-      100.0,
       60.0,
       30.0,
-      10.0,
-      2.0
+      20.0
     ],
     "clampBrushRadius": true,
-    "curvatureAlpha": 0.75,
-    "maxLen": 12,
-    "minLen": 5,
-    "stepSize": 0.0
+    "curvatureAlpha": 0.5,
+    "maxLen": 15,
+    "minLen": 3,
+    "stepSize": 0.0,
+    "thicknessScale": 1.0
   }
 }

@@ -12,6 +12,7 @@
 #include "painty/io/ImageIO.hxx"
 #include "painty/mixer/Palette.hxx"
 #include "painty/mixer/Serialization.hxx"
+#include "painty/renderer/FootprintBrush.hxx"
 #include "painty/renderer/Renderer.hxx"
 #include "painty/renderer/TextureBrush.hxx"
 #include "painty/sbr/PictureTargetSbrPainter.hxx"
@@ -24,6 +25,7 @@ static void from_json(const nlohmann::json& j,
   p.smoothIterations = j.value("smoothIterations", 5U);
   p.nrColors         = j.value("nrColors", 6U);
   p.thinningVolume   = j.value("thinningVolume", 1.0);
+  p.alphaDiff        = j.value("alphaDiff", 1.0);
 }
 
 static void from_json(const nlohmann::json& j,
@@ -41,6 +43,7 @@ static void from_json(const nlohmann::json& j,
   p.curvatureAlpha      = j.value("curvatureAlpha", 1.0);
   p.blockVisitedRegions = j.value("blockVisitedRegions", true);
   p.clampBrushRadius    = j.value("clampBrushRadius", true);
+  p.thicknessScale      = j.value("thicknessScale", 2.0);
 }
 
 static void from_json(const nlohmann::json& j,
@@ -61,6 +64,7 @@ int main(int argc, const char* argv[]) {
     // clang-format off
       ("i,image", "input picture", cxxopts::value<std::string>())
       ("m,mask", "mask", cxxopts::value<std::string>())
+      ("a,canvas", "canvas", cxxopts::value<std::string>())
       ("c,config", "config as json file", cxxopts::value<std::string>())
       ("o,output", "Output file to store the rendered image", cxxopts::value<std::string>()
           ->default_value("sbr.png"))
@@ -118,7 +122,7 @@ int main(int argc, const char* argv[]) {
   painty::Mat3d image;
   painty::io::imRead(result["image"].as<std::string>(), image, false);
 
-  constexpr auto OptimRenderSize = 1024;
+  constexpr auto OptimRenderSize = 2048;
   auto width                     = OptimRenderSize;
   auto height                    = OptimRenderSize / 2;
   if (image.cols > image.rows) {
@@ -134,13 +138,26 @@ int main(int argc, const char* argv[]) {
   }
   std::cout << "Creating renderer with width=" << width
             << " and height=" << height << std::endl;
+
   auto brushPtr =
     std::make_shared<painty::TextureBrush<painty::vec3>>("data/sample_0");
   brushPtr->enableSmudge(j.value("enableSmudge", true));
+
+  // auto brushPtr = std::make_shared<painty::FootprintBrush<painty::vec3>>(0.0);
+
   auto canvasPtr =
     std::make_shared<painty::Canvas<painty::vec3>>(height, width);
+  const uint32_t dringTimeMillis = j.value("dryingTimeMillis", 1000U * 60U);
+  canvasPtr->setDryingTime(std::chrono::milliseconds(dringTimeMillis));
+  if (result.count("a") == 1UL) {
+    painty::Mat3d initCanvas;
+    painty::io::imRead(result["canvas"].as<std::string>(), initCanvas, false);
+    canvasPtr->setBackground(painty::ScaledMat(initCanvas, height, width));
+  }
+
   painty::PictureTargetSbrPainter picturePainter(
     canvasPtr, std::make_shared<painty::PaintMixer>(palette), brushPtr);
+  picturePainter.enableCoatCanvas(j.value("coatCanvas", false));
 
   std::cout << "Setting configs in renderer" << std::endl;
   picturePainter._paramsInput        = j["image_params"];

@@ -14,6 +14,7 @@
 #include "painty/renderer/BrushStrokeSample.hxx"
 #include "painty/renderer/Canvas.hxx"
 #include "painty/renderer/Smudge.hxx"
+#include "painty/renderer/TextureBrushDictionary.hxx"
 
 namespace painty {
 template <class vector_type>
@@ -24,7 +25,8 @@ class TextureBrush final : public BrushBase<vector_type> {
  public:
   TextureBrush(const std::string& sampleDir)
       : _brushStrokeSample(sampleDir),
-        _smudge(static_cast<int32_t>(2.0 * _radius)) {
+        _smudge(static_cast<int32_t>(2.0 * _radius)),
+        _textureBrushDictionary() {
     for (auto& c : _paintStored) {
       c.fill(static_cast<T>(0.1));
     }
@@ -49,11 +51,24 @@ class TextureBrush final : public BrushBase<vector_type> {
     _paintStored = paint;
   }
 
-  void paintStroke(const std::vector<vec2>& vertices,
+  void paintStroke(const std::vector<vec2>& verticesArg,
                    Canvas<vector_type>& canvas) override {
-    if (vertices.size() < 2UL) {
+    if (verticesArg.size() < 2UL) {
       return;
     }
+
+    auto vertices = std::vector<vec2>();
+    vertices.push_back(verticesArg.front() -
+                       (verticesArg[1U] - verticesArg.front()).normalized() *
+                         _radius);
+    vertices.insert(vertices.end(), verticesArg.cbegin(), verticesArg.cend());
+    vertices.push_back(
+      verticesArg.back() +
+      (verticesArg.back() - verticesArg[verticesArg.size() - 2U]).normalized() *
+        _radius);
+
+    _brushStrokeSample.generateFromTexture(
+      _textureBrushDictionary.lookup(vertices, 2.0 * _radius));
 
     // compute bounding rectangle
     auto boundMin = vertices.front();
@@ -110,19 +125,15 @@ class TextureBrush final : public BrushBase<vector_type> {
       upCanvasCoordinates.push_back(l);
       downCanvasCoordinates.push_back(r);
 
-      constexpr auto uvM = 1.0;
-      upUv.push_back({u, -uvM});
-      downUv.push_back({u, uvM});
+      // constexpr auto uvM = 1.0;
+      upUv.push_back({u, 0.0});
+      downUv.push_back({u, 1.0});
     }
     upCanvasCoordinates.insert(upCanvasCoordinates.begin(),
                                downCanvasCoordinates.rbegin(),
                                downCanvasCoordinates.rend());
 
     upUv.insert(upUv.begin(), downUv.rbegin(), downUv.rend());
-
-    // canvas coordinates to uv coordinates
-    TextureWarp canvas2uv;
-    canvas2uv.init(upCanvasCoordinates, upUv);
 
     const auto now = std::chrono::system_clock::now();
 
@@ -141,22 +152,17 @@ class TextureBrush final : public BrushBase<vector_type> {
           continue;
         }
 
-        // if (!PointInPolyon(upCanvasCoordinates, { static_cast<T>(x), static_cast<T>(y) }))
-        // {
-        //   continue;
-        // }
-
-        // transform canvas coordinates to uv local coordinates
-        vec2 canvasUV = canvas2uv.warp({static_cast<T>(x), static_cast<T>(y)});
-
-        // uv not in stroke
-        if ((canvasUV[0U] < 0.0) || (canvasUV[0U] > 1.0) ||
-            (canvasUV[1U] < -1.0) || (canvasUV[1U] > 1.0)) {
+        auto texPos = generalizedBarycentricCoordinatesInterpolate(
+          upCanvasCoordinates, {x, y}, upUv);
+        if ((texPos[0U] < 0.0) || (texPos[0U] > 1.0) || (texPos[1U] < 0.0) ||
+            (texPos[1U] > 1.0)) {
           continue;
         }
-
-        // retrieve the height of the sample at uv
-        const auto Vtex = _brushStrokeSample.getSampleAtUV(canvasUV);
+        texPos[0U] *= _brushStrokeSample.getThicknessMap().cols;
+        texPos[1U] *= _brushStrokeSample.getThicknessMap().rows;
+        const auto Vtex =
+          BrushBase<vector_type>::getThicknessScale() *
+          Interpolate(_brushStrokeSample.getThicknessMap(), texPos);
         if (Vtex > 0.0) {
           const auto s = x - static_cast<int32_t>(boundMin[0U]);
           const auto t = y - static_cast<int32_t>(boundMin[1U]);
@@ -232,5 +238,11 @@ class TextureBrush final : public BrushBase<vector_type> {
   Smudge<vector_type> _smudge;
 
   bool _useSmudge = true;
+
+  /**
+   * @brief Retrieve brush textures according to brush radii and path length.
+   *
+   */
+  TextureBrushDictionary _textureBrushDictionary;
 };
 }  // namespace painty

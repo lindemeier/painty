@@ -1,7 +1,7 @@
 # gcc
 # painty_copts = ["-Wall", "-Werror"]
 #
-painty_copts = ["-Wall", "-Werror", "-Weverything", "-Wno-c++98-compat", "-Wno-padded", "-Wno-documentation", "-Wno-global-constructors"]
+painty_copts = ["-Wall", "-Werror", "-Weverything", "-Wno-c++98-compat", "-Wno-padded", "-Wno-documentation", "-Wno-global-constructors", "-Wno-exit-time-destructors"]
 
 def painty_cc_library(
         name,

@@ -163,6 +163,9 @@ class SuperpixelSegmentation {
   void extract(const Mat3d& targetLab, const Mat3d& canvasLab,
                const Mat1d& mask, int32_t cellWidth);
 
+  void extractWithDiff(const Mat3d& targetLab, const Mat1d& difference,
+                       const Mat1d& mask, int32_t cellWidth);
+
   void getSegmentationOutlined(Mat3d& background) const;
 
   const Mat1i& getRegions(std::map<int32_t, ImageRegion>& regions);

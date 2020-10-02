@@ -25,6 +25,8 @@ class PictureTargetSbrPainter {
     uint32_t smoothIterations = 5U;    // bilateral filter color sigma
     uint32_t nrColors         = 6U;
     double thinningVolume     = 2.0;
+    double alphaDiff =
+      0.75;  // weight color diff in contrast to derivative diff
   };
 
   struct ParamsOrientations {
@@ -44,6 +46,7 @@ class PictureTargetSbrPainter {
     bool blockVisitedRegions =
       true;  // block regions from stroke seeding when the have been visited by another, previously generated stroke
     bool clampBrushRadius = true;  //
+    double thicknessScale = 2.0;
   };
 
   struct ParamsConvergence {
@@ -73,6 +76,8 @@ class PictureTargetSbrPainter {
 
   PictureTargetSbrPainter() = delete;
 
+  void enableCoatCanvas(bool enable);
+
   ParamsInput _paramsInput;
   ParamsOrientations _paramsOrientations;
   ParamsStroke _paramsStroke;
@@ -88,35 +93,41 @@ class PictureTargetSbrPainter {
   struct BrushStroke {
     std::vector<vec2> path = {};
     double radius          = 0.0;
+    PaintCoeff paint;
   };
 
   using ColorIndexBrushStrokeMap = std::map<size_t, std::vector<BrushStroke>>;
 
-  auto extractRegions(const Mat3d& target_Lab, const Mat3d& canvasCurrentLab,
-                      const Mat1d& difference, double brushSize) const
+  auto extractRegions(const Mat3d& target_Lab, const Mat1d& difference,
+                      double brushSize) const
     -> std::pair<Mat<int32_t>, std::map<int32_t, ImageRegion>>;
 
   auto checkConvergence(const Mat1d& difference,
                         std::map<int32_t, ImageRegion>& regions,
-                        Mat<int32_t>& labels) const -> bool;
+                        Mat<int32_t>& labels, const double epsFac) const
+    -> bool;
 
   auto generateBrushStrokes(std::map<int32_t, ImageRegion>& regions,
                             const Mat3d& target_Lab,
                             const Mat3d& canvasCurrentLab,
                             const Mat1d& difference, double brushRadius,
                             const Palette& palette, const Mat<int32_t>& labels,
-                            const Mat1d& mask) const
+                            const Mat1d& mask, const Mat3d& tensors) const
     -> ColorIndexBrushStrokeMap;
 
-  static auto findBestPaintIndex(const vec3& R_target, const vec3& R0,
-                                 const Palette& palette)
+  auto findBestPaintIndex(const vec3& R_target, const vec3& R0,
+                          const Palette& palette) const
     -> std::optional<size_t>;
 
-  static auto computeDifference(const Mat3d& target_Lab,
-                                const Mat3d& canvasCurrentLab) -> Mat1d;
+  void paintCoatCanvas(const PaintCoeff& paint);
+
+  auto computeDifference(const Mat3d& target_Lab, const Mat3d& canvasCurrentLab,
+                         const double brushRadius) const -> Mat1d;
 
   std::shared_ptr<Canvas<vec3>> _canvasPtr          = nullptr;
   std::shared_ptr<PaintMixer> _basePigmentsMixerPtr = nullptr;
   std::shared_ptr<BrushBase<vec3>> _brushPtr        = nullptr;
+
+  bool _coatCanvas = false;
 };
 }  // namespace painty

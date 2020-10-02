@@ -294,8 +294,8 @@ PaintMixer::PaintMixer(const Palette& basePalette)
  * @param count The number of paints in the resulting palette.
  * @return Palette the palette
  */
-Palette PaintMixer::mixFromInputPicture(const Mat<vec3>& sRGBPicture,
-                                        uint32_t count) const {
+auto PaintMixer::mixFromInputPicture(const Mat<vec3>& sRGBPicture,
+                                     uint32_t count) const -> Palette {
   // extract rgb palette from the image
   std::vector<vec3> colors;
   ExtractColorPaletteAharoni(sRGBPicture, colors, count);
@@ -324,8 +324,8 @@ Palette PaintMixer::mixFromInputPicture(const Mat<vec3>& sRGBPicture,
  * @param weights The weights used for mixing.
  * @return PaintCoeff
  */
-PaintCoeff PaintMixer::mixSinglePaint(
-  const std::vector<CoeffPrecision>& weights) const {
+auto PaintMixer::mixSinglePaint(
+  const std::vector<CoeffPrecision>& weights) const -> PaintCoeff {
   if (weights.size() != _basePalette.size()) {
     throw std::invalid_argument("Palette size does not match underlying size.");
   }
@@ -361,8 +361,8 @@ PaintCoeff PaintMixer::mixSinglePaint(
  * @param paint the target paint.
  * @return std::vector<CoeffPrecision>
  */
-std::vector<CoeffPrecision> PaintMixer::getWeightsForMixingTargetPaint(
-  const PaintCoeff& paint) const {
+auto PaintMixer::getWeightsForMixingTargetPaint(const PaintCoeff& paint) const
+  -> std::vector<CoeffPrecision> {
   const auto k = _basePalette.size();
 
   std::vector<CoeffPrecision> weights(k);
@@ -442,9 +442,9 @@ std::vector<CoeffPrecision> PaintMixer::getWeightsForMixingTargetPaint(
  *
  * @return std::vector<CoeffPrecision>
  */
-std::vector<CoeffPrecision> PaintMixer::getMixtureWeightsForReflectance(
+auto PaintMixer::getMixtureWeightsForReflectance(
   const vec3& targetReflectance, const vec3& backgroundReflectance,
-  double& layerThickness) const {
+  double& layerThickness) const -> std::vector<CoeffPrecision> {
   const auto k = _basePalette.size();
 
   std::vector<CoeffPrecision> weights(k);
@@ -520,7 +520,7 @@ std::vector<CoeffPrecision> PaintMixer::getMixtureWeightsForReflectance(
  *
  * @return const Palette&
  */
-const Palette& PaintMixer::getUnderlyingPalette() const {
+auto PaintMixer::getUnderlyingPalette() const -> const Palette& {
   return _basePalette;
 }
 
@@ -545,6 +545,13 @@ auto PaintMixer::mixed(const PaintCoeff& paint, const double paintVolume,
   mixed.S = ((paintVolume * paint.S) + (otherVolume * other.S)) * totalVInv;
 
   return mixed;
+}
+
+auto PaintMixer::mixClosestFit(const vec3& R0, const vec3& target)
+  -> PaintCoeff {
+  // add paint to the palette
+  auto d = 0.0;
+  return mixSinglePaint(getMixtureWeightsForReflectance(target, R0, d));
 }
 
 }  // namespace painty
