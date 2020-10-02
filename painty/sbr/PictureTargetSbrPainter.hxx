@@ -76,6 +76,8 @@ class PictureTargetSbrPainter {
 
   PictureTargetSbrPainter() = delete;
 
+  void enableCoatCanvas(bool enable);
+
   ParamsInput _paramsInput;
   ParamsOrientations _paramsOrientations;
   ParamsStroke _paramsStroke;
@@ -125,5 +127,7 @@ class PictureTargetSbrPainter {
   std::shared_ptr<Canvas<vec3>> _canvasPtr          = nullptr;
   std::shared_ptr<PaintMixer> _basePigmentsMixerPtr = nullptr;
   std::shared_ptr<BrushBase<vec3>> _brushPtr        = nullptr;
+
+  bool _coatCanvas = false;
 };
 }  // namespace painty

@@ -27,6 +27,10 @@ PictureTargetSbrPainter::PictureTargetSbrPainter(
       _basePigmentsMixerPtr(basePigmentsMixerPtr),
       _brushPtr(painterPtr) {}
 
+void PictureTargetSbrPainter::enableCoatCanvas(bool enable) {
+  _coatCanvas = enable;
+}
+
 auto PictureTargetSbrPainter::extractRegions(const Mat3d& target_Lab,
                                              const Mat1d& difference,
                                              double brushSize) const
@@ -288,7 +292,9 @@ auto PictureTargetSbrPainter::paint() -> bool {
                      VisualizePalette(palette, 1.0), false);
 
   std::cout << "coating canvas" << std::endl;
-  paintCoatCanvas(palette[1U]);
+  if (_coatCanvas) {
+    paintCoatCanvas(palette[1U]);
+  }
 
   // for every brush
   auto itBrush = 1;

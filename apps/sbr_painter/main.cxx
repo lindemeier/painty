@@ -149,7 +149,7 @@ int main(int argc, const char* argv[]) {
     std::make_shared<painty::Canvas<painty::vec3>>(height, width);
   const uint32_t dringTimeMillis = j.value("dryingTimeMillis", 1000U * 60U);
   canvasPtr->setDryingTime(std::chrono::milliseconds(dringTimeMillis));
-  if (result.count("c") == 0UL) {
+  if (result.count("a") == 1UL) {
     painty::Mat3d initCanvas;
     painty::io::imRead(result["canvas"].as<std::string>(), initCanvas, false);
     canvasPtr->setBackground(painty::ScaledMat(initCanvas, height, width));
@@ -157,6 +157,7 @@ int main(int argc, const char* argv[]) {
 
   painty::PictureTargetSbrPainter picturePainter(
     canvasPtr, std::make_shared<painty::PaintMixer>(palette), brushPtr);
+  picturePainter.enableCoatCanvas(j.value("coatCanvas", false));
 
   std::cout << "Setting configs in renderer" << std::endl;
   picturePainter._paramsInput        = j["image_params"];

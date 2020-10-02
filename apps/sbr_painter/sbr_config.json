@@ -1,9 +1,10 @@
 {
   "enableSmudge": true,
+  "coatCanvas": false,
   "dryingTimeMillis": 60000,
   "base_pigments": "lindemeier-measured.json",
   "convergence_params": {
-    "maxIterations": 15,
+    "maxIterations": 5,
     "rms_global": 0.0,
     "rms_local": 0.05
   },
@@ -22,7 +23,6 @@
   "stroke_params": {
     "blockVisitedRegions": true,
     "brushSizes": [
-      120.0,
       60.0,
       30.0,
       20.0
@@ -32,6 +32,6 @@
     "maxLen": 15,
     "minLen": 3,
     "stepSize": 0.0,
-    "thicknessScale": 10.0
+    "thicknessScale": 1.0
   }
 }
