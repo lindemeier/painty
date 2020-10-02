@@ -64,6 +64,7 @@ int main(int argc, const char* argv[]) {
     // clang-format off
       ("i,image", "input picture", cxxopts::value<std::string>())
       ("m,mask", "mask", cxxopts::value<std::string>())
+      ("a,canvas", "canvas", cxxopts::value<std::string>())
       ("c,config", "config as json file", cxxopts::value<std::string>())
       ("o,output", "Output file to store the rendered image", cxxopts::value<std::string>()
           ->default_value("sbr.png"))
@@ -148,6 +149,12 @@ int main(int argc, const char* argv[]) {
     std::make_shared<painty::Canvas<painty::vec3>>(height, width);
   const uint32_t dringTimeMillis = j.value("dryingTimeMillis", 1000U * 60U);
   canvasPtr->setDryingTime(std::chrono::milliseconds(dringTimeMillis));
+  if (result.count("c") == 0UL) {
+    painty::Mat3d initCanvas;
+    painty::io::imRead(result["canvas"].as<std::string>(), initCanvas, false);
+    canvasPtr->setBackground(painty::ScaledMat(initCanvas, height, width));
+  }
+
   painty::PictureTargetSbrPainter picturePainter(
     canvasPtr, std::make_shared<painty::PaintMixer>(palette), brushPtr);
 

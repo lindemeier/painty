@@ -1,5 +1,5 @@
 {
-  "enableSmudge": false,
+  "enableSmudge": true,
   "dryingTimeMillis": 60000,
   "base_pigments": "lindemeier-measured.json",
   "convergence_params": {
@@ -8,7 +8,7 @@
     "rms_local": 0.05
   },
   "image_params": {
-    "nrColors": 4,
+    "nrColors": 8,
     "sigmaColor": 0.75,
     "sigmaSpatial": 1.0,
     "smoothIterations": 2,
