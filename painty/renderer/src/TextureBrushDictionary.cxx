@@ -17,7 +17,6 @@
 
 namespace painty {
 
-
 TextureBrushDictionary::TextureBrushDictionary() {
   createBrushTexturesFromFolder("data/textures");
 }

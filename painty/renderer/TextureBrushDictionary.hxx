@@ -28,7 +28,7 @@ class TextureBrushDictionary {
  private:
   std::vector<std::vector<std::vector<Mat1d>>> _brushTexturesBySizeByLength;
   std::vector<double> _avgSizes;
-  std::vector<std::vector<double> > _avgTexLength;
+  std::vector<std::vector<double>> _avgTexLength;
 };
 
 }  // namespace painty
