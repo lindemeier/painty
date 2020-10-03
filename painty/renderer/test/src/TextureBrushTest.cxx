@@ -12,8 +12,11 @@
 #include "painty/io/ImageIO.hxx"
 #include "painty/renderer/Renderer.hxx"
 #include "painty/renderer/TextureBrush.hxx"
+#include "prgl/Window.hxx"
 
 TEST(TextureBrushTest, Construct) {
+  auto gl = std::make_unique<prgl::Window>(1024, 768, "window", true);
+
   auto brush = painty::TextureBrush<painty::vec3>(
     "data/sample_0");
 
@@ -28,6 +31,7 @@ TEST(TextureBrushTest, Construct) {
   path.emplace_back(50.0, 250.0);
   path.emplace_back(400.0, 250.0);
   path.emplace_back(750.0, 250.0);
+  brush.setRadius(10.0);
 
   brush.paintStroke(path, canvas);
 

@@ -15,6 +15,11 @@
 #include "painty/renderer/Canvas.hxx"
 #include "painty/renderer/Smudge.hxx"
 #include "painty/renderer/TextureBrushDictionary.hxx"
+#include "prgl/FrameBufferObject.hxx"
+#include "prgl/GlslRenderingPipelineProgram.hxx"
+#include "prgl/Texture2d.hxx"
+#include "prgl/VertexArrayObject.hxx"
+#include "prgl/VertexBufferObject.hxx"
 
 namespace painty {
 template <class vector_type>
@@ -109,6 +114,8 @@ class TextureBrush final : public BrushBase<vector_type> {
     std::vector<vec2> downUv;
     downUv.reserve(vertices.size());
 
+    std::vector<vec2> vboVertices;
+    std::vector<vec2> vboTexCoords;
     for (auto i = 0U; i < vertices.size(); ++i) {
       T u          = static_cast<T>(i) / static_cast<T>(vertices.size() - 1);
       const auto c = spineSpline.catmullRom(u);
@@ -124,6 +131,12 @@ class TextureBrush final : public BrushBase<vector_type> {
 
       upCanvasCoordinates.push_back(l);
       downCanvasCoordinates.push_back(r);
+
+      vboVertices.push_back(l);
+      vboVertices.push_back(r);
+
+      vboTexCoords.push_back({u, 0.0});
+      vboTexCoords.push_back({u, 1.0});
 
       // constexpr auto uvM = 1.0;
       upUv.push_back({u, 0.0});
@@ -142,6 +155,77 @@ class TextureBrush final : public BrushBase<vector_type> {
     for (auto& p : thicknessMap) {
       p = static_cast<T>(0.0);
     }
+    auto heightTexture = prgl::Texture2d::Create(
+      thicknessMap.cols, thicknessMap.rows, prgl::TextureFormatInternal::R32F,
+      prgl::TextureFormat::Red, prgl::DataType::Float);
+    {
+      std::vector<float> empty(thicknessMap.total(), 0.0F);
+      heightTexture->upload(empty.data());
+    }
+    auto heightFbo = prgl::FrameBufferObject::Create();
+    heightFbo->attachTexture(heightTexture);
+
+    auto vboPosition = prgl::VertexBufferObject::Create(
+      prgl::VertexBufferObject::Usage::StaticDraw);
+    vboPosition->createBuffer(vboVertices.data()->data(), 3U,
+                              vboVertices.size());
+
+    auto vboTex = prgl::VertexBufferObject::Create(
+      prgl::VertexBufferObject::Usage::StaticDraw);
+    vboTex->createBuffer(vboTexCoords.data()->data(), 2U, vboTexCoords.size());
+
+    auto vao = prgl::VertexArrayObject::Create();
+    vao->addVertexBufferObject(0U, vboPosition);
+    vao->addVertexBufferObject(1U, vboTex);
+
+    auto glsl = prgl::GlslRenderingPipelineProgram::Create();
+    glsl->attachVertexShader(R"(
+      #version 330 core
+
+      layout(location = 0) in vec3 vertexPosition;
+      layout(location = 1) in vec2 vertexTexCoord;
+
+      out vec3 vColor;
+
+      void main()
+      {
+        vColor = vec3(vertexTexCoord.st, 0.0);
+
+        gl_Position = vec4(vertexPosition, 1.0);
+      }
+    )");
+    glsl->attachFragmentShader(R"(
+      #version 330 core
+
+      in vec3 vColor;
+      out vec3 color;
+
+      void main()
+      {
+        color = vColor;
+      }
+    )");
+    const auto fboBinder = prgl::Binder<prgl::FrameBufferObject>(heightFbo);
+    {
+      const auto shaderBinder =
+        prgl::Binder<prgl::GlslRenderingPipelineProgram>(glsl);
+      {
+        const auto vaoBinder = prgl::Binder<prgl::VertexArrayObject>(vao);
+
+        vao->render(prgl::DrawMode::TriangleStrip, 0U,
+                    static_cast<uint32_t>(vboVertices.size()));
+      }
+    }
+    std::vector<float> heightTextureData;
+    heightTexture->download(heightTextureData);
+
+    Mat1d texDataMat(thicknessMap.size());
+    for (auto i = 0U; i < heightTextureData.size(); i++) {
+      texDataMat(static_cast<int32_t>(i)) =
+        static_cast<double>(heightTextureData[i]);
+    }
+    io::imSave("/tmp/heightTextureData.jpg", texDataMat, false);
+
     std::vector<vec<int32_t, 2U>> pixels;
     for (auto x = static_cast<int32_t>(boundMin[0U]);
          x <= static_cast<int32_t>(boundMax[0U]); x++) {
