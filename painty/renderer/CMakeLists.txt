@@ -18,12 +18,14 @@ target_link_libraries(${PROJECT_NAME}
   paintyImage
   paintyIo
   stdc++fs
+  prgl
 )
 
 add_dependencies(${PROJECT_NAME}
   paintyCore
   paintyImage
   paintyIo
+  prgl
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
