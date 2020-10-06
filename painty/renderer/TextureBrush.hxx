@@ -17,6 +17,7 @@
 #include "painty/renderer/TextureBrushDictionary.hxx"
 #include "prgl/FrameBufferObject.hxx"
 #include "prgl/GlslRenderingPipelineProgram.hxx"
+#include "prgl/Projection.hxx"
 #include "prgl/Texture2d.hxx"
 #include "prgl/VertexArrayObject.hxx"
 #include "prgl/VertexBufferObject.hxx"
@@ -114,8 +115,8 @@ class TextureBrush final : public BrushBase<vector_type> {
     std::vector<vec2> downUv;
     downUv.reserve(vertices.size());
 
-    std::vector<vec2> vboVertices;
-    std::vector<vec2> vboTexCoords;
+    std::vector<std::array<float, 2U>> vboVertices;
+    std::vector<std::array<float, 2U>> vboTexCoords;
     for (auto i = 0U; i < vertices.size(); ++i) {
       T u          = static_cast<T>(i) / static_cast<T>(vertices.size() - 1);
       const auto c = spineSpline.catmullRom(u);
@@ -126,17 +127,19 @@ class TextureBrush final : public BrushBase<vector_type> {
       // compute perpendicular vector to spine
       const vec2 d = {-t[1], t[0]};
 
-      const auto l = c - _radius * d;
-      const auto r = c + _radius * d;
+      const vec2 l = c - _radius * d;
+      const vec2 r = c + _radius * d;
 
       upCanvasCoordinates.push_back(l);
       downCanvasCoordinates.push_back(r);
 
-      vboVertices.push_back(l);
-      vboVertices.push_back(r);
+      vboVertices.push_back(
+        {static_cast<float>(r[0U]), static_cast<float>(r[1U])});
+      vboVertices.push_back(
+        {static_cast<float>(l[0U]), static_cast<float>(l[1U])});
 
-      vboTexCoords.push_back({u, 0.0});
-      vboTexCoords.push_back({u, 1.0});
+      vboTexCoords.push_back({static_cast<float>(u), static_cast<float>(0.0)});
+      vboTexCoords.push_back({static_cast<float>(u), static_cast<float>(1.0)});
 
       // constexpr auto uvM = 1.0;
       upUv.push_back({u, 0.0});
@@ -156,10 +159,14 @@ class TextureBrush final : public BrushBase<vector_type> {
       p = static_cast<T>(0.0);
     }
     auto heightTexture = prgl::Texture2d::Create(
-      thicknessMap.cols, thicknessMap.rows, prgl::TextureFormatInternal::R32F,
-      prgl::TextureFormat::Red, prgl::DataType::Float);
+      canvas.getPaintLayer().getCols(), canvas.getPaintLayer().getRows(),
+      prgl::TextureFormatInternal::R8, prgl::TextureFormat::Red,
+      prgl::DataType::Byte);
     {
-      std::vector<float> empty(thicknessMap.total(), 0.0F);
+      std::vector<uint8_t> empty(
+        heightTexture->getWidth() * heightTexture->getHeight(),
+        static_cast<uint8_t>(0U));
+
       heightTexture->upload(empty.data());
     }
     auto heightFbo = prgl::FrameBufferObject::Create();
@@ -167,12 +174,11 @@ class TextureBrush final : public BrushBase<vector_type> {
 
     auto vboPosition = prgl::VertexBufferObject::Create(
       prgl::VertexBufferObject::Usage::StaticDraw);
-    vboPosition->createBuffer(vboVertices.data()->data(), 3U,
-                              vboVertices.size());
+    vboPosition->createBuffer(vboVertices);
 
     auto vboTex = prgl::VertexBufferObject::Create(
       prgl::VertexBufferObject::Usage::StaticDraw);
-    vboTex->createBuffer(vboTexCoords.data()->data(), 2U, vboTexCoords.size());
+    vboTex->createBuffer(vboTexCoords);
 
     auto vao = prgl::VertexArrayObject::Create();
     vao->addVertexBufferObject(0U, vboPosition);
@@ -182,48 +188,78 @@ class TextureBrush final : public BrushBase<vector_type> {
     glsl->attachVertexShader(R"(
       #version 330 core
 
-      layout(location = 0) in vec3 vertexPosition;
+      layout(location = 0) in vec2 vertexPosition;
       layout(location = 1) in vec2 vertexTexCoord;
 
-      out vec3 vColor;
+      uniform mat4 projectionMatrix;
+
+      out vec2 texCoord;
 
       void main()
       {
-        vColor = vec3(vertexTexCoord.st, 0.0);
+        texCoord = vertexTexCoord;
 
-        gl_Position = vec4(vertexPosition, 1.0);
+        gl_Position = projectionMatrix * vec4(vertexPosition.xy, 0.0, 1.0);
       }
     )");
     glsl->attachFragmentShader(R"(
-      #version 330 core
+      #version 420 core
 
-      in vec3 vColor;
+      layout(binding = 0) uniform sampler2D brushTexture;
+
+      in vec2 texCoord;
       out vec3 color;
 
       void main()
       {
-        color = vColor;
+        color = texture(brushTexture, texCoord).rgb;
+        // color = vec3(1.0,1.0, 1.0);
       }
     )");
+    const auto brushTexture = _brushStrokeSample.getThicknessMap();
+    auto brushTextureGl     = prgl::Texture2d::Create(
+      brushTexture.cols, brushTexture.rows, prgl::TextureFormatInternal::R8,
+      prgl::TextureFormat::Red, prgl::DataType::Byte);
     const auto fboBinder = prgl::Binder<prgl::FrameBufferObject>(heightFbo);
     {
       const auto shaderBinder =
         prgl::Binder<prgl::GlslRenderingPipelineProgram>(glsl);
+
       {
         const auto vaoBinder = prgl::Binder<prgl::VertexArrayObject>(vao);
+        const auto ortho     = prgl::projection::ortho<float>(
+          0.0F, static_cast<float>(heightTexture->getWidth()),
+          static_cast<float>(heightTexture->getHeight()), 0.0F, -1.0F, 1.0F);
+        glsl->setMatrix("projectionMatrix", ortho);
+
+        // gl mat
+
+        Mat1d copy;
+        cv::flip(brushTexture, copy, 0);
+        cv::normalize(copy, copy, cv::NORM_MINMAX, 1.0);
+        Mat1u copy2;
+        copy.convertTo(copy2, CV_8UC1, 255.0);
+        brushTextureGl->upload(copy2.data);
+        // gl mat
+
+        glsl->bindSampler("brushTexture", 0U, brushTextureGl);
 
         vao->render(prgl::DrawMode::TriangleStrip, 0U,
                     static_cast<uint32_t>(vboVertices.size()));
+        // vao->render(prgl::DrawMode::LineStrip, 0U,
+        //             static_cast<uint32_t>(vboVertices.size()));
       }
     }
     std::vector<float> heightTextureData;
     heightTexture->download(heightTextureData);
 
-    Mat1d texDataMat(thicknessMap.size());
+    Mat1d texDataMat(static_cast<int32_t>(heightTexture->getHeight()),
+                     static_cast<int32_t>(heightTexture->getWidth()));
     for (auto i = 0U; i < heightTextureData.size(); i++) {
       texDataMat(static_cast<int32_t>(i)) =
         static_cast<double>(heightTextureData[i]);
     }
+    cv::flip(texDataMat, texDataMat, 0);
     io::imSave("/tmp/heightTextureData.jpg", texDataMat, false);
 
     std::vector<vec<int32_t, 2U>> pixels;

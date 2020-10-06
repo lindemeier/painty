@@ -31,7 +31,7 @@ TEST(TextureBrushTest, Construct) {
   path.emplace_back(50.0, 250.0);
   path.emplace_back(400.0, 250.0);
   path.emplace_back(750.0, 250.0);
-  brush.setRadius(10.0);
+  brush.setRadius(40.0);
 
   brush.paintStroke(path, canvas);
 
