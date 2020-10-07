@@ -10,6 +10,8 @@ painty_cc_library(
         "//painty/image:painty_image",
         "//painty/io:painty_io"
     ],
+    data = ["//data:exported_texture_sample_0", "//data:exported_footprint", "//painty/renderer/shaders:shaders"]
+
 )
 
 painty_cc_test(
@@ -19,6 +21,5 @@ painty_cc_test(
         ":painty_renderer",
         "@gtest",
         "//painty/io:painty_io",
-    ],
-    data = ["//data:exported_texture_sample_0", "//data:exported_footprint"]
+    ]
 )

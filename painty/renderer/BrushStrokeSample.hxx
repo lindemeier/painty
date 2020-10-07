@@ -18,6 +18,7 @@
 namespace painty {
 class BrushStrokeSample final {
  public:
+  BrushStrokeSample();
   BrushStrokeSample(const std::string& sampleDir);
 
   const Mat<double>& getThicknessMap() const;

@@ -13,6 +13,10 @@
 
 #include "painty/io/ImageIO.hxx"
 
+painty::BrushStrokeSample::BrushStrokeSample() {
+  loadSample("data/sample_0");
+}
+
 painty::BrushStrokeSample::BrushStrokeSample(const std::string& sampleDir) {
   loadSample(sampleDir);
 }

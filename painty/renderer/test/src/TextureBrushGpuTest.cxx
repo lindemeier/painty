@@ -11,11 +11,12 @@
 #include "gtest/gtest.h"
 #include "painty/io/ImageIO.hxx"
 #include "painty/renderer/Renderer.hxx"
-#include "painty/renderer/TextureBrush.hxx"
+#include "painty/renderer/TextureBrushGpu.hxx"
+#include "prgl/Window.hxx"
 
-TEST(TextureBrushTest, Construct) {
-  auto brush = painty::TextureBrush<painty::vec3>(
-    "data/sample_0");
+TEST(TextureBrushGpuTest, Construct) {
+  auto brush = painty::TextureBrushGpu(
+    std::make_shared<prgl::Window>(1024, 768, "window", true));
 
   brush.dip({{{0.2, 0.3, 0.4}, {0.1, 0.23, 0.14}}});
 
@@ -31,10 +32,4 @@ TEST(TextureBrushTest, Construct) {
   brush.setRadius(40.0);
 
   brush.paintStroke(path, canvas);
-
-  painty::Renderer<painty::vec3> renderer;
-
-  painty::io::imSave("/tmp/canvasComposed.png", renderer.compose(canvas), true);
-  painty::io::imSave("/tmp/getLightedRendering.png", renderer.render(canvas),
-                     true);
 }
