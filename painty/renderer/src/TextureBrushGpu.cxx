@@ -52,28 +52,6 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
   _brushStrokeSample.generateFromTexture(
     _textureBrushDictionary.lookup(vertices, 2.0 * _radius));
 
-  // compute bounding rectangle
-  auto boundMin = vertices.front();
-  auto boundMax = vertices.front();
-  for (const auto& xy : vertices) {
-    boundMin[0U] = std::min(boundMin[0U], xy[0U]);
-    boundMin[1U] = std::min(boundMin[1U], xy[1U]);
-    boundMax[0U] = std::max(boundMax[0U], xy[0U]);
-    boundMax[1U] = std::max(boundMax[1U], xy[1U]);
-  }
-  boundMin[0U] = std::max(boundMin[0U] - _radius, 0.0);
-  boundMax[0U] = std::min(boundMax[0U] + _radius,
-                          static_cast<T>(canvas.getPaintLayer().getCols() - 1));
-  boundMin[1U] = std::max(boundMin[1U] - _radius, 0.0);
-  boundMax[1U] = std::min(boundMax[1U] + _radius,
-                          static_cast<T>(canvas.getPaintLayer().getRows() - 1));
-
-  auto length = 0.0;
-  for (auto i = 1UL; i < vertices.size(); ++i) {
-    length += (vertices[i] - vertices[i - 1]).norm();
-  }
-
-  // spine
   SplineEval<std::vector<vec2>::const_iterator> spineSpline(vertices.cbegin(),
                                                             vertices.cend());
 
@@ -101,19 +79,19 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
     vboTexCoords.push_back({static_cast<float>(u), static_cast<float>(1.0)});
   }
 
-  auto heightTexture = prgl::Texture2d::Create(
+  auto warpedBrushTexture = prgl::Texture2d::Create(
     canvas.getPaintLayer().getCols(), canvas.getPaintLayer().getRows(),
     prgl::TextureFormatInternal::R8, prgl::TextureFormat::Red,
     prgl::DataType::Byte);
   {
     std::vector<uint8_t> empty(
-      heightTexture->getWidth() * heightTexture->getHeight(),
+      warpedBrushTexture->getWidth() * warpedBrushTexture->getHeight(),
       static_cast<uint8_t>(0U));
 
-    heightTexture->upload(empty.data());
+    warpedBrushTexture->upload(empty.data());
   }
   auto heightFbo = prgl::FrameBufferObject::Create();
-  heightFbo->attachTexture(heightTexture);
+  heightFbo->attachTexture(warpedBrushTexture);
 
   auto vboPosition = prgl::VertexBufferObject::Create(
     prgl::VertexBufferObject::Usage::StaticDraw);
@@ -147,8 +125,9 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
         const auto vaoBinder = prgl::Binder<prgl::VertexArrayObject>(vao);
 
         const auto ortho = prgl::projection::ortho<float>(
-          0.0F, static_cast<float>(heightTexture->getWidth()),
-          static_cast<float>(heightTexture->getHeight()), 0.0F, -1.0F, 1.0F);
+          0.0F, static_cast<float>(warpedBrushTexture->getWidth()),
+          static_cast<float>(warpedBrushTexture->getHeight()), 0.0F, -1.0F,
+          1.0F);
 
         glsl->setMatrix("projectionMatrix", ortho);
 
@@ -171,15 +150,15 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
       }
     }
   }
-  std::vector<float> heightTextureData;
-  heightTexture->download(heightTextureData);
+  std::vector<float> warpedBrushTextureData;
+  warpedBrushTexture->download(warpedBrushTextureData);
 
-  Mat1d texDataMat(static_cast<int32_t>(heightTexture->getHeight()),
-                   static_cast<int32_t>(heightTexture->getWidth()));
-  for (auto i = 0U; i < heightTextureData.size(); i++) {
+  Mat1d texDataMat(static_cast<int32_t>(warpedBrushTexture->getHeight()),
+                   static_cast<int32_t>(warpedBrushTexture->getWidth()));
+  for (auto i = 0U; i < warpedBrushTextureData.size(); i++) {
     texDataMat(static_cast<int32_t>(i)) =
-      static_cast<double>(heightTextureData[i]);
+      static_cast<double>(warpedBrushTextureData[i]);
   }
   cv::flip(texDataMat, texDataMat, 0);
-  io::imSave("/tmp/heightTextureDataGlsl.jpg", texDataMat, false);
+  io::imSave("/tmp/warpedBrushTextureDataGlsl.jpg", texDataMat, false);
 }
