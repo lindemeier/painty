@@ -150,8 +150,10 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
       }
     }
   }
-  std::vector<float> warpedBrushTextureData;
-  warpedBrushTexture->download(warpedBrushTextureData);
+  std::vector<float> warpedBrushTextureData(warpedBrushTexture->getHeight() *
+                                            warpedBrushTexture->getWidth());
+  warpedBrushTexture->download(warpedBrushTextureData.data(),
+                               prgl::TextureFormat::Red, prgl::DataType::Float);
 
   Mat1d texDataMat(static_cast<int32_t>(warpedBrushTexture->getHeight()),
                    static_cast<int32_t>(warpedBrushTexture->getWidth()));

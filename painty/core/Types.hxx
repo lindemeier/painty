@@ -14,6 +14,12 @@
 #include <string>
 
 namespace painty {
+
+struct Size final {
+  uint32_t width  = {};
+  uint32_t height = {};
+};
+
 template <typename T>
 class DataType {
  public:

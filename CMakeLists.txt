@@ -49,6 +49,7 @@ FetchContent_MakeAvailable(prgl)
 # modules
 add_subdirectory(painty/core)
 add_subdirectory(painty/image)
+add_subdirectory(painty/gpu)
 add_subdirectory(painty/io)
 add_subdirectory(painty/mixer)
 add_subdirectory(painty/renderer)
