@@ -16,13 +16,28 @@ namespace painty {
 template <class T>
 class GpuMat final {
  public:
+  /**
+  * @brief Construct a new Gpu Mat object.
+  *
+  * @param size
+  */
   GpuMat(const Size& size) : _size(size) {}
+  /**
+   * @brief Construct a new Gpu Mat object
+   *
+   * @param cpuImage
+   */
   GpuMat(const Mat<T>& cpuImage)
       : _size({static_cast<uint32_t>(cpuImage.cols),
                static_cast<uint32_t>(cpuImage.rows)}) {
     upload(cpuImage);
   }
 
+  /**
+   * @brief Upload an image to the gpu memory.
+   *
+   * @param m
+   */
   void upload(const Mat<T>& m) {
     _mat = m;
 
@@ -111,41 +126,72 @@ class GpuMat final {
     _texture->upload(yFlipped.data);
   }
 
+  /**
+   * @brief Clear the gpu memory to zeroes.
+   *
+   */
+  void clear() {
+    GLuint clearColor[4] = {0, 0, 0, 0};
+    glClearTexImage(_texture->getId(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                    &clearColor);
+  }
+
+  /**
+   * @brief Get the Mat object. Call download before to get the current content of the gpu texture.
+   *
+   * @return const Mat<T>&
+   */
   auto getMat() const -> const Mat<T>& {
     return _mat;
   }
 
+  /**
+   * @brief Get the dimensions of the texture.
+   *
+   * @return const Size&
+   */
   auto getSize() const -> const Size& {
     return _size;
   }
 
+  /**
+   * @brief Get the Texture object
+   *
+   * @return const std::shared_ptr<prgl::Texture2d>&
+   */
   auto getTexture() -> const std::shared_ptr<prgl::Texture2d>& {
     return _texture;
   }
 
+  /**
+   * @brief update the host memory with the content of the texture.
+   *
+   */
   void download() {
-    const auto type =
-      prgl::DataTypeTr<typename DataType<T>::channel_type>::dataType;
-    const auto nrChannels = DataType<T>::dim;
+    if (_texture != nullptr) {
+      const auto type =
+        prgl::DataTypeTr<typename DataType<T>::channel_type>::dataType;
+      const auto nrChannels = DataType<T>::dim;
 
-    if ((static_cast<uint32_t>(_mat.cols) != _size.width) ||
-        (static_cast<uint32_t>(_mat.rows) != _size.height)) {
-      _mat = Mat<T>(static_cast<int32_t>(_size.height),
-                    static_cast<int32_t>(_size.width));
-    }
-    auto format = prgl::TextureFormat::Red;
-    if (nrChannels == 1U) {
-      format = prgl::TextureFormat::Red;
-    } else if (nrChannels == 2U) {
-      format = prgl::TextureFormat::Rg;
-    } else if (nrChannels == 3U) {
-      format = prgl::TextureFormat::Rgb;
-    } else if (nrChannels == 4U) {
-      format = prgl::TextureFormat::Rgba;
-    }
-    _texture->download(&(_mat.data), format, type);
+      if ((static_cast<uint32_t>(_mat.cols) != _size.width) ||
+          (static_cast<uint32_t>(_mat.rows) != _size.height)) {
+        _mat = Mat<T>(static_cast<int32_t>(_size.height),
+                      static_cast<int32_t>(_size.width));
+      }
+      auto format = prgl::TextureFormat::Red;
+      if (nrChannels == 1U) {
+        format = prgl::TextureFormat::Red;
+      } else if (nrChannels == 2U) {
+        format = prgl::TextureFormat::Rg;
+      } else if (nrChannels == 3U) {
+        format = prgl::TextureFormat::Rgb;
+      } else if (nrChannels == 4U) {
+        format = prgl::TextureFormat::Rgba;
+      }
+      _texture->download(_mat.data, format, type);
 
-    cv::flip(_mat, _mat, 0);
+      cv::flip(_mat, _mat, 0);
+    }
   }
 
  private:
@@ -154,5 +200,5 @@ class GpuMat final {
   std::shared_ptr<prgl::Texture2d> _texture = nullptr;
 
   Mat<T> _mat = {};
-};  // namespace painty
+};
 }  // namespace painty
