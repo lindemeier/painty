@@ -26,6 +26,9 @@ void imRead(const std::vector<uint8_t>& buffer, Mat<double>& gray,
 bool imSave(const std::string& filename, const Mat<vec3>& linear_rgb,
             bool convertTo_sRGB);
 
+bool imSave(const std::string& filename, const Mat<vec3f>& linear_rgb,
+            bool convertTo_sRGB);
+
 bool imSave(const std::string& filename, const Mat<double>& gray,
             bool convertTo_sRGB);
 

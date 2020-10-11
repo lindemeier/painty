@@ -64,9 +64,9 @@ auto TextureBrushDictionary::lookup(const std::vector<vec2>& path,
     candidates.size() - static_cast<std::size_t>(1UL));
   const auto index = dis(gen);
 
-  std::cout << "Brush stroke with size: " << brushSize << " and length  "
-            << length << " lookup -> " << i0 << ":" << i1 << ":" << index
-            << std::endl;
+  // std::cout << "Brush stroke with size: " << brushSize << " and length  "
+  //           << length << " lookup -> " << i0 << ":" << i1 << ":" << index
+  //           << std::endl;
 
   return candidates[index];
 }
@@ -97,7 +97,7 @@ void TextureBrushDictionary::createBrushTexturesFromFolder(
 
   for (const auto& p : std::filesystem::directory_iterator(folder)) {
     const auto filepath = p.path();
-    std::cout << filepath << std::endl;
+    // std::cout << filepath << std::endl;
 
     const std::string filename =
       split(split(filepath, '.').front(), '/').back();

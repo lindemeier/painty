@@ -46,8 +46,9 @@ class ColorConverter {
                                                                0.82521};
   static constexpr std::array<Scalar, 3U> IM_ILLUMINANT_D55 = {0.95682, 1.00000,
                                                                0.92149};
-  static constexpr std::array<Scalar, 3U> IM_ILLUMINANT_D65 = {0.95047, 1.00000,
-                                                               1.08883};
+  static constexpr std::array<Scalar, 3U> IM_ILLUMINANT_D65 = {
+    static_cast<Scalar>(0.95047), static_cast<Scalar>(1.00000),
+    static_cast<Scalar>(1.08883)};
   static constexpr std::array<Scalar, 3U> IM_ILLUMINANT_D75 = {0.94972, 1.00000,
                                                                1.22638};
   static constexpr std::array<Scalar, 3U> IM_ILLUMINANT_E   = {1.00000, 1.00000,
@@ -195,10 +196,12 @@ class ColorConverter {
 
   // make sRGB, with gamma
   void rgb2srgb(const Scalar l, Scalar& s) const {
-    if (l <= 0.00313066844250063) {
-      s = l * 12.92;
+    if (l <= static_cast<Scalar>(0.00313066844250063)) {
+      s = l * static_cast<Scalar>(12.92);
     } else {
-      s = 1.055 * std::pow(l, 1. / 2.4) - 0.055;
+      s = static_cast<Scalar>(1.055) *
+            std::pow(l, static_cast<Scalar>(1.0) / static_cast<Scalar>(2.4)) -
+          static_cast<Scalar>(0.055);
     }
   }
 
