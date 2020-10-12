@@ -23,7 +23,7 @@ void painty::PaintLayerGpu::clear() {
   _V.clear();
 }
 
-void painty::PaintLayerGpu::composeOnto(GpuMat<vec3f>& R0) const {
+void painty::PaintLayerGpu::composeOnto(GpuMat<vec4f>& R0) const {
   const auto shader =
     prgl::GlslComputeShader::Create(prgl::GlslProgram::ReadShaderFromFile(
       "painty/renderer/shaders/ComposeLayerOnSubstrate.compute.glsl"));
@@ -34,9 +34,6 @@ void painty::PaintLayerGpu::composeOnto(GpuMat<vec3f>& R0) const {
   shader->bindImage2D(1U, _K.getTexture(), prgl::TextureAccess::ReadOnly);
   shader->bindImage2D(2U, _S.getTexture(), prgl::TextureAccess::ReadOnly);
   shader->bindImage2D(3U, _V.getTexture(), prgl::TextureAccess::ReadOnly);
-
-  shader->set2i("gSize", static_cast<int32_t>(_size.width),
-                static_cast<int32_t>(_size.height));
 
   shader->execute(0, 0, static_cast<int32_t>(_size.width),
                   static_cast<int32_t>(_size.height));

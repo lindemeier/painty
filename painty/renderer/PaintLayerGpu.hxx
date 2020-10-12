@@ -23,13 +23,17 @@ class PaintLayerGpu final {
 
   void clear();
 
-  void composeOnto(GpuMat<vec3f>& R0) const;
+  void composeOnto(GpuMat<vec4f>& R0) const;
 
  private:
   Size _size;
 
-  GpuMat<vec3f> _K;
-  GpuMat<vec3f> _S;
+  /**
+   * @brief Need to use 4 channels due to GLSL formats.
+   *
+   */
+  GpuMat<vec4f> _K;
+  GpuMat<vec4f> _S;
   GpuMat<float> _V;
 };
 }  // namespace painty
