@@ -30,10 +30,10 @@ class PaintLayerGpu final {
 
   /**
    * @brief Need to use 4 channels due to GLSL formats.
+   * Storing volume as alpha value in both buffers.
    *
    */
   GpuMat<vec4f> _K;
   GpuMat<vec4f> _S;
-  GpuMat<float> _V;
 };
 }  // namespace painty

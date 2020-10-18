@@ -7,7 +7,6 @@ layout(local_size_x = 16, local_size_y = 16) in;
 layout(binding = 0, rgba32f) uniform highp image2D tex_R0;
 layout(binding = 1, rgba32f) uniform highp readonly image2D tex_K;
 layout(binding = 2, rgba32f) uniform highp readonly image2D tex_S;
-layout(binding = 3, r32f) uniform highp readonly image2D tex_V;
 
 uniform ivec2 offset;
 
@@ -39,7 +38,7 @@ void main() {
   highp vec3 r0 = imageLoad(tex_R0, texPos).rgb;
   highp vec3 K  = imageLoad(tex_K, texPos).rgb;
   highp vec3 S  = imageLoad(tex_S, texPos).rgb;
-  highp float d = imageLoad(tex_V, texPos).r;
+  highp float d = imageLoad(tex_K, texPos).a;
 
   const float Eps = 10e-6;
   if ((abs(d) < Eps) || (abs(S.r) < Eps) || (abs(S.g) < Eps) ||
