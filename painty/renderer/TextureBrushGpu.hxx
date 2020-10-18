@@ -30,7 +30,7 @@ class TextureBrushGpu final : public BrushBase<vec3> {
 
  private:
   auto generateWarpedTexture(const std::vector<vec2>& path,
-                             const Size& size) const
+                             const vec2& boundMin, const vec2& boundMax) const
     -> std::shared_ptr<prgl::Texture2d>;
 
   std::shared_ptr<prgl::Window> _glWindow = nullptr;

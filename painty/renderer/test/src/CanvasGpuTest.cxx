@@ -14,14 +14,16 @@
 #include "prgl/Window.hxx"
 
 TEST(CanvasGpuTest, Construct) {
-  const auto window = std::make_shared<prgl::Window>(800, 600, "window", false);
+  constexpr auto height = 768U;
+  constexpr auto width  = 1024U;
+
+  const auto window =
+    std::make_shared<prgl::Window>(1024U, 768U, "window", false);
 
   auto brush = painty::TextureBrushGpu(window);
 
   brush.dip({{{0.2, 0.3, 0.4}, {0.1, 0.23, 0.14}}});
 
-  constexpr auto height = 768U;
-  constexpr auto width  = 1024U;
   auto canvas           = painty::CanvasGpu({width, height});
   canvas.clear();
 
