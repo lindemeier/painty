@@ -5,6 +5,7 @@ project(paintyRenderer)
 
 add_library(${PROJECT_NAME} STATIC
   ${PROJECT_SOURCE_DIR}/src/BrushStrokeSample.cxx
+  ${PROJECT_SOURCE_DIR}/src/CanvasGpu.cxx
   ${PROJECT_SOURCE_DIR}/src/TextureBrushDictionary.cxx
   ${PROJECT_SOURCE_DIR}/src/TextureBrushGpu.cxx
   ${PROJECT_SOURCE_DIR}/src/PaintLayerGpu.cxx

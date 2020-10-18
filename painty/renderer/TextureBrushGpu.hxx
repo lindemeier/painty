@@ -10,6 +10,7 @@
 #include "painty/core/Vec.hxx"
 #include "painty/renderer/BrushBase.hxx"
 #include "painty/renderer/BrushStrokeSample.hxx"
+#include "painty/renderer/CanvasGpu.hxx"
 #include "painty/renderer/TextureBrushDictionary.hxx"
 #include "prgl/Window.hxx"
 
@@ -25,7 +26,13 @@ class TextureBrushGpu final : public BrushBase<vec3> {
   void paintStroke(const std::vector<vec2>& path,
                    Canvas<vec3>& canvas) override;
 
+  void paintStroke(const std::vector<vec2>& path, CanvasGpu& canvas);
+
  private:
+  auto generateWarpedTexture(const std::vector<vec2>& path,
+                             const Size& size) const
+    -> std::shared_ptr<prgl::Texture2d>;
+
   std::shared_ptr<prgl::Window> _glWindow = nullptr;
 
   double _radius = 0.0;
