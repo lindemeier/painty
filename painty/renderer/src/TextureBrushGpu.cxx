@@ -82,44 +82,30 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
 
   generateWarpedTexture(vertices, canvas.getSize());
 
-  // std::vector<float> warpedBrushTextureData(_warpedBrushTexture->getHeight() *
-  //                                           _warpedBrushTexture->getWidth());
+  {
+    prgl::Binder<prgl::GlslComputeShader> shaderBinder(_shaderImprint);
 
-  // _warpedBrushTexture->download(warpedBrushTextureData.data(),
-  //                               prgl::TextureFormat::Red,
-  //                               prgl::DataType::Float);
+    _shaderImprint->bindImage2D(0U, _warpedBrushTexture,
+                                prgl::TextureAccess::ReadOnly);
+    _shaderImprint->bindImage2D(1U, canvas.getPaintLayer().getK().getTexture(),
+                                prgl::TextureAccess::ReadWrite);
+    _shaderImprint->bindImage2D(2U, canvas.getPaintLayer().getS().getTexture(),
+                                prgl::TextureAccess::ReadWrite);
 
-  // Mat1d texDataMat(static_cast<int32_t>(_warpedBrushTexture->getHeight()),
-  //                  static_cast<int32_t>(_warpedBrushTexture->getWidth()));
-  // for (auto i = 0U; i < warpedBrushTextureData.size(); i++) {
-  //   texDataMat(static_cast<int32_t>(i)) =
-  //     static_cast<double>(warpedBrushTextureData[i]);
-  // }
-  // cv::flip(texDataMat, texDataMat, 0);
-  // io::imSave("/tmp/warpedBrushTextureDataGlsl.jpg", texDataMat, false);
+    _shaderImprint->set3f("K_brush",
+                          static_cast<float>(_paintStored.front()[0U]),
+                          static_cast<float>(_paintStored.front()[1U]),
+                          static_cast<float>(_paintStored.front()[2U]));
+    _shaderImprint->set3f("S_brush",
+                          static_cast<float>(_paintStored.back()[0U]),
+                          static_cast<float>(_paintStored.back()[1U]),
+                          static_cast<float>(_paintStored.back()[2U]));
 
-  _shaderImprint->bind(true);
-
-  _shaderImprint->bindImage2D(0U, _warpedBrushTexture,
-                              prgl::TextureAccess::ReadOnly);
-  _shaderImprint->bindImage2D(1U, canvas.getPaintLayer().getK().getTexture(),
-                              prgl::TextureAccess::ReadWrite);
-  _shaderImprint->bindImage2D(2U, canvas.getPaintLayer().getS().getTexture(),
-                              prgl::TextureAccess::ReadWrite);
-
-  _shaderImprint->set3f("K_brush", static_cast<float>(_paintStored.front()[0U]),
-                        static_cast<float>(_paintStored.front()[1U]),
-                        static_cast<float>(_paintStored.front()[2U]));
-  _shaderImprint->set3f("S_brush", static_cast<float>(_paintStored.back()[0U]),
-                        static_cast<float>(_paintStored.back()[1U]),
-                        static_cast<float>(_paintStored.back()[2U]));
-
-  _shaderImprint->execute(
-    static_cast<int32_t>(boundMin[0U]), static_cast<int32_t>(boundMin[1U]),
-    static_cast<int32_t>(boundMax[0U] - boundMin[0U]) + 1,
-    static_cast<int32_t>(boundMax[1U] - boundMin[1U]) + 1);
-
-  _shaderImprint->bind(false);
+    _shaderImprint->execute(
+      static_cast<int32_t>(boundMin[0U]), static_cast<int32_t>(boundMin[1U]),
+      static_cast<int32_t>(boundMax[0U] - boundMin[0U]) + 1,
+      static_cast<int32_t>(boundMax[1U] - boundMin[1U]) + 1);
+  }
 }
 
 void painty::TextureBrushGpu::generateWarpedTexture(
@@ -128,8 +114,8 @@ void painty::TextureBrushGpu::generateWarpedTexture(
       (_warpedBrushTexture->getHeight() != size.height) ||
       (_warpedBrushTexture->getWidth() != size.width)) {
     _warpedBrushTexture = prgl::Texture2d::Create(
-      size.width, size.height, prgl::TextureFormatInternal::R8,
-      prgl::TextureFormat::Red, prgl::DataType::UnsignedByte);
+      size.width, size.height, prgl::TextureFormatInternal::R32F,
+      prgl::TextureFormat::Red, prgl::DataType::Float);
     _warpedBrushTexture->upload(nullptr);
   }
   GLuint clearColor[4] = {0, 0, 0, 0};

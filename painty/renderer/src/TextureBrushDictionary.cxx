@@ -65,10 +65,6 @@ auto TextureBrushDictionary::lookup(const std::vector<vec2>& path,
     candidates.size() - static_cast<std::size_t>(1UL));
   const auto index = dis(gen);
 
-  // std::cout << "Brush stroke with size: " << brushSize << " and length  "
-  //           << length << " lookup -> " << i0 << ":" << i1 << ":" << index
-  //           << std::endl;
-
   return candidates[index];
 }
 
@@ -110,21 +106,21 @@ void TextureBrushDictionary::createBrushTexturesFromFolder(
     Entry entry;
     entry.texHost = loadHeightMap(filepath);
 
-    Mat1u byteImage = {};
+    Mat1f fImage = {};
     {
-      Mat1d copy = {};
+      Mat1f copy = {};
       cv::normalize(entry.texHost, copy, 0.0, 1.0, cv::NORM_MINMAX);
       cv::flip(copy, copy, 0);
-      copy.convertTo(byteImage, CV_8UC1, 255.0);
+      copy.convertTo(fImage, CV_32FC1, 1.0);
     }
 
     // cv::imshow("brush_tex", byteImage);
     // cv::waitKey(100);
 
     entry.texGpu = prgl::Texture2d::Create(
-      byteImage.cols, byteImage.rows, prgl::TextureFormatInternal::R8,
-      prgl::TextureFormat::Red, prgl::DataType::UnsignedByte);
-    entry.texGpu->upload(byteImage.data);
+      fImage.cols, fImage.rows, prgl::TextureFormatInternal::R32F,
+      prgl::TextureFormat::Red, prgl::DataType::Float);
+    entry.texGpu->upload(fImage.data);
 
     textureMap[radius][length].push_back(entry);
   }

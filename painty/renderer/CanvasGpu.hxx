@@ -29,5 +29,6 @@ class CanvasGpu final {
   PaintLayerGpu _paintLayer;
 
   GpuMat<vec4f> _r0_substrate;
+  GpuMat<vec4f> _r0_substrate_copy_buffer;
 };
 }  // namespace painty

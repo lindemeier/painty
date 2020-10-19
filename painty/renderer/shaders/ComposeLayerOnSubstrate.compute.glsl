@@ -54,6 +54,10 @@ void main() {
 
   highp vec3 bSh = b * S * d;
 
+  if ((abs(bSh.x) < Eps) || (abs(bSh.y) < Eps) || (abs(bSh.z) < Eps)) {
+    return;
+  }
+
   highp vec3 bcothbSh = coth(bSh);
 
   highp vec3 R =
