@@ -67,8 +67,8 @@ class TextureBrush final : public BrushBase<vector_type> {
       (verticesArg.back() - verticesArg[verticesArg.size() - 2U]).normalized() *
         _radius);
 
-    _brushStrokeSample.generateFromTexture(
-      _textureBrushDictionary.lookup(vertices, 2.0 * _radius));
+    auto tex = _textureBrushDictionary.lookup(vertices, 2.0 * _radius).texHost;
+    _brushStrokeSample.generateFromTexture(tex);
 
     // compute bounding rectangle
     auto boundMin = vertices.front();

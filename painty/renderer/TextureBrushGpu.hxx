@@ -12,6 +12,8 @@
 #include "painty/renderer/BrushStrokeSample.hxx"
 #include "painty/renderer/CanvasGpu.hxx"
 #include "painty/renderer/TextureBrushDictionary.hxx"
+#include "prgl/GlslComputeShader.hxx"
+#include "prgl/GlslRenderingPipelineProgram.hxx"
 #include "prgl/Window.hxx"
 
 namespace painty {
@@ -29,9 +31,7 @@ class TextureBrushGpu final : public BrushBase<vec3> {
   void paintStroke(const std::vector<vec2>& path, CanvasGpu& canvas);
 
  private:
-  auto generateWarpedTexture(const std::vector<vec2>& path,
-                             const Size& size) const
-    -> std::shared_ptr<prgl::Texture2d>;
+  void generateWarpedTexture(const std::vector<vec2>& path, const Size& size);
 
   std::shared_ptr<prgl::Window> _glWindow = nullptr;
 
@@ -39,8 +39,10 @@ class TextureBrushGpu final : public BrushBase<vec3> {
 
   std::array<vec3, 2UL> _paintStored;
 
-  BrushStrokeSample _brushStrokeSample;
-
   TextureBrushDictionary _textureBrushDictionary;
+
+  std::shared_ptr<prgl::GlslRenderingPipelineProgram> _shaderWarp = nullptr;
+  std::shared_ptr<prgl::GlslComputeShader> _shaderImprint         = nullptr;
+  std::shared_ptr<prgl::Texture2d> _warpedBrushTexture            = nullptr;
 };
 }  // namespace painty
