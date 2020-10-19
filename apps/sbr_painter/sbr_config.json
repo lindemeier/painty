@@ -28,7 +28,7 @@
       20.0
     ],
     "clampBrushRadius": true,
-    "curvatureAlpha": 0.5,
+    "curvatureAlpha": 0.25,
     "maxLen": 15,
     "minLen": 3,
     "stepSize": 0.0,
