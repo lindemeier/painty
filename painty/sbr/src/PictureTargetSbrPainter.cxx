@@ -20,10 +20,12 @@
 
 namespace painty {
 PictureTargetSbrPainter::PictureTargetSbrPainter(
-  const std::shared_ptr<Canvas<vec3>>& canvasPtr,
+  const std::shared_ptr<prgl::Window>& windowPtr,
+  const std::shared_ptr<CanvasGpu>& canvasPtr,
   const std::shared_ptr<PaintMixer>& basePigmentsMixerPtr,
-  const std::shared_ptr<BrushBase<vec3>>& painterPtr)
-    : _canvasPtr(canvasPtr),
+  const std::shared_ptr<TextureBrushGpu>& painterPtr)
+    : _windowPtr(windowPtr),
+      _canvasPtr(canvasPtr),
       _basePigmentsMixerPtr(basePigmentsMixerPtr),
       _brushPtr(painterPtr) {}
 
@@ -328,7 +330,9 @@ auto PictureTargetSbrPainter::paint() -> bool {
                                          _paramsStroke.brushSizes.size()));
 
       std::cout << "Getting current state of the canvas" << std::endl;
-      const auto canvasCurrentRGBLinear = Renderer<vec3>().compose(*_canvasPtr);
+      // const auto canvasCurrentRGBLinear = Renderer<vec3>().compose(*_canvasPtr);
+      const auto canvasCurrentRGBLinear =
+        _canvasPtr->getComposition(_windowPtr);
       painty::io::imSave("/tmp/canvasCurrent.jpg", canvasCurrentRGBLinear,
                          true);
       const auto canvasCurrentLab = ScaledMat(
@@ -355,9 +359,9 @@ auto PictureTargetSbrPainter::paint() -> bool {
         regions, target_Lab, canvasCurrentLab, difference, brushRadius, palette,
         labels, _paramsInput.mask, tensors);
       std::cout << "Rendering strokes" << std::endl;
-      const auto xs = static_cast<double>(_canvasPtr->getR0().cols) /
+      const auto xs = static_cast<double>(_canvasPtr->getSize().width) /
                       static_cast<double>(target_Lab.cols);
-      const auto ys = static_cast<double>(_canvasPtr->getR0().rows) /
+      const auto ys = static_cast<double>(_canvasPtr->getSize().height) /
                       static_cast<double>(target_Lab.rows);
       for (auto& element : brushStrokeMap) {
         const auto paint = palette[element.first];
@@ -383,16 +387,16 @@ auto PictureTargetSbrPainter::paint() -> bool {
 }
 
 void PictureTargetSbrPainter::paintCoatCanvas(const PaintCoeff& paint) {
-  const auto step = static_cast<double>(_canvasPtr->get_h().rows) / 10.0;
+  const auto step = static_cast<double>(_canvasPtr->getSize().height) / 10.0;
 
   _brushPtr->dip({paint.K, paint.S});
   _brushPtr->setRadius(step * 0.8);
 
-  for (auto u = step * 0.5; u < static_cast<double>(_canvasPtr->get_h().rows);
-       u += step) {
+  for (auto u = step * 0.5;
+       u < static_cast<double>(_canvasPtr->getSize().height); u += step) {
     std::vector<vec2> path = {
       {-2.0 * step, u},
-      {static_cast<double>(_canvasPtr->get_h().cols) + 2.0 * step, u}};
+      {static_cast<double>(_canvasPtr->getSize().width) + 2.0 * step, u}};
     _brushPtr->paintStroke(path, *_canvasPtr);
   }
 }

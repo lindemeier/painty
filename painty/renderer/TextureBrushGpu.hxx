@@ -19,7 +19,7 @@
 namespace painty {
 class TextureBrushGpu final : public BrushBase<vec3> {
  public:
-  TextureBrushGpu(const std::shared_ptr<prgl::Window>& window);
+  TextureBrushGpu();
 
   void setRadius(const double) override;
 
@@ -30,10 +30,10 @@ class TextureBrushGpu final : public BrushBase<vec3> {
 
   void paintStroke(const std::vector<vec2>& path, CanvasGpu& canvas);
 
+  void enableSmudge(bool enable);
+
  private:
   void generateWarpedTexture(const std::vector<vec2>& path, const Size& size);
-
-  std::shared_ptr<prgl::Window> _glWindow = nullptr;
 
   double _radius = 0.0;
 
@@ -42,7 +42,11 @@ class TextureBrushGpu final : public BrushBase<vec3> {
   TextureBrushDictionary _textureBrushDictionary;
 
   std::shared_ptr<prgl::GlslRenderingPipelineProgram> _shaderWarp = nullptr;
+
   std::shared_ptr<prgl::GlslComputeShader> _shaderImprint         = nullptr;
+
   std::shared_ptr<prgl::Texture2d> _warpedBrushTexture            = nullptr;
+
+  bool _smudge = false;
 };
 }  // namespace painty

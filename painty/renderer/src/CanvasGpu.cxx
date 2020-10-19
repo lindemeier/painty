@@ -27,8 +27,18 @@ auto painty::CanvasGpu::getPaintLayer() -> PaintLayerGpu& {
   return _paintLayer;
 }
 
-auto painty::CanvasGpu::getComposition() -> Mat3d {
+auto painty::CanvasGpu::getComposition(
+  const std::shared_ptr<prgl::Window>& windowPtr) -> Mat3d {
+  // set currently to white
+  // After implementing drying, change this to a temporary
+  _r0_substrate.setTo({1.0, 1.0, 1.0, 1.0});
+
   _paintLayer.composeOnto(_r0_substrate);
+
+  _r0_substrate.getTexture()->render(
+    0.0F, 0.0F, static_cast<float>(windowPtr->getWidth()),
+    static_cast<float>(windowPtr->getHeight()));
+  windowPtr->update(false);
 
   _r0_substrate.download();
 

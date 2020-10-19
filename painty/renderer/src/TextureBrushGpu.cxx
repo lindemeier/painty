@@ -15,10 +15,8 @@
 #include "prgl/VertexArrayObject.hxx"
 #include "prgl/VertexBufferObject.hxx"
 
-painty::TextureBrushGpu::TextureBrushGpu(
-  const std::shared_ptr<prgl::Window>& window)
-    : _glWindow(window),
-      _textureBrushDictionary(),
+painty::TextureBrushGpu::TextureBrushGpu()
+    : _textureBrushDictionary(),
       _shaderWarp(nullptr),
       _shaderImprint(nullptr),
       _warpedBrushTexture(nullptr) {
@@ -84,21 +82,21 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
 
   generateWarpedTexture(vertices, canvas.getSize());
 
-  std::vector<float> warpedBrushTextureData(_warpedBrushTexture->getHeight() *
-                                            _warpedBrushTexture->getWidth());
+  // std::vector<float> warpedBrushTextureData(_warpedBrushTexture->getHeight() *
+  //                                           _warpedBrushTexture->getWidth());
 
-  _warpedBrushTexture->download(warpedBrushTextureData.data(),
-                                prgl::TextureFormat::Red,
-                                prgl::DataType::Float);
+  // _warpedBrushTexture->download(warpedBrushTextureData.data(),
+  //                               prgl::TextureFormat::Red,
+  //                               prgl::DataType::Float);
 
-  Mat1d texDataMat(static_cast<int32_t>(_warpedBrushTexture->getHeight()),
-                   static_cast<int32_t>(_warpedBrushTexture->getWidth()));
-  for (auto i = 0U; i < warpedBrushTextureData.size(); i++) {
-    texDataMat(static_cast<int32_t>(i)) =
-      static_cast<double>(warpedBrushTextureData[i]);
-  }
-  cv::flip(texDataMat, texDataMat, 0);
-  io::imSave("/tmp/warpedBrushTextureDataGlsl.jpg", texDataMat, false);
+  // Mat1d texDataMat(static_cast<int32_t>(_warpedBrushTexture->getHeight()),
+  //                  static_cast<int32_t>(_warpedBrushTexture->getWidth()));
+  // for (auto i = 0U; i < warpedBrushTextureData.size(); i++) {
+  //   texDataMat(static_cast<int32_t>(i)) =
+  //     static_cast<double>(warpedBrushTextureData[i]);
+  // }
+  // cv::flip(texDataMat, texDataMat, 0);
+  // io::imSave("/tmp/warpedBrushTextureDataGlsl.jpg", texDataMat, false);
 
   _shaderImprint->bind(true);
 
@@ -204,4 +202,8 @@ void painty::TextureBrushGpu::generateWarpedTexture(
       }
     }
   }
+}
+
+void painty::TextureBrushGpu::enableSmudge(bool enable) {
+  _smudge = enable;
 }

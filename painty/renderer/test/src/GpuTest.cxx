@@ -32,7 +32,7 @@ TEST(GpuMatTest, Construct) {
 }
 
 TEST(CanvasGpuTest, Construct) {
-  auto brush = painty::TextureBrushGpu(window);
+  auto brush = painty::TextureBrushGpu();
 
   brush.dip({{{0.2, 0.3, 0.4}, {0.1, 0.23, 0.14}}});
 
@@ -71,7 +71,7 @@ TEST(PaintLayerGpuTest, Construct) {
 }
 
 TEST(TextureBrushGpuTest, Construct) {
-  auto brush = painty::TextureBrushGpu(window);
+  auto brush = painty::TextureBrushGpu();
 
   brush.dip({{{0.2, 0.3, 0.4}, {0.1, 0.23, 0.14}}});
 
@@ -86,7 +86,7 @@ TEST(TextureBrushGpuTest, Construct) {
 
   brush.paintStroke(path, canvas);
 
-  const auto rgb = canvas.getComposition();
+  const auto rgb = canvas.getComposition(window);
 
   painty::io::imSave("/tmp/canvasGpuComposed.png", rgb, true);
 }

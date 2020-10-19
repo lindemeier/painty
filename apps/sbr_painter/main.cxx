@@ -14,8 +14,9 @@
 #include "painty/mixer/Serialization.hxx"
 #include "painty/renderer/FootprintBrush.hxx"
 #include "painty/renderer/Renderer.hxx"
-#include "painty/renderer/TextureBrush.hxx"
+#include "painty/renderer/TextureBrushGpu.hxx"
 #include "painty/sbr/PictureTargetSbrPainter.hxx"
+#include "prgl/Window.hxx"
 
 namespace painty {
 static void from_json(const nlohmann::json& j,
@@ -122,41 +123,41 @@ int main(int argc, const char* argv[]) {
   painty::Mat3d image;
   painty::io::imRead(result["image"].as<std::string>(), image, false);
 
-  constexpr auto OptimRenderSize = 2048;
+  constexpr auto OptimRenderSize = 2048U;
   auto width                     = OptimRenderSize;
-  auto height                    = OptimRenderSize / 2;
+  auto height                    = OptimRenderSize / 2U;
   if (image.cols > image.rows) {
     width  = OptimRenderSize;
-    height = static_cast<int32_t>(
+    height = static_cast<uint32_t>(
       (static_cast<double>(width) / static_cast<double>(image.cols)) *
       image.rows);
   } else {
     height = OptimRenderSize;
-    width  = static_cast<int32_t>(
+    width  = static_cast<uint32_t>(
       (static_cast<double>(height) / static_cast<double>(image.rows)) *
       image.cols);
   }
   std::cout << "Creating renderer with width=" << width
             << " and height=" << height << std::endl;
+  const auto windowPtr =
+    std::make_shared<prgl::Window>(width, height, "window", false);
 
-  auto brushPtr =
-    std::make_shared<painty::TextureBrush<painty::vec3>>("data/sample_0");
+  auto brushPtr = std::make_shared<painty::TextureBrushGpu>();
   brushPtr->enableSmudge(j.value("enableSmudge", true));
 
-  // auto brushPtr = std::make_shared<painty::FootprintBrush<painty::vec3>>(0.0);
-
   auto canvasPtr =
-    std::make_shared<painty::Canvas<painty::vec3>>(height, width);
-  const uint32_t dringTimeMillis = j.value("dryingTimeMillis", 1000U * 60U);
-  canvasPtr->setDryingTime(std::chrono::milliseconds(dringTimeMillis));
-  if (result.count("a") == 1UL) {
-    painty::Mat3d initCanvas;
-    painty::io::imRead(result["canvas"].as<std::string>(), initCanvas, false);
-    canvasPtr->setBackground(painty::ScaledMat(initCanvas, height, width));
-  }
+    std::make_shared<painty::CanvasGpu>(painty::Size{width, height});
+  // const uint32_t dringTimeMillis = j.value("dryingTimeMillis", 1000U * 60U);
+  // canvasPtr->setDryingTime(std::chrono::milliseconds(dringTimeMillis));
+  // if (result.count("a") == 1UL) {
+  //   painty::Mat3d initCanvas;
+  //   painty::io::imRead(result["canvas"].as<std::string>(), initCanvas, false);
+  //   canvasPtr->setBackground(painty::ScaledMat(initCanvas, height, width));
+  // }
 
   painty::PictureTargetSbrPainter picturePainter(
-    canvasPtr, std::make_shared<painty::PaintMixer>(palette), brushPtr);
+    windowPtr, canvasPtr, std::make_shared<painty::PaintMixer>(palette),
+    brushPtr);
   picturePainter.enableCoatCanvas(j.value("coatCanvas", false));
 
   std::cout << "Setting configs in renderer" << std::endl;
@@ -176,34 +177,12 @@ int main(int argc, const char* argv[]) {
   }
   std::cout << "Start painting" << std::endl;
 
-  auto future =
-    std::async(std::launch::async, &painty::PictureTargetSbrPainter::paint,
-               &picturePainter);
+  picturePainter.paint();
 
-  painty::Renderer<painty::vec3> renderer;
-
-  while (future.wait_for(std::chrono::seconds(1U)) !=
-         std::future_status::ready) {
-    const auto rendering = painty::convertColor(
-      renderer.compose(*canvasPtr),
-      painty::ColorConverter<double>::Conversion::rgb_2_srgb);
-
-    painty::io::imSave(result["output"].as<std::string>(),
-                       renderer.compose(*canvasPtr), false);
-
-    painty::Mat3u byteImage;
-    painty::ScaledMat(rendering, height / 2, width / 2)
-      .convertTo(byteImage, CV_8UC3, 255.0);
-    cv::cvtColor(byteImage, byteImage, cv::COLOR_RGB2BGR);
-    cv::imshow("canvas", byteImage);
-    cv::waitKey(50);
-  }
-
-  future.wait();
   std::cout << "Writing result" << std::endl;
 
   painty::io::imSave(result["output"].as<std::string>(),
-                     renderer.compose(*canvasPtr), true);
+                     canvasPtr->getComposition(windowPtr), true);
 
   exit(EXIT_SUCCESS);
 }
