@@ -37,7 +37,7 @@ auto painty::CanvasGpu::getComposition(
 
   _r0_substrate_copy_buffer.getTexture()->render(
     0.0F, 0.0F, static_cast<float>(windowPtr->getWidth()),
-    static_cast<float>(windowPtr->getHeight()));
+    static_cast<float>(windowPtr->getHeight()), true);
   windowPtr->update(false);
 
   _r0_substrate_copy_buffer.download();
