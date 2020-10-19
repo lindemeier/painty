@@ -20,9 +20,15 @@ class CanvasGpu final {
 
   void clear();
 
+  auto getPaintLayer() -> PaintLayerGpu&;
+
+  auto getComposition() -> Mat3d;
+
  private:
   Size _size;
 
   PaintLayerGpu _paintLayer;
+
+  GpuMat<vec4f> _r0_substrate;
 };
 }  // namespace painty

@@ -66,6 +66,14 @@ class GpuMat final {
   }
 
   /**
+   * @brief Clear the gpu memory to specific value.
+   *
+   */
+  void setTo(const vec4f& value) {
+    glClearTexImage(_texture->getId(), 0, GL_RGBA, GL_FLOAT, &(value[0U]));
+  }
+
+  /**
    * @brief Get the Mat object. Call download before to get the current content of the gpu texture.
    *
    * @return const Mat<T>&
@@ -199,6 +207,7 @@ class GpuMat final {
     _texture = prgl::Texture2d::Create(_size.width, _size.height,
                                        internalFormat, format, type, minFilter,
                                        magFilter, envMode, wrapMode, false);
+    _texture->upload(nullptr);
   }
 
   Size _size;

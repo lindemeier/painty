@@ -10,6 +10,7 @@
 #include "painty/core/Spline.hxx"
 #include "painty/io/ImageIO.hxx"
 #include "prgl/FrameBufferObject.hxx"
+#include "prgl/GlslComputeShader.hxx"
 #include "prgl/GlslRenderingPipelineProgram.hxx"
 #include "prgl/Projection.hxx"
 #include "prgl/Texture2d.hxx"
@@ -74,10 +75,11 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
   _brushStrokeSample.generateFromTexture(
     _textureBrushDictionary.lookup(vertices, 2.0 * _radius));
   const auto warpedBrushTexture =
-    generateWarpedTexture(vertices, boundMin, boundMax);
+    generateWarpedTexture(vertices, canvas.getSize());
 
   std::vector<float> warpedBrushTextureData(warpedBrushTexture->getHeight() *
                                             warpedBrushTexture->getWidth());
+
   warpedBrushTexture->download(warpedBrushTextureData.data(),
                                prgl::TextureFormat::Red, prgl::DataType::Float);
 
@@ -89,14 +91,37 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
   }
   cv::flip(texDataMat, texDataMat, 0);
   io::imSave("/tmp/warpedBrushTextureDataGlsl.jpg", texDataMat, false);
+
+  const auto shader =
+    prgl::GlslComputeShader::Create(prgl::GlslProgram::ReadShaderFromFile(
+      "painty/renderer/shaders/PaintTextureFootprintOnCanvas.compute.glsl"));
+
+  shader->bind(true);
+
+  shader->bindImage2D(0U, warpedBrushTexture, prgl::TextureAccess::ReadOnly);
+  shader->bindImage2D(1U, canvas.getPaintLayer().getK().getTexture(),
+                      prgl::TextureAccess::ReadWrite);
+  shader->bindImage2D(2U, canvas.getPaintLayer().getS().getTexture(),
+                      prgl::TextureAccess::ReadWrite);
+
+  shader->set3f("K_brush", static_cast<float>(_paintStored.front()[0U]),
+                static_cast<float>(_paintStored.front()[1U]),
+                static_cast<float>(_paintStored.front()[2U]));
+  shader->set3f("S_brush", static_cast<float>(_paintStored.back()[0U]),
+                static_cast<float>(_paintStored.back()[1U]),
+                static_cast<float>(_paintStored.back()[2U]));
+
+  shader->execute(static_cast<int32_t>(boundMin[0U]),
+                  static_cast<int32_t>(boundMin[1U]),
+                  static_cast<int32_t>(boundMax[0U] - boundMin[0U]) + 1,
+                  static_cast<int32_t>(boundMax[1U] - boundMin[1U]) + 1);
+
+  shader->bind(false);
 }
 
 auto painty::TextureBrushGpu::generateWarpedTexture(
-  const std::vector<vec2>& vertices, const vec2& boundMin,
-  const vec2& boundMax) const -> std::shared_ptr<prgl::Texture2d> {
-  const Size size = {static_cast<uint32_t>(boundMax[0] - boundMin[0] + 1),
-                     static_cast<uint32_t>(boundMax[1] - boundMin[1] + 1)};
-
+  const std::vector<vec2>& vertices, const Size& size) const
+  -> std::shared_ptr<prgl::Texture2d> {
   SplineEval<std::vector<vec2>::const_iterator> spineSpline(vertices.cbegin(),
                                                             vertices.cend());
 
@@ -104,7 +129,7 @@ auto painty::TextureBrushGpu::generateWarpedTexture(
   std::vector<std::array<float, 2U>> vboTexCoords;
   for (auto i = 0U; i < vertices.size(); ++i) {
     T u          = static_cast<T>(i) / static_cast<T>(vertices.size() - 1);
-    const auto c = spineSpline.catmullRom(u) - boundMin;
+    const auto c = spineSpline.catmullRom(u);
 
     // spine tangent vector
     auto t = spineSpline.catmullRomDerivativeFirst(u).normalized();
@@ -156,6 +181,7 @@ auto painty::TextureBrushGpu::generateWarpedTexture(
     "painty/renderer/shaders/BrushTextureWarp.frag.glsl"));
 
   const auto brushTexture = _brushStrokeSample.getThicknessMap();
+
   auto brushTextureGl     = prgl::Texture2d::Create(
     brushTexture.cols, brushTexture.rows, prgl::TextureFormatInternal::R8,
     prgl::TextureFormat::Red, prgl::DataType::Byte);
@@ -182,6 +208,7 @@ auto painty::TextureBrushGpu::generateWarpedTexture(
         cv::normalize(copy, copy, cv::NORM_MINMAX, 1.0);
         Mat1u copy2;
         copy.convertTo(copy2, CV_8UC1, 255.0);
+
         brushTextureGl->upload(copy2.data);
         // gl mat
 

@@ -37,3 +37,11 @@ void painty::PaintLayerGpu::composeOnto(GpuMat<vec4f>& R0) const {
 
   shader->bind(false);
 }
+
+auto painty::PaintLayerGpu::getK() -> GpuMat<vec4f>& {
+  return _K;
+}
+
+auto painty::PaintLayerGpu::getS() -> GpuMat<vec4f>& {
+  return _S;
+}

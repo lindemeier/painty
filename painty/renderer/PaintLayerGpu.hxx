@@ -25,6 +25,9 @@ class PaintLayerGpu final {
 
   void composeOnto(GpuMat<vec4f>& R0) const;
 
+  auto getK() -> GpuMat<vec4f>&;
+  auto getS() -> GpuMat<vec4f>&;
+
  private:
   Size _size;
 
