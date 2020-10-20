@@ -9,7 +9,6 @@
 
 #include "painty/core/Spline.hxx"
 #include "painty/io/ImageIO.hxx"
-#include "prgl/FrameBufferObject.hxx"
 #include "prgl/Projection.hxx"
 #include "prgl/Texture2d.hxx"
 #include "prgl/VertexArrayObject.hxx"
@@ -19,7 +18,8 @@ painty::TextureBrushGpu::TextureBrushGpu()
     : _textureBrushDictionary(),
       _shaderWarp(nullptr),
       _shaderImprint(nullptr),
-      _warpedBrushTexture(nullptr) {
+      _warpedBrushTexture(nullptr),
+      _warpedBrushTextureFbo(nullptr) {
   _shaderWarp = prgl::GlslRenderingPipelineProgram::Create();
   _shaderWarp->attachVertexShader(prgl::GlslProgram::ReadShaderFromFile(
     "painty/renderer/shaders/BrushTextureWarp.vert.glsl"));
@@ -29,6 +29,8 @@ painty::TextureBrushGpu::TextureBrushGpu()
   _shaderImprint =
     prgl::GlslComputeShader::Create(prgl::GlslProgram::ReadShaderFromFile(
       "painty/renderer/shaders/PaintTextureFootprintOnCanvas.compute.glsl"));
+
+  _warpedBrushTextureFbo = prgl::FrameBufferObject::Create();
 }
 
 void painty::TextureBrushGpu::setRadius(const double radius) {
@@ -117,6 +119,7 @@ void painty::TextureBrushGpu::generateWarpedTexture(
       size.width, size.height, prgl::TextureFormatInternal::R32F,
       prgl::TextureFormat::Red, prgl::DataType::Float);
     _warpedBrushTexture->upload(nullptr);
+    _warpedBrushTextureFbo->attachTexture(_warpedBrushTexture);
   }
   GLuint clearColor[4] = {0, 0, 0, 0};
   glClearTexImage(_warpedBrushTexture->getId(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
@@ -149,9 +152,6 @@ void painty::TextureBrushGpu::generateWarpedTexture(
     vboTexCoords.push_back({static_cast<float>(u), static_cast<float>(1.0)});
   }
 
-  auto heightFbo = prgl::FrameBufferObject::Create();
-  heightFbo->attachTexture(_warpedBrushTexture);
-
   auto vboPosition = prgl::VertexBufferObject::Create(
     prgl::VertexBufferObject::Usage::StaticDraw);
   vboPosition->createBuffer(vboVertices);
@@ -165,7 +165,8 @@ void painty::TextureBrushGpu::generateWarpedTexture(
   vao->addVertexBufferObject(1U, vboTex);
 
   {
-    const auto fboBinder = prgl::Binder<prgl::FrameBufferObject>(heightFbo);
+    const auto fboBinder =
+      prgl::Binder<prgl::FrameBufferObject>(_warpedBrushTextureFbo);
     {
       const auto shaderBinder =
         prgl::Binder<prgl::GlslRenderingPipelineProgram>(_shaderWarp);

@@ -12,6 +12,7 @@
 #include "painty/renderer/BrushStrokeSample.hxx"
 #include "painty/renderer/CanvasGpu.hxx"
 #include "painty/renderer/TextureBrushDictionary.hxx"
+#include "prgl/FrameBufferObject.hxx"
 #include "prgl/GlslComputeShader.hxx"
 #include "prgl/GlslRenderingPipelineProgram.hxx"
 #include "prgl/Window.hxx"
@@ -46,6 +47,8 @@ class TextureBrushGpu final : public BrushBase<vec3> {
   std::shared_ptr<prgl::GlslComputeShader> _shaderImprint         = nullptr;
 
   std::shared_ptr<prgl::Texture2d> _warpedBrushTexture            = nullptr;
+
+  std::shared_ptr<prgl::FrameBufferObject> _warpedBrushTextureFbo = nullptr;
 
   bool _smudge = false;
 };
