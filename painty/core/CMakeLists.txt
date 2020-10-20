@@ -7,6 +7,7 @@ find_package (Eigen3 REQUIRED NO_MODULE)
 
 add_library(${PROJECT_NAME} STATIC
   ${PROJECT_SOURCE_DIR}/src/ThreadPool.cxx
+  ${PROJECT_SOURCE_DIR}/src/Timer.cxx
 )
 
 target_include_directories(${PROJECT_NAME}
