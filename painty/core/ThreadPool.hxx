@@ -15,11 +15,10 @@ namespace painty {
 
 class ThreadPool {
  private:
-  std::thread _thread;
+  std::vector<std::thread> _threads;
   std::mutex _mutex;
   std::condition_variable _condition;
   std::atomic_bool _terminate;
-  std::atomic_bool _executing;
 
   std::deque<std::packaged_task<void()> > _tasks;
 
@@ -42,25 +41,38 @@ class ThreadPool {
     return res;
   }
 
-  void startWorker();
+  void initWorkers();
+
+  /**
+   * @brief Start the thread pool.
+   *
+   */
+  void start();
+  /**
+   * @brief Terminate the thread pool.
+   * This gets automatically called if this object gets out of scope.
+   *
+   */
+  void terminate();
 
  public:
-  ThreadPool();
+  ThreadPool(std::size_t threadCount);
   virtual ~ThreadPool();
 
-  void start();      // continue executing jobs
-  void stop();       // pause executing jobs
-  void terminate();  // shut down thread
-  void clear();      // clear current tasks
+  /**
+   * @brief Remove all jobs that are queued.
+   *
+   */
+  void clear();
 
   template <class Function, class... Args>
-  std::future<typename std::result_of<Function(Args...)>::type> push_front(
+  std::future<typename std::result_of<Function(Args...)>::type> add_front(
     Function&& f, Args&&... args) {
     return push(false, f, args...);
   }
 
   template <class Function, class... Args>
-  std::future<typename std::result_of<Function(Args...)>::type> push_back(
+  std::future<typename std::result_of<Function(Args...)>::type> add_back(
     Function&& f, Args&&... args) {
     return push(true, f, args...);
   }

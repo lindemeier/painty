@@ -7,6 +7,7 @@ add_executable(${PROJECT_NAME}
     ${PROJECT_SOURCE_DIR}/src/MathTest.cxx
     ${PROJECT_SOURCE_DIR}/src/KubelkaMunkTest.cxx
     ${PROJECT_SOURCE_DIR}/src/SplineTest.cxx
+    ${PROJECT_SOURCE_DIR}/src/ThreadPoolTest.cxx
     ${PROJECT_SOURCE_DIR}/src/VecTest.cxx
   )
 add_test(

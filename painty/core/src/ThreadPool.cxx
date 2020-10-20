@@ -10,13 +10,14 @@
 
 namespace painty {
 
-ThreadPool::ThreadPool()
-    : _mutex(),
+ThreadPool::ThreadPool(std::size_t threadCount)
+    : _threads(threadCount),
+      _mutex(),
       _condition(),
       _terminate(false),
-      _executing(true),
       _tasks() {
-  startWorker();
+  initWorkers();
+  start();
 }
 
 ThreadPool::~ThreadPool() {
@@ -24,24 +25,23 @@ ThreadPool::~ThreadPool() {
 }
 
 void ThreadPool::start() {
-  if (!_executing) {
-    _executing = true;
-
-    _condition.notify_all();
-  }
+   _condition.notify_all();
 }
 
-void ThreadPool::stop() {
-  _executing = false;
-}
 
 void ThreadPool::terminate() {
+  std::unique_lock<std::mutex> lock(_mutex);
+
   _terminate = true;
+  lock.unlock();
 
   _condition.notify_all();
 
-  if (_thread.joinable())
-    _thread.join();
+  for (auto& t : _threads) {
+    if (t.joinable()) {
+      t.join();
+    }
+  }
 }
 
 void ThreadPool::clear() {
@@ -49,30 +49,32 @@ void ThreadPool::clear() {
   _tasks.clear();
 }
 
-void ThreadPool::startWorker() {
+void ThreadPool::initWorkers() {
   _terminate = false;
+  for (auto& thread : _threads) {
+    thread = std::thread([&]() {
+      while (!_terminate) {
+        std::packaged_task<void()> f;
 
-  _thread = std::thread([&]() {
-    while (!_terminate) {
-      std::packaged_task<void()> f;
+        std::unique_lock<std::mutex> lock(_mutex);
 
-      std::unique_lock<std::mutex> lock(_mutex);
-
-      while (_tasks.empty() || !_executing) {
-        _condition.wait(lock);
-        if (_terminate) {
-          return;
+        while (_tasks.empty()) {
+          _condition.wait(lock);
+          if (_terminate) {
+            return;
+          }
         }
+
+        f = std::move(_tasks.front());
+        _tasks.pop_front();
+
+        lock.unlock();
+
+        f();
+
       }
-
-      f = std::move(_tasks.front());
-      _tasks.pop_front();
-
-      lock.unlock();
-
-      f();
-    }
-  });
+    });
+  }
 }
 
 }  // namespace painty
