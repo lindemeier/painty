@@ -50,6 +50,8 @@ class TextureBrushGpu final : public BrushBase<vec3> {
 
   std::shared_ptr<prgl::FrameBufferObject> _warpedBrushTextureFbo = nullptr;
 
+  std::shared_ptr<prgl::GlslComputeShader> _shaderClearBrushTexture = nullptr;
+
   bool _smudge = false;
 };
 }  // namespace painty

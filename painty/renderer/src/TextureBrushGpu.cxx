@@ -19,7 +19,8 @@ painty::TextureBrushGpu::TextureBrushGpu()
       _shaderWarp(nullptr),
       _shaderImprint(nullptr),
       _warpedBrushTexture(nullptr),
-      _warpedBrushTextureFbo(nullptr) {
+      _warpedBrushTextureFbo(nullptr),
+      _shaderClearBrushTexture(nullptr) {
   _shaderWarp = prgl::GlslRenderingPipelineProgram::Create();
   _shaderWarp->attachVertexShader(prgl::GlslProgram::ReadShaderFromFile(
     "painty/renderer/shaders/BrushTextureWarp.vert.glsl"));
@@ -31,6 +32,10 @@ painty::TextureBrushGpu::TextureBrushGpu()
       "painty/renderer/shaders/PaintTextureFootprintOnCanvas.compute.glsl"));
 
   _warpedBrushTextureFbo = prgl::FrameBufferObject::Create();
+
+  _shaderClearBrushTexture =
+    prgl::GlslComputeShader::Create(prgl::GlslProgram::ReadShaderFromFile(
+      "painty/renderer/shaders/ClearTextureFootprint.compute.glsl"));
 }
 
 void painty::TextureBrushGpu::setRadius(const double radius) {
@@ -84,16 +89,18 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
 
   generateWarpedTexture(vertices, canvas.getSize());
 
-  {
-    prgl::Binder<prgl::GlslComputeShader> shaderBinder(_shaderImprint);
+  const auto aoiWidth  = static_cast<int32_t>(boundMax[0U] - boundMin[0U]) + 1;
+  const auto aoiHeight = static_cast<int32_t>(boundMax[1U] - boundMin[1U]) + 1;
 
+  // imprint the canvas using the warped brush textrure
+  {
+    const prgl::Binder<prgl::GlslComputeShader> shaderBinder(_shaderImprint);
     _shaderImprint->bindImage2D(0U, _warpedBrushTexture,
                                 prgl::TextureAccess::ReadOnly);
     _shaderImprint->bindImage2D(1U, canvas.getPaintLayer().getK().getTexture(),
                                 prgl::TextureAccess::ReadWrite);
     _shaderImprint->bindImage2D(2U, canvas.getPaintLayer().getS().getTexture(),
                                 prgl::TextureAccess::ReadWrite);
-
     _shaderImprint->set3f("K_brush",
                           static_cast<float>(_paintStored.front()[0U]),
                           static_cast<float>(_paintStored.front()[1U]),
@@ -102,11 +109,20 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
                           static_cast<float>(_paintStored.back()[0U]),
                           static_cast<float>(_paintStored.back()[1U]),
                           static_cast<float>(_paintStored.back()[2U]));
+    _shaderImprint->execute(static_cast<int32_t>(boundMin[0U]),
+                            static_cast<int32_t>(boundMin[1U]), aoiWidth,
+                            aoiHeight);
+  }
 
-    _shaderImprint->execute(
-      static_cast<int32_t>(boundMin[0U]), static_cast<int32_t>(boundMin[1U]),
-      static_cast<int32_t>(boundMax[0U] - boundMin[0U]) + 1,
-      static_cast<int32_t>(boundMax[1U] - boundMin[1U]) + 1);
+  // clear the warped brush texture for next brush stroke
+  {
+    const prgl::Binder<prgl::GlslComputeShader> shaderBinder(
+      _shaderClearBrushTexture);
+    _shaderClearBrushTexture->bindImage2D(0U, _warpedBrushTexture,
+                                          prgl::TextureAccess::WriteOnly);
+    _shaderClearBrushTexture->execute(static_cast<int32_t>(boundMin[0U]),
+                                      static_cast<int32_t>(boundMin[1U]),
+                                      aoiWidth, aoiHeight);
   }
 }
 
@@ -121,9 +137,6 @@ void painty::TextureBrushGpu::generateWarpedTexture(
     _warpedBrushTexture->upload(nullptr);
     _warpedBrushTextureFbo->attachTexture(_warpedBrushTexture);
   }
-  GLuint clearColor[4] = {0, 0, 0, 0};
-  glClearTexImage(_warpedBrushTexture->getId(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                  &clearColor);
 
   SplineEval<std::vector<vec2>::const_iterator> spineSpline(vertices.cbegin(),
                                                             vertices.cend());
