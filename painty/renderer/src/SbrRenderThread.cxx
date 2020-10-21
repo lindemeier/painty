@@ -55,3 +55,9 @@ auto painty::SbrRenderThread::getLinearRgbImage() -> std::future<Mat3d> {
   });
   return future;
 }
+
+void painty::SbrRenderThread::setBrushThicknessScale(const double scale) {
+  _jobQueue.add_back([this, scale]() {
+    _brushPtr->setThicknessScale(scale);
+  });
+}

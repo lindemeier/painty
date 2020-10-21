@@ -12,6 +12,7 @@ uniform ivec2 offset;
 
 uniform highp vec3 K_brush;
 uniform highp vec3 S_brush;
+uniform highp float thicknessScale;
 
 void main() {
   ivec2 gSize = imageSize(tex_K);
@@ -30,7 +31,7 @@ void main() {
   highp vec3 K     = imageLoad(tex_K, texPos).rgb;
   highp vec3 S     = imageLoad(tex_S, texPos).rgb;
   highp float vCan = imageLoad(tex_K, texPos).a;
-  highp float vTex = imageLoad(warpedBrushTexture, texPos).r;
+  highp float vTex = thicknessScale * imageLoad(warpedBrushTexture, texPos).r;
 
   // compute the total amount of paint
   highp float vSum = vCan + vTex;
@@ -47,5 +48,6 @@ void main() {
 
   // store the results
   imageStore(tex_K, texPos, vec4(Kn, vSum));
-  imageStore(tex_S, texPos, vec4(Sn, std::max(vCan, vTex)));
+  highp float vLighting = (vTex > 0.0) ? vTex : vCan;
+  imageStore(tex_S, texPos, vec4(Sn, vLighting));
 }

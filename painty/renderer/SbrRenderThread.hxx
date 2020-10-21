@@ -41,6 +41,13 @@ class SbrRenderThread final {
    */
   auto getLinearRgbImage() -> std::future<Mat3d>;
 
+  /**
+   * @brief Multiplies the brush texture height with given scale.
+   *
+   * @param scale
+   */
+  void setBrushThicknessScale(const double scale);
+
  private:
   static constexpr auto ThreadCount = 1UL;
   /**

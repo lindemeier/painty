@@ -109,6 +109,8 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
                           static_cast<float>(_paintStored.back()[0U]),
                           static_cast<float>(_paintStored.back()[1U]),
                           static_cast<float>(_paintStored.back()[2U]));
+    _shaderImprint->setf("thicknessScale",
+                         static_cast<float>(getThicknessScale()));
     _shaderImprint->execute(static_cast<int32_t>(boundMin[0U]),
                             static_cast<int32_t>(boundMin[1U]), aoiWidth,
                             aoiHeight);
