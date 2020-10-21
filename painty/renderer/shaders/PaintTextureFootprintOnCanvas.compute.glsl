@@ -47,5 +47,5 @@ void main() {
 
   // store the results
   imageStore(tex_K, texPos, vec4(Kn, vSum));
-  imageStore(tex_S, texPos, vec4(Sn, vSum));
+  imageStore(tex_S, texPos, vec4(Sn, std::max(vCan, vTex)));
 }
