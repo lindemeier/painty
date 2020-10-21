@@ -29,20 +29,18 @@ auto painty::CanvasGpu::getPaintLayer() -> PaintLayerGpu& {
   return _paintLayer;
 }
 
-auto painty::CanvasGpu::getComposition(
-  const std::shared_ptr<prgl::Window>& windowPtr) -> Mat3d {
+auto painty::CanvasGpu::getComposed() -> const GpuMat<vec4f>& {
   _r0_substrate.getTexture()->copyTo(*_r0_substrate_copy_buffer.getTexture());
-
   _paintLayer.composeOnto(_r0_substrate_copy_buffer);
+  return _r0_substrate_copy_buffer;
+}
 
-  _r0_substrate_copy_buffer.getTexture()->render(
-    0.0F, 0.0F, static_cast<float>(windowPtr->getWidth()),
-    static_cast<float>(windowPtr->getHeight()), true);
-  windowPtr->update(false);
+auto painty::CanvasGpu::getCompositionLinearRgb() -> Mat3d {
+  auto composed = getComposed();
 
-  _r0_substrate_copy_buffer.download();
+  composed.download();
 
-  const auto r0 = _r0_substrate_copy_buffer.getMat();
+  const auto r0 = composed.getMat();
 
   Mat3d rgb(r0.size());
   for (auto i = 0; i < static_cast<int32_t>(r0.total()); i++) {

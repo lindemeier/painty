@@ -46,7 +46,7 @@ class ThreadPool final {
    * This gets automatically called if this object gets out of scope.
    *
    */
-  void terminate();
+  void stop();
 
  public:
   ThreadPool(std::size_t threadCount);
@@ -76,7 +76,7 @@ class ThreadPool final {
   std::vector<std::thread> _threads;
   std::mutex _mutex;
   std::condition_variable _condition;
-  std::atomic_bool _terminate;
+  std::atomic_bool _stop;
 
   std::deque<std::packaged_task<void()> > _tasks;
 };

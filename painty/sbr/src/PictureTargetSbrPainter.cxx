@@ -331,8 +331,7 @@ auto PictureTargetSbrPainter::paint() -> bool {
 
       std::cout << "Getting current state of the canvas" << std::endl;
       // const auto canvasCurrentRGBLinear = Renderer<vec3>().compose(*_canvasPtr);
-      const auto canvasCurrentRGBLinear =
-        _canvasPtr->getComposition(_windowPtr);
+      const auto canvasCurrentRGBLinear = _canvasPtr->getCompositionLinearRgb();
       painty::io::imSave("/tmp/canvasCurrent.jpg", canvasCurrentRGBLinear,
                          true);
       const auto canvasCurrentLab = ScaledMat(

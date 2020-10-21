@@ -21,7 +21,9 @@ class CanvasGpu final {
 
   auto getPaintLayer() -> PaintLayerGpu&;
 
-  auto getComposition(const std::shared_ptr<prgl::Window>& windowPtr) -> Mat3d;
+  auto getComposed() -> const GpuMat<vec4f>&;
+
+  auto getCompositionLinearRgb() -> Mat3d;
 
  private:
   Size _size;

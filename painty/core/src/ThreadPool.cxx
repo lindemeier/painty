@@ -14,26 +14,22 @@ ThreadPool::ThreadPool(std::size_t threadCount)
     : _threads(threadCount),
       _mutex(),
       _condition(),
-      _terminate(false),
+      _stop(false),
       _tasks() {
   initWorkers();
   start();
 }
 
 ThreadPool::~ThreadPool() {
-  terminate();
+  stop();
 }
 
 void ThreadPool::start() {
    _condition.notify_all();
 }
 
-
-void ThreadPool::terminate() {
-  std::unique_lock<std::mutex> lock(_mutex);
-
-  _terminate = true;
-  lock.unlock();
+void ThreadPool::stop() {
+  _stop = true;
 
   _condition.notify_all();
 
@@ -50,17 +46,17 @@ void ThreadPool::clear() {
 }
 
 void ThreadPool::initWorkers() {
-  _terminate = false;
+  _stop = false;
   for (auto& thread : _threads) {
     thread = std::thread([&]() {
-      while (!_terminate) {
+      while (!_stop) {
         std::packaged_task<void()> f;
 
         std::unique_lock<std::mutex> lock(_mutex);
 
         while (_tasks.empty()) {
           _condition.wait(lock);
-          if (_terminate) {
+          if (_stop) {
             return;
           }
         }
@@ -71,7 +67,6 @@ void ThreadPool::initWorkers() {
         lock.unlock();
 
         f();
-
       }
     });
   }

@@ -182,7 +182,7 @@ int main(int argc, const char* argv[]) {
   std::cout << "Writing result" << std::endl;
 
   painty::io::imSave(result["output"].as<std::string>(),
-                     canvasPtr->getComposition(windowPtr), true);
+                     canvasPtr->getCompositionLinearRgb(), true);
 
   exit(EXIT_SUCCESS);
 }

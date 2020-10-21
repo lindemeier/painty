@@ -7,9 +7,10 @@
  */
 #pragma once
 
+#include <atomic>
 #include <chrono>
-#include <functional>
 #include <future>
+#include <functional>
 
 namespace painty {
 /**
@@ -23,7 +24,7 @@ class Timer {
   *
   * @param singleShot if true, the timer calls the function once and then releases the thread.
   */
-  Timer(bool singleShot);
+  Timer();
   ~Timer();
   Timer(const Timer&) = delete;
   Timer& operator=(const Timer&) = delete;
@@ -40,23 +41,21 @@ class Timer {
   template <class Function, class... Arguments, class Rep, class Period>
   void start(const std::chrono::duration<Rep, Period>& timeout, Function&& f,
              Arguments&&... args) {
+    _stop = false;
+
     std::function<typename std::result_of<Function(Arguments...)>::type()> task(
       std::bind(std::forward<Function>(f), std::forward<Arguments>(args)...));
-    _thread = std::thread([&]() {
-      do {
-        std::this_thread::sleep_for(timeout);
-        task();
-      } while ((!_singleShot) && (!_terminate));
-    });
-
-    if (_thread.joinable()) {
-      _thread.join();
-    }
+    _future =
+      std::async(std::launch::async, [task{std::move(task)}, timeout, this]() {
+        do {
+          std::this_thread::sleep_for(timeout);
+          task();
+        } while (!_stop);
+      });
   }
 
  private:
-  std::thread _thread = {};
-  std::atomic_bool _terminate;
-  bool _singleShot;
+  std::future<void> _future;
+  std::atomic_bool _stop;
 };
 }  // namespace painty

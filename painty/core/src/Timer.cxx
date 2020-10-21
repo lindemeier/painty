@@ -10,13 +10,13 @@
 
 namespace painty {
 
-Timer::Timer(bool singleShot) : _terminate(false), _singleShot(singleShot) {}
+Timer::Timer() : _stop(false) {}
 
 Timer::~Timer() {
-  _terminate = true;
+  _stop = true;
 
-  if (_thread.joinable()) {
-    _thread.join();
+  if (_future.valid()) {
+    _future.wait();
   }
 }
 

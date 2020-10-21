@@ -12,7 +12,7 @@
 #include "painty/core/Timer.hxx"
 
 TEST(TimerTestTest, Construct) {
-  painty::Timer timer(false);
+  painty::Timer timer;
 
   timer.start(std::chrono::milliseconds(1000U), [=]() {
 
