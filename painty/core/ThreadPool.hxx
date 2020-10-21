@@ -13,15 +13,8 @@
 
 namespace painty {
 
-class ThreadPool {
+class ThreadPool final {
  private:
-  std::vector<std::thread> _threads;
-  std::mutex _mutex;
-  std::condition_variable _condition;
-  std::atomic_bool _terminate;
-
-  std::deque<std::packaged_task<void()> > _tasks;
-
   template <class Function, class... Args>
   std::future<typename std::result_of<Function(Args...)>::type> push(
     bool back, Function&& f, Args&&... args) {
@@ -57,7 +50,9 @@ class ThreadPool {
 
  public:
   ThreadPool(std::size_t threadCount);
-  virtual ~ThreadPool();
+  ~ThreadPool();
+  ThreadPool(const ThreadPool&) = delete;
+  ThreadPool& operator=(const ThreadPool&) = delete;
 
   /**
    * @brief Remove all jobs that are queued.
@@ -76,6 +71,14 @@ class ThreadPool {
     Function&& f, Args&&... args) {
     return push(true, f, args...);
   }
+
+ private:
+  std::vector<std::thread> _threads;
+  std::mutex _mutex;
+  std::condition_variable _condition;
+  std::atomic_bool _terminate;
+
+  std::deque<std::packaged_task<void()> > _tasks;
 };
 
 }  // namespace painty

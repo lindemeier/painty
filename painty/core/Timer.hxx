@@ -25,6 +25,8 @@ class Timer {
   */
   Timer(bool singleShot);
   ~Timer();
+  Timer(const Timer&) = delete;
+  Timer& operator=(const Timer&) = delete;
 
   /**
    * @brief
