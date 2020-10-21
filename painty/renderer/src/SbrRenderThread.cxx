@@ -38,6 +38,14 @@ painty::SbrRenderThread::SbrRenderThread(const Size& canvasSize)
   });
 }
 
+auto painty::SbrRenderThread::getSize() const -> Size {
+  return _canvasSize;
+}
+
+auto painty::SbrRenderThread::getBrushThicknessScale() const -> double {
+  return _thicknessScale;
+}
+
 auto painty::SbrRenderThread::render(const std::vector<vec2>& path,
                                      const double radius,
                                      const std::array<vec3, 2UL>& ks)
@@ -50,14 +58,21 @@ auto painty::SbrRenderThread::render(const std::vector<vec2>& path,
 }
 
 auto painty::SbrRenderThread::getLinearRgbImage() -> std::future<Mat3d> {
-  auto future = _jobQueue.add_back([this]() {
+  auto future = _jobQueue.add_back([this]() -> Mat3d {
     return _canvasPtr->getCompositionLinearRgb();
   });
   return future;
 }
 
 void painty::SbrRenderThread::setBrushThicknessScale(const double scale) {
+  _thicknessScale = scale;
   _jobQueue.add_back([this, scale]() {
     _brushPtr->setThicknessScale(scale);
+  });
+}
+
+void painty::SbrRenderThread::enableSmudge(bool enable) {
+  _jobQueue.add_back([this, enable]() {
+    _brushPtr->enableSmudge(enable);
   });
 }

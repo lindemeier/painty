@@ -24,6 +24,20 @@ class SbrRenderThread final {
   SbrRenderThread& operator=(const SbrRenderThread&) = delete;
 
   /**
+   * @brief Get the Size object
+   *
+   * @return Size
+   */
+  auto getSize() const -> Size;
+
+  /**
+   * @brief Get the Thickness Scale object
+   *
+   * @return double
+   */
+  auto getBrushThicknessScale() const -> double;
+
+  /**
    * @brief Renders a brush stroke to the canvas in the rendering thread.
    *
    * @param path the control points of the brush stroke.
@@ -47,6 +61,13 @@ class SbrRenderThread final {
    * @param scale
    */
   void setBrushThicknessScale(const double scale);
+
+  /**
+   * @brief
+   *
+   * @param enable
+   */
+  void enableSmudge(bool enable);
 
  private:
   static constexpr auto ThreadCount = 1UL;
@@ -85,5 +106,7 @@ class SbrRenderThread final {
    *
    */
   ThreadPool _jobQueue;
+
+  double _thicknessScale = 1.0;
 };
 }  // namespace painty

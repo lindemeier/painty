@@ -139,14 +139,10 @@ int main(int argc, const char* argv[]) {
   }
   std::cout << "Creating renderer with width=" << width
             << " and height=" << height << std::endl;
-  const auto windowPtr =
-    std::make_shared<prgl::Window>(width, height, "window", false);
 
-  auto brushPtr = std::make_shared<painty::TextureBrushGpu>();
-  brushPtr->enableSmudge(j.value("enableSmudge", true));
 
-  auto canvasPtr =
-    std::make_shared<painty::CanvasGpu>(painty::Size{width, height});
+
+
   // const uint32_t dringTimeMillis = j.value("dryingTimeMillis", 1000U * 60U);
   // canvasPtr->setDryingTime(std::chrono::milliseconds(dringTimeMillis));
   // if (result.count("a") == 1UL) {
@@ -156,9 +152,9 @@ int main(int argc, const char* argv[]) {
   // }
 
   painty::PictureTargetSbrPainter picturePainter(
-    windowPtr, canvasPtr, std::make_shared<painty::PaintMixer>(palette),
-    brushPtr);
+    painty::Size{width, height}, std::make_shared<painty::PaintMixer>(palette));
   picturePainter.enableCoatCanvas(j.value("coatCanvas", false));
+  picturePainter.enableSmudge(j.value("enableSmudge", true));
 
   std::cout << "Setting configs in renderer" << std::endl;
   picturePainter._paramsInput        = j["image_params"];
@@ -177,12 +173,12 @@ int main(int argc, const char* argv[]) {
   }
   std::cout << "Start painting" << std::endl;
 
-  picturePainter.paint();
+  const auto paintedResult = picturePainter.paint();
 
   std::cout << "Writing result" << std::endl;
 
   painty::io::imSave(result["output"].as<std::string>(),
-                     canvasPtr->getCompositionLinearRgb(), true);
+                     paintedResult, true);
 
   exit(EXIT_SUCCESS);
 }
