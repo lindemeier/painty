@@ -7,12 +7,15 @@
  */
 #include "painty/renderer/SbrRenderThread.hxx"
 
+#include <iostream>
+
 painty::SbrRenderThread::SbrRenderThread(const Size& canvasSize)
     : _windowPtr(nullptr),
       _brushPtr(nullptr),
       _canvasPtr(nullptr),
       _canvasSize(canvasSize),
       _timerWindowUpdate(),
+      _timerDryStep(),
       _jobQueue(ThreadCount) {
   // initialize the gl window in the render thread
   _jobQueue
@@ -34,6 +37,13 @@ painty::SbrRenderThread::SbrRenderThread(const Size& canvasSize)
         0.0F, 0.0F, static_cast<float>(_windowPtr->getWidth()),
         static_cast<float>(_windowPtr->getHeight()), true);
       _windowPtr->update(false);
+    });
+  });
+
+  _timerDryStep.start(std::chrono::milliseconds(10000U), [this]() {
+    _jobQueue.add_back([]() {
+      std::cout << "drying step" << std::endl;
+      // _canvasPtr->dryStep();
     });
   });
 }

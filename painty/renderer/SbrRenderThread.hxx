@@ -96,10 +96,16 @@ class SbrRenderThread final {
   Size _canvasSize = {};
 
   /**
-   * @brief Timer for calling window update and current result display at a certian rate.
+   * @brief Timer for calling window update and current result display at a certain rate.
    *
    */
   Timer _timerWindowUpdate;
+
+  /**
+   * @brief Timer for calling drying shader update.
+   *
+   */
+  Timer _timerDryStep;
 
   /**
    * @brief A thread pool with one single thread for rendering.

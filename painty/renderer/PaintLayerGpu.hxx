@@ -14,6 +14,7 @@
 #include <array>
 
 #include "painty/gpu/GpuMat.hxx"
+#include "prgl/GlslComputeShader.hxx"
 
 namespace painty {
 
@@ -38,5 +39,7 @@ class PaintLayerGpu final {
    */
   GpuMat<vec4f> _K;
   GpuMat<vec4f> _S;
+
+  std::shared_ptr<prgl::GlslComputeShader> _composeShader = nullptr;
 };
 }  // namespace painty

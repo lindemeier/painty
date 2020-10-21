@@ -10,6 +10,7 @@
 #include "painty/core/Vec.hxx"
 #include "painty/image/Mat.hxx"
 #include "painty/renderer/PaintLayerGpu.hxx"
+#include "prgl/GlslComputeShader.hxx"
 #include "prgl/Window.hxx"
 
 namespace painty {
@@ -25,6 +26,8 @@ class CanvasGpu final {
 
   auto getCompositionLinearRgb() -> Mat3d;
 
+  void dryStep();
+
  private:
   Size _size;
 
@@ -32,5 +35,7 @@ class CanvasGpu final {
 
   GpuMat<vec4f> _r0_substrate;
   GpuMat<vec4f> _r0_substrate_copy_buffer;
+
+  std::shared_ptr<prgl::GlslComputeShader> _dryShader = nullptr;
 };
 }  // namespace painty
