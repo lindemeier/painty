@@ -26,7 +26,7 @@ class CanvasGpu final {
 
   auto getCompositionLinearRgb() -> Mat3d;
 
-  void dryStep();
+  void dryStep(float step = 0.01F);
 
  private:
   Size _size;

@@ -140,11 +140,6 @@ int main(int argc, const char* argv[]) {
   std::cout << "Creating renderer with width=" << width
             << " and height=" << height << std::endl;
 
-
-
-
-  // const uint32_t dringTimeMillis = j.value("dryingTimeMillis", 1000U * 60U);
-  // canvasPtr->setDryingTime(std::chrono::milliseconds(dringTimeMillis));
   // if (result.count("a") == 1UL) {
   //   painty::Mat3d initCanvas;
   //   painty::io::imRead(result["canvas"].as<std::string>(), initCanvas, false);

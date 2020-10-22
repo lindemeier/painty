@@ -53,8 +53,10 @@ auto painty::CanvasGpu::getCompositionLinearRgb() -> Mat3d {
   return rgb;
 }
 
-void painty::CanvasGpu::dryStep() {
+void painty::CanvasGpu::dryStep(float step) {
   _dryShader->bind(true);
+
+  _dryShader->setf("dryPortion", step);
 
   _dryShader->bindImage2D(0U, _r0_substrate.getTexture(),
                           prgl::TextureAccess::ReadWrite);

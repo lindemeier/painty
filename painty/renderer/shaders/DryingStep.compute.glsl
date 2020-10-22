@@ -10,7 +10,7 @@ layout(binding = 2, rgba32f) uniform highp image2D tex_S;
 
 uniform ivec2 offset;
 
-const float dryPortion = 0.01;
+uniform highp float dryPortion;
 
 highp float coth(in highp float x) {
   if (x > 20.0) {

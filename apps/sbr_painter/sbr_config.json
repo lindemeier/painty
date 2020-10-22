@@ -1,15 +1,14 @@
 {
   "enableSmudge": true,
   "coatCanvas": false,
-  "dryingTimeMillis": 60000,
   "base_pigments": "lindemeier-measured.json",
   "convergence_params": {
-    "maxIterations": 8,
+    "maxIterations": 5,
     "rms_global": 0.0,
     "rms_local": 0.05
   },
   "image_params": {
-    "nrColors": 12,
+    "nrColors": 6,
     "sigmaColor": 0.75,
     "sigmaSpatial": 1.0,
     "smoothIterations": 2,
@@ -28,8 +27,8 @@
       20.0
     ],
     "clampBrushRadius": true,
-    "curvatureAlpha": 0.25,
-    "maxLen": 15,
+    "curvatureAlpha": 0.75,
+    "maxLen": 25,
     "minLen": 3,
     "stepSize": 0.0,
     "thicknessScale": 1.0

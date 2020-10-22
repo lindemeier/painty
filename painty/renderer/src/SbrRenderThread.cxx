@@ -35,7 +35,7 @@ painty::SbrRenderThread::SbrRenderThread(
     });
   });
 
-  _timerDryStep.start(std::chrono::seconds(1U), [this]() {
+  _timerDryStep.start(std::chrono::milliseconds(250U), [this]() {
     _gpuTaskQueue->add_task([this]() {
       _canvasPtr->dryStep();
     });
@@ -78,5 +78,11 @@ void painty::SbrRenderThread::setBrushThicknessScale(const double scale) {
 void painty::SbrRenderThread::enableSmudge(bool enable) {
   _gpuTaskQueue->add_task([this, enable]() {
     _brushPtr->enableSmudge(enable);
+  });
+}
+
+auto painty::SbrRenderThread::dryCanvas() -> std::future<void> {
+  return _gpuTaskQueue->add_task([this]() {
+    _canvasPtr->dryStep(1.0F);
   });
 }

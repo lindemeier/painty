@@ -330,7 +330,7 @@ auto PictureTargetSbrPainter::paint() -> Mat3d {
                                          _paramsStroke.brushSizes.size()));
 
       std::cout << "Getting current state of the canvas" << std::endl;
-      // const auto canvasCurrentRGBLinear = Renderer<vec3>().compose(*_canvasPtr);
+
       const Mat3d canvasCurrentRGBLinear =
         _renderThread.getLinearRgbImage().get();
       painty::io::imSave("/tmp/canvasCurrent.jpg", canvasCurrentRGBLinear,
@@ -380,6 +380,7 @@ auto PictureTargetSbrPainter::paint() -> Mat3d {
 
     future.wait();
   }
+  _renderThread.dryCanvas().wait();
 
   return _renderThread.getLinearRgbImage().get();
 }

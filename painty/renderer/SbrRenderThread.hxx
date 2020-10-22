@@ -70,6 +70,8 @@ class SbrRenderThread final {
    */
   void enableSmudge(bool enable);
 
+  auto dryCanvas() -> std::future<void>;
+
  private:
   static constexpr auto ThreadCount = 1UL;
 
