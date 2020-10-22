@@ -7,8 +7,6 @@
  */
 #include "painty/renderer/SbrRenderThread.hxx"
 
-#include <iostream>
-
 painty::SbrRenderThread::SbrRenderThread(const Size& canvasSize)
     : _windowPtr(nullptr),
       _brushPtr(nullptr),
@@ -19,19 +17,19 @@ painty::SbrRenderThread::SbrRenderThread(const Size& canvasSize)
       _jobQueue(ThreadCount) {
   // initialize the gl window in the render thread
   _jobQueue
-    .add_back([=]() {
+    .add_back([this]() {
       constexpr std::array<int32_t, 4UL> rgbaBits = {8, 8, 8, 8};
       _windowPtr = std::make_unique<prgl::Window>(
         _canvasSize.width, _canvasSize.height, "SbrRenderThread - Window",
         rgbaBits, 0, 0, 8, false);
 
-      _brushPtr  = std::make_unique<TextureBrushGpu>();
+      _brushPtr = std::make_unique<TextureBrushGpu>();
 
       _canvasPtr = std::make_unique<CanvasGpu>(_canvasSize);
     })
     .wait();
 
-  _timerWindowUpdate.start(std::chrono::milliseconds(1000U), [this]() {
+  _timerWindowUpdate.start(std::chrono::milliseconds(500U), [this]() {
     _jobQueue.add_back([this]() {
       _canvasPtr->getComposed().getTexture()->render(
         0.0F, 0.0F, static_cast<float>(_windowPtr->getWidth()),
@@ -40,10 +38,9 @@ painty::SbrRenderThread::SbrRenderThread(const Size& canvasSize)
     });
   });
 
-  _timerDryStep.start(std::chrono::milliseconds(10000U), [this]() {
-    _jobQueue.add_back([]() {
-      std::cout << "drying step" << std::endl;
-      // _canvasPtr->dryStep();
+  _timerDryStep.start(std::chrono::seconds(1U), [this]() {
+    _jobQueue.add_back([this]() {
+      _canvasPtr->dryStep();
     });
   });
 }
