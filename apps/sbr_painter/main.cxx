@@ -175,10 +175,10 @@ int main(int argc, const char* argv[]) {
 
   const auto paintedResult = picturePainter.paint();
 
-  std::cout << "Writing result" << std::endl;
+  const auto writeFile = result["output"].as<std::string>();
+  std::cout << "Writing result to: " << writeFile << std::endl;
 
-  painty::io::imSave(result["output"].as<std::string>(),
-                     paintedResult, true);
+  painty::io::imSave(writeFile, paintedResult, true);
 
   exit(EXIT_SUCCESS);
 }
