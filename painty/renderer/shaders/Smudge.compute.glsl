@@ -21,11 +21,10 @@ const highp float rateDeposition = 0.1;
 const highp float ratePickup     = 0.1;
 
 highp vec2 rotate(in highp vec2 p, in highp vec2 center, in highp float theta) {
-  // highp vec2 pt = p - center;
-  // highp vec2 pr = vec2(pt.x * cos(theta) - pt.y * sin(theta),
-  //                      pt.x * sin(theta) + pt.y * cos(theta));
-  // return pr + center;
-  return p;
+  highp vec2 pt = p - center;
+  highp vec2 pr = vec2(pt.x * cos(theta) - pt.y * sin(theta),
+                       pt.x * sin(theta) + pt.y * cos(theta));
+  return pr + center;
 }
 
 void main() {
@@ -44,17 +43,17 @@ void main() {
   // get the position of the smudge map
   ivec2 smudgePos = canvasPos - topLeft;
 
-  // don't access outliers
-  ivec2 pSize = imageSize(tex_K);
-  if ((smudgePos.x < 0) || (smudgePos.y < 0) || (smudgePos.x >= pSize.x) ||
-      (smudgePos.y >= pSize.y)) {
-    return;
-  }
-
   // rotate the position of the smudge map
   highp vec2 rotatedSmudgePosF =
     rotate(vec2(smudgePos.x, smudgePos.y), rotationCenter, theta);
   ivec2 rotatedSmudgePos = ivec2(rotatedSmudgePosF.x, rotatedSmudgePosF.y);
+
+  // don't access outliers
+  ivec2 pSize = imageSize(tex_K);
+  if ((rotatedSmudgePos.x < 0) || (rotatedSmudgePos.y < 0) ||
+      (rotatedSmudgePos.x >= pSize.x) || (rotatedSmudgePos.y >= pSize.y)) {
+    return;
+  }
 
   // load the current state
   highp vec3 canvasK = imageLoad(tex_K, canvasPos).rgb;

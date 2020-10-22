@@ -50,7 +50,7 @@ void painty::TextureBrushGpu::setRadius(const double radius) {
   if (!fuzzyCompare(_radius, radius, Eps)) {
     _radius = radius;
 
-    const auto smudgeWindowSize = static_cast<uint32_t>(3.0 * radius);
+    const auto smudgeWindowSize = static_cast<uint32_t>(2.0 * radius) + 1;
 
     _smudgeK = GpuMat<vec4f>(Size{smudgeWindowSize, smudgeWindowSize});
     _smudgeS = GpuMat<vec4f>(Size{smudgeWindowSize, smudgeWindowSize});
