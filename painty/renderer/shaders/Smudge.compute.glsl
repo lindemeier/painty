@@ -40,6 +40,13 @@ void main() {
     return;
   }
 
+  highp float vTex =
+    thicknessScale * imageLoad(warpedBrushTexture, canvasPos).r;
+
+  if (vTex < 10e-3) {
+    return;
+  }
+
   // get the position of the smudge map
   ivec2 smudgePos = canvasPos - topLeft;
 
@@ -59,9 +66,6 @@ void main() {
   highp vec3 canvasK = imageLoad(tex_K, canvasPos).rgb;
   highp vec3 canvasS = imageLoad(tex_S, canvasPos).rgb;
   highp float cV     = imageLoad(tex_K, canvasPos).a;
-
-  highp float vTex =
-    thicknessScale * imageLoad(warpedBrushTexture, canvasPos).r;
 
   highp vec3 pickK = imageLoad(tex_smudge_K, rotatedSmudgePos).rgb;
   highp vec3 pickS = imageLoad(tex_smudge_S, rotatedSmudgePos).rgb;
