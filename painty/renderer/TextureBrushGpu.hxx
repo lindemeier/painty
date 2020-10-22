@@ -36,6 +36,8 @@ class TextureBrushGpu final : public BrushBase<vec3> {
  private:
   void generateWarpedTexture(const std::vector<vec2>& path, const Size& size);
 
+  void smudge(const std::vector<vec2>& path, CanvasGpu& canvas);
+
   double _radius = 0.0;
 
   std::array<vec3, 2UL> _paintStored;
@@ -51,6 +53,12 @@ class TextureBrushGpu final : public BrushBase<vec3> {
   std::shared_ptr<prgl::FrameBufferObject> _warpedBrushTextureFbo = nullptr;
 
   std::shared_ptr<prgl::GlslComputeShader> _shaderClearBrushTexture = nullptr;
+
+  GpuMat<vec4f> _smudgeK;
+
+  GpuMat<vec4f> _smudgeS;
+
+  std::shared_ptr<prgl::GlslComputeShader> _smudgeShader = nullptr;
 
   bool _smudge = false;
 };

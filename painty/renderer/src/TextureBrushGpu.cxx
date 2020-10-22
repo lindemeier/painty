@@ -19,8 +19,9 @@ painty::TextureBrushGpu::TextureBrushGpu()
       _shaderWarp(nullptr),
       _shaderImprint(nullptr),
       _warpedBrushTexture(nullptr),
-      _warpedBrushTextureFbo(nullptr),
-      _shaderClearBrushTexture(nullptr) {
+      _shaderClearBrushTexture(nullptr),
+      _smudgeK(Size{10U, 10U}),
+      _smudgeS(Size{10U, 10U}) {
   _shaderWarp = prgl::GlslRenderingPipelineProgram::Create();
   _shaderWarp->attachVertexShader(prgl::GlslProgram::ReadShaderFromFile(
     "painty/renderer/shaders/BrushTextureWarp.vert.glsl"));
@@ -36,12 +37,26 @@ painty::TextureBrushGpu::TextureBrushGpu()
   _shaderClearBrushTexture =
     prgl::GlslComputeShader::Create(prgl::GlslProgram::ReadShaderFromFile(
       "painty/renderer/shaders/ClearTextureFootprint.compute.glsl"));
+
+  _smudgeShader =
+    prgl::GlslComputeShader::Create(prgl::GlslProgram::ReadShaderFromFile(
+      "painty/renderer/shaders/Smudge.compute.glsl"));
+
+  setRadius(5.0);
 }
 
 void painty::TextureBrushGpu::setRadius(const double radius) {
   constexpr auto Eps = 0.5;
   if (!fuzzyCompare(_radius, radius, Eps)) {
     _radius = radius;
+
+    const auto smudgeWindowSize = static_cast<uint32_t>(3.0 * radius);
+
+    _smudgeK = GpuMat<vec4f>(Size{smudgeWindowSize, smudgeWindowSize});
+    _smudgeS = GpuMat<vec4f>(Size{smudgeWindowSize, smudgeWindowSize});
+
+    _smudgeK.clear();
+    _smudgeS.clear();
   }
 }
 
@@ -91,6 +106,10 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
 
   const auto aoiWidth  = static_cast<int32_t>(boundMax[0U] - boundMin[0U]) + 1;
   const auto aoiHeight = static_cast<int32_t>(boundMax[1U] - boundMin[1U]) + 1;
+
+  if (_smudge) {
+    smudge(vertices, canvas);
+  }
 
   // imprint the canvas using the warped brush textrure
   {
@@ -146,7 +165,8 @@ void painty::TextureBrushGpu::generateWarpedTexture(
   std::vector<std::array<float, 2U>> vboVertices;
   std::vector<std::array<float, 2U>> vboTexCoords;
   for (auto i = 0U; i < vertices.size(); ++i) {
-    T u          = static_cast<T>(i) / static_cast<T>(vertices.size() - 1);
+    const auto u =
+      static_cast<double>(i) / static_cast<double>(vertices.size() - 1);
     const auto c = spineSpline.catmullRom(u);
 
     // spine tangent vector
@@ -208,4 +228,62 @@ void painty::TextureBrushGpu::generateWarpedTexture(
 
 void painty::TextureBrushGpu::enableSmudge(bool enable) {
   _smudge = enable;
+}
+
+void painty::TextureBrushGpu::smudge(const std::vector<vec2>& vertices,
+                                     CanvasGpu& canvas) {
+  auto length = 0.0;
+  for (auto i = 1UL; i < vertices.size(); ++i) {
+    length += (vertices[i] - vertices[i - 1]).norm();
+  }
+  SplineEval<std::vector<vec2>::const_iterator> spineSpline(vertices.cbegin(),
+                                                            vertices.cend());
+
+  const prgl::Binder<prgl::GlslComputeShader> shaderBinder(_smudgeShader);
+  _smudgeShader->bindImage2D(0U, _warpedBrushTexture,
+                             prgl::TextureAccess::ReadOnly);
+  _smudgeShader->bindImage2D(1U, canvas.getPaintLayer().getK().getTexture(),
+                             prgl::TextureAccess::ReadWrite);
+  _smudgeShader->bindImage2D(2U, canvas.getPaintLayer().getS().getTexture(),
+                             prgl::TextureAccess::ReadWrite);
+  _smudgeShader->bindImage2D(3U, _smudgeK.getTexture(),
+                             prgl::TextureAccess::ReadWrite);
+  _smudgeShader->bindImage2D(4U, _smudgeS.getTexture(),
+                             prgl::TextureAccess::ReadWrite);
+  const vec2 smudgeMapCenter = {
+    static_cast<double>(_smudgeK.getSize().width) * 0.5,
+    static_cast<double>(_smudgeK.getSize().height) * 0.5};
+  _smudgeShader->set2f("rotationCenter",
+                       static_cast<float>(smudgeMapCenter[0U]),
+                       static_cast<float>(smudgeMapCenter[1U]));
+  _smudgeShader->setf("thicknessScale",
+                      static_cast<float>(getThicknessScale()));
+
+  for (auto u = 0.0; u <= 1.0; u += (1.0 / length)) {
+    const auto canvasCenter = spineSpline.catmullRom(u);
+    const auto heading = spineSpline.catmullRomDerivativeFirst(u).normalized();
+    const auto theta   = std::atan2(heading[1U], heading[0U]);
+
+    std::cout << "u: " << u << std::endl;
+    std::cout << "theta: " << theta << std::endl;
+    std::cout << "canvasCenter: " << canvasCenter.transpose() << std::endl;
+
+    const vec2i topLeft = {
+      static_cast<int32_t>(canvasCenter[0U]) -
+        static_cast<int32_t>(_smudgeK.getSize().width) * 0.5,
+      static_cast<int32_t>(canvasCenter[1U]) -
+        static_cast<int32_t>(_smudgeK.getSize().height) * 0.5};
+
+    std::cout << "smudgeMapCenter: " << smudgeMapCenter.transpose()
+              << std::endl;
+    std::cout << "topLeft: " << topLeft.transpose() << std::endl;
+
+    _smudgeShader->setf("theta", static_cast<float>(theta));
+    _smudgeShader->set2i("topLeft", topLeft[0U], topLeft[1U]);
+    _smudgeShader->execute(topLeft[0U], topLeft[1U],
+                           static_cast<int32_t>(_smudgeK.getSize().width),
+                           static_cast<int32_t>(_smudgeK.getSize().height));
+
+    std::cout << std::endl;
+  }
 }
