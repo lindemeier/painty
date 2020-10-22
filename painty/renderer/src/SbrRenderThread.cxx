@@ -16,18 +16,26 @@ painty::SbrRenderThread::SbrRenderThread(const Size& canvasSize)
       _timerDryStep(),
       _jobQueue(ThreadCount) {
   // initialize the gl window in the render thread
-  _jobQueue
-    .add_back([this]() {
-      constexpr std::array<int32_t, 4UL> rgbaBits = {8, 8, 8, 8};
-      _windowPtr = std::make_unique<prgl::Window>(
-        _canvasSize.width, _canvasSize.height, "SbrRenderThread - Window",
-        rgbaBits, 0, 0, 8, false);
+  _windowPtr = _jobQueue
+                 .add_back([canvasSize]() -> std::unique_ptr<prgl::Window> {
+                   constexpr std::array<int32_t, 4UL> rgbaBits = {8, 8, 8, 8};
+                   return std::make_unique<prgl::Window>(
+                     canvasSize.width, canvasSize.height,
+                     "SbrRenderThread - Window", rgbaBits, 0, 0, 8, false);
+                 })
+                 .get();
 
-      _brushPtr = std::make_unique<TextureBrushGpu>();
+  _brushPtr = _jobQueue
+                .add_back([]() -> std::unique_ptr<TextureBrushGpu> {
+                  return std::make_unique<TextureBrushGpu>();
+                })
+                .get();
 
-      _canvasPtr = std::make_unique<CanvasGpu>(_canvasSize);
-    })
-    .wait();
+  _canvasPtr = _jobQueue
+                 .add_back([canvasSize]() -> std::unique_ptr<CanvasGpu> {
+                   return std::make_unique<CanvasGpu>(canvasSize);
+                 })
+                 .get();
 
   _timerWindowUpdate.start(std::chrono::milliseconds(500U), [this]() {
     _jobQueue.add_back([this]() {

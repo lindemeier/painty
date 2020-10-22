@@ -12,7 +12,9 @@ painty::CanvasGpu::CanvasGpu(const Size& size)
       _paintLayer(size),
       _r0_substrate(size),
       _r0_substrate_copy_buffer(size),
-      _dryShader(nullptr) {
+      _dryShader(
+        prgl::GlslComputeShader::Create(prgl::GlslProgram::ReadShaderFromFile(
+          "painty/renderer/shaders/DryingStep.compute.glsl"))) {
   clear();
 }
 
@@ -52,11 +54,6 @@ auto painty::CanvasGpu::getCompositionLinearRgb() -> Mat3d {
 }
 
 void painty::CanvasGpu::dryStep() {
-  if (_dryShader == nullptr) {
-    _dryShader =
-      prgl::GlslComputeShader::Create(prgl::GlslProgram::ReadShaderFromFile(
-        "painty/renderer/shaders/DryingStep.compute.glsl"));
-  }
   _dryShader->bind(true);
 
   _dryShader->bindImage2D(0U, _r0_substrate.getTexture(),
