@@ -264,26 +264,16 @@ void painty::TextureBrushGpu::smudge(const std::vector<vec2>& vertices,
     const auto heading = spineSpline.catmullRomDerivativeFirst(u).normalized();
     const auto theta   = std::atan2(heading[1U], heading[0U]);
 
-    std::cout << "u: " << u << std::endl;
-    std::cout << "theta: " << theta << std::endl;
-    std::cout << "canvasCenter: " << canvasCenter.transpose() << std::endl;
-
     const vec2i topLeft = {
       static_cast<int32_t>(canvasCenter[0U]) -
         static_cast<int32_t>(_smudgeK.getSize().width) * 0.5,
       static_cast<int32_t>(canvasCenter[1U]) -
         static_cast<int32_t>(_smudgeK.getSize().height) * 0.5};
 
-    std::cout << "smudgeMapCenter: " << smudgeMapCenter.transpose()
-              << std::endl;
-    std::cout << "topLeft: " << topLeft.transpose() << std::endl;
-
     _smudgeShader->setf("theta", static_cast<float>(theta));
     _smudgeShader->set2i("topLeft", topLeft[0U], topLeft[1U]);
     _smudgeShader->execute(topLeft[0U], topLeft[1U],
                            static_cast<int32_t>(_smudgeK.getSize().width),
                            static_cast<int32_t>(_smudgeK.getSize().height));
-
-    std::cout << std::endl;
   }
 }
