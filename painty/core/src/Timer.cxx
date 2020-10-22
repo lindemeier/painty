@@ -13,11 +13,16 @@ namespace painty {
 Timer::Timer() : _stop(false) {}
 
 Timer::~Timer() {
+  stop();
+}
+
+void Timer::stop() {
   _stop = true;
 
   if (_future.valid()) {
     _future.wait();
   }
+
 }
 
 }  // namespace painty

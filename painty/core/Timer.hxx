@@ -29,6 +29,8 @@ class Timer {
   Timer(const Timer&) = delete;
   Timer& operator=(const Timer&) = delete;
 
+  void stop();
+
   /**
    * @brief
    *
