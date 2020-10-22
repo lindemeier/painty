@@ -20,9 +20,9 @@
 
 namespace painty {
 PictureTargetSbrPainter::PictureTargetSbrPainter(
-  const Size& rendererSize,
+  const std::shared_ptr<GpuTaskQueue>& gpuTaskQueue, const Size& rendererSize,
   const std::shared_ptr<PaintMixer>& basePigmentsMixerPtr)
-    : _renderThread(rendererSize),
+    : _renderThread(gpuTaskQueue, rendererSize),
       _basePigmentsMixerPtr(basePigmentsMixerPtr) {}
 
 void PictureTargetSbrPainter::enableCoatCanvas(bool enable) {

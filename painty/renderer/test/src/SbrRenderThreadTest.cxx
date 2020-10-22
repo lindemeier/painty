@@ -9,8 +9,11 @@
  */
 
 #include "gtest/gtest.h"
+#include "painty/gpu/GpuTaskQueue.hxx"
 #include "painty/renderer/SbrRenderThread.hxx"
 
 TEST(SbrRenderThreadTest, Construct) {
-  painty::SbrRenderThread renderThread({1024U, 768U});
+  const auto windowSize = painty::Size{1024U, 768U};
+  const auto queue      = std::make_shared<painty::GpuTaskQueue>(windowSize);
+  painty::SbrRenderThread renderThread(queue, windowSize);
 }

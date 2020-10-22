@@ -67,7 +67,7 @@ class PictureTargetSbrPainter {
   };
 
   PictureTargetSbrPainter(
-    const Size& rendererSize,
+    const std::shared_ptr<GpuTaskQueue>& gpuTaskQueue, const Size& rendererSize,
     const std::shared_ptr<PaintMixer>& basePigmentsMixerPtr);
 
   auto paint() -> Mat3d;

@@ -7,9 +7,9 @@
  */
 #pragma once
 
-#include "painty/core/ThreadPool.hxx"
 #include "painty/core/Timer.hxx"
 #include "painty/core/Types.hxx"
+#include "painty/gpu/GpuTaskQueue.hxx"
 #include "painty/renderer/CanvasGpu.hxx"
 #include "painty/renderer/TextureBrushGpu.hxx"
 #include "prgl/Window.hxx"
@@ -18,7 +18,8 @@ namespace painty {
 
 class SbrRenderThread final {
  public:
-  SbrRenderThread(const Size& canvasSize);
+  SbrRenderThread(const std::shared_ptr<GpuTaskQueue>& gpuTaskQueue,
+                  const Size& canvasSize);
 
   SbrRenderThread(const SbrRenderThread&) = delete;
   SbrRenderThread& operator=(const SbrRenderThread&) = delete;
@@ -71,11 +72,6 @@ class SbrRenderThread final {
 
  private:
   static constexpr auto ThreadCount = 1UL;
-  /**
-  * @brief A glfw window with OpenGL context.
-  *
-  */
-  std::unique_ptr<prgl::Window> _windowPtr = nullptr;
 
   /**
    * @brief The brush used to apply paint to the canvas.
@@ -108,10 +104,10 @@ class SbrRenderThread final {
   Timer _timerDryStep;
 
   /**
-   * @brief A thread pool with one single thread for rendering.
+   * @brief The task queue holding the opengl context.
    *
    */
-  ThreadPool _jobQueue;
+  std::shared_ptr<GpuTaskQueue> _gpuTaskQueue = nullptr;
 
   double _thicknessScale = 1.0;
 };

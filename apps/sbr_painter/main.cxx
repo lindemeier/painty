@@ -150,9 +150,12 @@ int main(int argc, const char* argv[]) {
   //   painty::io::imRead(result["canvas"].as<std::string>(), initCanvas, false);
   //   canvasPtr->setBackground(painty::ScaledMat(initCanvas, height, width));
   // }
+  const auto size = painty::Size{width, height};
+
+  const auto gpuTaskQueue = std::make_shared<painty::GpuTaskQueue>(size);
 
   painty::PictureTargetSbrPainter picturePainter(
-    painty::Size{width, height}, std::make_shared<painty::PaintMixer>(palette));
+    gpuTaskQueue, size, std::make_shared<painty::PaintMixer>(palette));
   picturePainter.enableCoatCanvas(j.value("coatCanvas", false));
   picturePainter.enableSmudge(j.value("enableSmudge", true));
 

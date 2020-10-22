@@ -4,12 +4,12 @@
   "dryingTimeMillis": 60000,
   "base_pigments": "lindemeier-measured.json",
   "convergence_params": {
-    "maxIterations": 5,
+    "maxIterations": 8,
     "rms_global": 0.0,
     "rms_local": 0.05
   },
   "image_params": {
-    "nrColors": 8,
+    "nrColors": 12,
     "sigmaColor": 0.75,
     "sigmaSpatial": 1.0,
     "smoothIterations": 2,
