@@ -31,6 +31,6 @@
     "maxLen": 25,
     "minLen": 3,
     "stepSize": 0.0,
-    "thicknessScale": 1.0
+    "thicknessScale": 0.05
   }
 }
