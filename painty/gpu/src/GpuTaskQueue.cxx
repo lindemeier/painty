@@ -19,6 +19,14 @@ painty::GpuTaskQueue::GpuTaskQueue(const Size& renderWindowSize) {
       .get();
 }
 
+painty::GpuTaskQueue::~GpuTaskQueue() {
+  _threadedJobQueue
+    .add_back([this]() {
+      _windowPtr = nullptr;
+    })
+    .wait();
+}
+
 auto painty::GpuTaskQueue::getWindow() const -> const prgl::Window& {
   return *_windowPtr;
 }

@@ -42,6 +42,18 @@ painty::SbrRenderThread::SbrRenderThread(
   });
 }
 
+painty::SbrRenderThread::~SbrRenderThread() {
+  _timerDryStep.stop();
+  _timerWindowUpdate.stop();
+
+  _gpuTaskQueue
+    ->add_task([this]() {
+      _brushPtr  = nullptr;
+      _canvasPtr = nullptr;
+    })
+    .wait();
+}
+
 auto painty::SbrRenderThread::getSize() const -> Size {
   return _canvasSize;
 }

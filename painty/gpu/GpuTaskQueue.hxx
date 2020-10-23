@@ -19,6 +19,7 @@ namespace painty {
 class GpuTaskQueue final {
  public:
   GpuTaskQueue(const Size& renderWindowSize);
+  ~GpuTaskQueue();
 
   /**
    * @brief Add work to the queue.

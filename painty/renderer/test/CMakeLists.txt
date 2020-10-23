@@ -8,7 +8,6 @@ add_executable(${PROJECT_NAME}
     ${PROJECT_SOURCE_DIR}/src/GpuTest.cxx
     ${PROJECT_SOURCE_DIR}/src/main.cxx
     ${PROJECT_SOURCE_DIR}/src/PaintLayerTest.cxx
-    ${PROJECT_SOURCE_DIR}/src/SbrRenderThreadTest.cxx
     ${PROJECT_SOURCE_DIR}/src/TextureBrushTest.cxx
   )
 add_test(

@@ -23,6 +23,7 @@ class SbrRenderThread final {
 
   SbrRenderThread(const SbrRenderThread&) = delete;
   SbrRenderThread& operator=(const SbrRenderThread&) = delete;
+  ~SbrRenderThread();
 
   /**
    * @brief Get the Size object
@@ -76,6 +77,18 @@ class SbrRenderThread final {
   static constexpr auto ThreadCount = 1UL;
 
   /**
+   * @brief Timer for calling window update and current result display at a certain rate.
+   *
+   */
+  Timer _timerWindowUpdate;
+
+  /**
+   * @brief Timer for calling drying shader update.
+   *
+   */
+  Timer _timerDryStep;
+
+  /**
    * @brief The brush used to apply paint to the canvas.
    *
    */
@@ -92,18 +105,6 @@ class SbrRenderThread final {
    *
    */
   Size _canvasSize = {};
-
-  /**
-   * @brief Timer for calling window update and current result display at a certain rate.
-   *
-   */
-  Timer _timerWindowUpdate;
-
-  /**
-   * @brief Timer for calling drying shader update.
-   *
-   */
-  Timer _timerDryStep;
 
   /**
    * @brief The task queue holding the opengl context.
