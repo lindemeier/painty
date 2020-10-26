@@ -7,6 +7,8 @@
  */
 #include "painty/renderer/CanvasGpu.hxx"
 
+#include "painty/io/ImageIO.hxx"
+
 painty::CanvasGpu::CanvasGpu(const Size& size)
     : _size(size),
       _paintLayer(size),
@@ -24,8 +26,21 @@ auto painty::CanvasGpu::getSize() const -> const Size& {
 
 void painty::CanvasGpu::clear() {
   _paintLayer.clear();
-  _r0_substrate.setTo({1.0, 1.0, 1.0, 1.0});
-  _r0_substrate_copy_buffer.setTo({1.0, 1.0, 1.0, 1.0});
+
+  Mat3d canvasPattern = {};
+  io::imRead("data/canvas_patterns/0.png", canvasPattern, true);
+  Mat4f canvasPatternToGpu(canvasPattern.size());
+  for (auto i = 0; i < static_cast<int32_t>(canvasPattern.total()); i++) {
+    canvasPatternToGpu(i) = {static_cast<float>(canvasPattern(i)[0U]),
+                             static_cast<float>(canvasPattern(i)[1U]),
+                             static_cast<float>(canvasPattern(i)[2U]), 1.0};
+  }
+  canvasPatternToGpu = ScaledMat(canvasPatternToGpu, _r0_substrate.getSize());
+  _r0_substrate.upload(canvasPatternToGpu);
+  _r0_substrate_copy_buffer.upload(canvasPatternToGpu);
+
+  // _r0_substrate.setTo({1.0, 1.0, 1.0, 1.0});
+  // _r0_substrate_copy_buffer.setTo({1.0, 1.0, 1.0, 1.0});
 }
 
 auto painty::CanvasGpu::getPaintLayer() -> PaintLayerGpu& {

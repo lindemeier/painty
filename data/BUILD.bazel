@@ -28,3 +28,11 @@ filegroup(
     ]),
     visibility = ["//visibility:public"]
 )
+
+filegroup(
+    name = "canvas_patterns",
+    srcs = glob([
+        "canvas_patterns/*.png"
+    ]),
+    visibility = ["//visibility:public"]
+)

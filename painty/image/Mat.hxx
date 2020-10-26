@@ -147,6 +147,17 @@ Mat<T> ScaledMat(const Mat<T>& input, const int32_t rows, const int32_t cols,
   return resized;
 }
 
+template <class T>
+Mat<T> ScaledMat(const Mat<T>& input, const Size& size,
+                 cv::InterpolationFlags flag = cv::INTER_LANCZOS4) {
+  Mat<T> resized;
+  cv::resize(input, resized,
+             cv::Size(static_cast<int32_t>(size.width),
+                      static_cast<int32_t>(size.height)),
+             0.0, 0.0, flag);
+  return resized;
+}
+
 template <class It1, class It2, class BinaryOperation>
 void transform(It1 it1_begin, It1 it1_end, It2 it2_begin,
                BinaryOperation operation) {
