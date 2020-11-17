@@ -17,22 +17,25 @@ uniform highp float theta;
 uniform ivec2 topLeft;
 uniform highp float thicknessScale;
 
-const highp float rateDeposition = 0.1;
-const highp float ratePickup     = 0.1;
+const highp float rateDeposition = 0.7;
+const highp float ratePickup     = 0.7;
 
 highp vec2 rotate(in highp vec2 p, in highp vec2 center, in highp float theta) {
   highp vec2 pt = p - center;
   highp vec2 pr = vec2(pt.x * cos(theta) - pt.y * sin(theta),
                        pt.x * sin(theta) + pt.y * cos(theta));
   return pr + center;
+  // return p;
 }
 
 void main() {
   ivec2 gSize = imageSize(tex_K);
 
   // flip y and add offset of bounding box around the warped brush footprint
+  // ivec2 canvasPos = ivec2(offset.x + gl_GlobalInvocationID.x,
+  //                         gSize.y - (offset.y + gl_GlobalInvocationID.y) - 1);
   ivec2 canvasPos = ivec2(offset.x + gl_GlobalInvocationID.x,
-                          gSize.y - (offset.y + gl_GlobalInvocationID.y) - 1);
+                          offset.y + gl_GlobalInvocationID.y);
 
   // don't access outliers
   if ((canvasPos.x < 0) || (canvasPos.y < 0) || (canvasPos.x >= gSize.x) ||
@@ -43,12 +46,12 @@ void main() {
   highp float vTex =
     thicknessScale * imageLoad(warpedBrushTexture, canvasPos).r;
 
-  if (vTex < 10e-3) {
+  if (vTex < 10e-6) {
     return;
   }
 
   // get the position of the smudge map
-  ivec2 smudgePos = canvasPos - topLeft;
+  ivec2 smudgePos = ivec2(gl_GlobalInvocationID.xy);
 
   // rotate the position of the smudge map
   highp vec2 rotatedSmudgePosF =

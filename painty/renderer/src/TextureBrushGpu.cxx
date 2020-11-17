@@ -71,20 +71,20 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
   }
 }
 
-void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
+void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& vertices,
                                           CanvasGpu& canvas) {
-  if (verticesArg.size() < 2UL) {
-    return;
-  }
-  auto vertices = std::vector<vec2>();
-  vertices.push_back(verticesArg.front() -
-                     (verticesArg[1U] - verticesArg.front()).normalized() *
-                       _radius);
-  vertices.insert(vertices.end(), verticesArg.cbegin(), verticesArg.cend());
-  vertices.push_back(
-    verticesArg.back() +
-    (verticesArg.back() - verticesArg[verticesArg.size() - 2U]).normalized() *
-      _radius);
+  // if (verticesArg.size() < 2UL) {
+  //   return;
+  // }
+  // auto vertices = std::vector<vec2>();
+  // vertices.push_back(verticesArg.front() -
+  //                    (verticesArg[1U] - verticesArg.front()).normalized() *
+  //                      _radius);
+  // vertices.insert(vertices.end(), verticesArg.cbegin(), verticesArg.cend());
+  // vertices.push_back(
+  //   verticesArg.back() +
+  //   (verticesArg.back() - verticesArg[verticesArg.size() - 2U]).normalized() *
+  //     _radius);
 
   // compute bounding rectangle
   auto boundMin = vertices.front();
@@ -107,9 +107,21 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
   const auto aoiWidth  = static_cast<int32_t>(boundMax[0U] - boundMin[0U]) + 1;
   const auto aoiHeight = static_cast<int32_t>(boundMax[1U] - boundMin[1U]) + 1;
 
+  // {
+  //   const auto rgb = canvas.getCompositionLinearRgb();
+  //   io::imSave(
+  //     "/tmp/" + std::to_string(verticesArg.front()[0U]) + "smudged_before.jpg",
+  //     rgb, true);
+  // }
   if (_smudge) {
     smudge(vertices, canvas);
   }
+  // {
+  //   const auto rgb = canvas.getCompositionLinearRgb();
+  //   io::imSave(
+  //     "/tmp/" + std::to_string(verticesArg.front()[0U]) + "smudged.jpg", rgb,
+  //     true);
+  // }
 
   // imprint the canvas using the warped brush textrure
   {
@@ -134,6 +146,13 @@ void painty::TextureBrushGpu::paintStroke(const std::vector<vec2>& verticesArg,
                             static_cast<int32_t>(boundMin[1U]), aoiWidth,
                             aoiHeight);
   }
+
+  // {
+  //   const auto rgb = canvas.getCompositionLinearRgb();
+  //   io::imSave("/tmp/" + std::to_string(verticesArg.front()[0U]) +
+  //                "smudge_imprinted.jpg",
+  //              rgb, true);
+  // }
 
   // clear the warped brush texture for next brush stroke
   {
@@ -234,7 +253,7 @@ void painty::TextureBrushGpu::smudge(const std::vector<vec2>& vertices,
                                      CanvasGpu& canvas) {
   auto length = 0.0;
   for (auto i = 1UL; i < vertices.size(); ++i) {
-    length += (vertices[i] - vertices[i - 1]).norm();
+    length += (vertices[i] - vertices[i - 1U]).norm();
   }
   SplineEval<std::vector<vec2>::const_iterator> spineSpline(vertices.cbegin(),
                                                             vertices.cend());
@@ -258,9 +277,16 @@ void painty::TextureBrushGpu::smudge(const std::vector<vec2>& vertices,
                        static_cast<float>(smudgeMapCenter[1U]));
   _smudgeShader->setf("thicknessScale",
                       static_cast<float>(getThicknessScale()));
-
-  for (auto u = 0.0; u <= 1.0; u += (1.0 / length)) {
+  vec2i lastPoint = {-1, -1};
+  for (auto u = 0.0; u <= 1.0; u += (0.25 / length)) {
     const auto canvasCenter = spineSpline.catmullRom(u);
+
+    // avoid resampling
+    if (canvasCenter.cast<int32_t>() == lastPoint) {
+      continue;
+    }
+    lastPoint = canvasCenter.cast<int32_t>();
+
     const auto heading = spineSpline.catmullRomDerivativeFirst(u).normalized();
     const auto theta   = std::atan2(heading[1U], heading[0U]);
 

@@ -4,14 +4,18 @@ painty_cc_library(
     name = "painty_renderer",
     srcs = glob(["src/*.cxx"]),
     hdrs = glob(["*.hxx"]),
+    data = [
+        "//data:canvas_patterns"
+        "//data:exported_footprint",
+        "//data:exported_texture_sample_0",
+        "//painty/renderer/shaders",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         "//painty/core:painty_core",
         "//painty/image:painty_image",
         "//painty/io:painty_io"
     ],
-    data = ["//data:exported_texture_sample_0", "//data:exported_footprint", "//painty/renderer/shaders:shaders"]
-
 )
 
 painty_cc_test(
@@ -19,7 +23,7 @@ painty_cc_test(
     srcs = glob(["test/src/*.cxx"]),
     deps = [
         ":painty_renderer",
-        "@gtest",
         "//painty/io:painty_io",
-    ]
+        "@gtest",
+    ],
 )
