@@ -32,6 +32,7 @@
 *.app
 
 build/*
+.vscode/*
 linear_rgb.png
 luminance.png
 hugo.png
