@@ -5,7 +5,11 @@ project(paintyRenderer)
 
 add_library(${PROJECT_NAME} STATIC
   ${PROJECT_SOURCE_DIR}/src/BrushStrokeSample.cxx
+  ${PROJECT_SOURCE_DIR}/src/CanvasGpu.cxx
+  ${PROJECT_SOURCE_DIR}/src/SbrRenderThread.cxx
   ${PROJECT_SOURCE_DIR}/src/TextureBrushDictionary.cxx
+  ${PROJECT_SOURCE_DIR}/src/TextureBrushGpu.cxx
+  ${PROJECT_SOURCE_DIR}/src/PaintLayerGpu.cxx
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -15,6 +19,7 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
   paintyCore
+  paintyGpu
   paintyImage
   paintyIo
   stdc++fs
@@ -22,6 +27,7 @@ target_link_libraries(${PROJECT_NAME}
 
 add_dependencies(${PROJECT_NAME}
   paintyCore
+  paintyGpu
   paintyImage
   paintyIo
 )

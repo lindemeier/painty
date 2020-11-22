@@ -19,15 +19,16 @@ TEST(TextureBrushTest, Construct) {
 
   brush.dip({{{0.2, 0.3, 0.4}, {0.1, 0.23, 0.14}}});
 
-  constexpr auto height = 500U;
-  constexpr auto width  = 800;
+  constexpr auto height = 768;
+  constexpr auto width  = 1024;
   auto canvas           = painty::Canvas<painty::vec3>(height, width);
   canvas.clear();
 
   std::vector<painty::vec2> path;
   path.emplace_back(50.0, 250.0);
   path.emplace_back(400.0, 250.0);
-  path.emplace_back(750.0, 250.0);
+  path.emplace_back(650.0, 250.0);
+  brush.setRadius(40.0);
 
   brush.paintStroke(path, canvas);
 

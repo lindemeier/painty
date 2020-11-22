@@ -1,15 +1,12 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project(paintyRendererTest)
+project(paintyGpuTest)
 
 add_executable(${PROJECT_NAME}
-    ${PROJECT_SOURCE_DIR}/src/BrushStrokeSampleTest.cxx
-    ${PROJECT_SOURCE_DIR}/src/CanvasTest.cxx
-    ${PROJECT_SOURCE_DIR}/src/GpuTest.cxx
-    ${PROJECT_SOURCE_DIR}/src/main.cxx
-    ${PROJECT_SOURCE_DIR}/src/PaintLayerTest.cxx
-    ${PROJECT_SOURCE_DIR}/src/TextureBrushTest.cxx
-  )
+  ${PROJECT_SOURCE_DIR}/src/GpuMatTest.cxx
+  ${PROJECT_SOURCE_DIR}/src/main.cxx
+)
+
 add_test(
   NAME ${PROJECT_NAME}
  COMMAND ${PROJECT_NAME}
@@ -18,12 +15,12 @@ add_test(
 
 target_link_libraries(${PROJECT_NAME}
   gtest
-  paintyRenderer
+  paintyGpu
 )
 add_dependencies(${PROJECT_NAME}
-  paintyRenderer
+  gtest
+  paintyGpu
 )
-
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD_REQUIRED ON)
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d")

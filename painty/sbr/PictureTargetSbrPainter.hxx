@@ -11,8 +11,7 @@
 
 #include "painty/image/Superpixel.hxx"
 #include "painty/mixer/PaintMixer.hxx"
-#include "painty/renderer/BrushBase.hxx"
-#include "painty/renderer/Canvas.hxx"
+#include "painty/renderer/SbrRenderThread.hxx"
 
 namespace painty {
 class PictureTargetSbrPainter {
@@ -68,15 +67,15 @@ class PictureTargetSbrPainter {
   };
 
   PictureTargetSbrPainter(
-    const std::shared_ptr<Canvas<vec3>>& canvasPtr,
-    const std::shared_ptr<PaintMixer>& basePigmentsMixerPtr,
-    const std::shared_ptr<BrushBase<vec3>>& painterPtr);
+    const std::shared_ptr<GpuTaskQueue>& gpuTaskQueue, const Size& rendererSize,
+    const std::shared_ptr<PaintMixer>& basePigmentsMixerPtr);
 
-  auto paint() -> bool;
+  auto paint() -> Mat3d;
 
   PictureTargetSbrPainter() = delete;
 
   void enableCoatCanvas(bool enable);
+  void enableSmudge(bool enable);
 
   ParamsInput _paramsInput;
   ParamsOrientations _paramsOrientations;
@@ -124,10 +123,9 @@ class PictureTargetSbrPainter {
   auto computeDifference(const Mat3d& target_Lab, const Mat3d& canvasCurrentLab,
                          const double brushRadius) const -> Mat1d;
 
-  std::shared_ptr<Canvas<vec3>> _canvasPtr          = nullptr;
-  std::shared_ptr<PaintMixer> _basePigmentsMixerPtr = nullptr;
-  std::shared_ptr<BrushBase<vec3>> _brushPtr        = nullptr;
+  SbrRenderThread _renderThread;
 
+  std::shared_ptr<PaintMixer> _basePigmentsMixerPtr = nullptr;
   bool _coatCanvas = false;
 };
 }  // namespace painty

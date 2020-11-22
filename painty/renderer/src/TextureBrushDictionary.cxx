@@ -13,6 +13,7 @@
 #include <map>
 #include <random>
 
+// #include "opencv2/highgui/highgui.hpp"
 #include "painty/io/ImageIO.hxx"
 
 namespace painty {
@@ -22,7 +23,7 @@ TextureBrushDictionary::TextureBrushDictionary() {
 }
 
 auto TextureBrushDictionary::lookup(const std::vector<vec2>& path,
-                                    const double brushSize) const -> Mat1d {
+                                    const double brushSize) const -> Entry {
   auto length = 0.0;
   for (auto i = 0U; i < (path.size() - 1U); i++) {
     length += (path[i] - path[i + 1U]).norm();
@@ -64,10 +65,6 @@ auto TextureBrushDictionary::lookup(const std::vector<vec2>& path,
     candidates.size() - static_cast<std::size_t>(1UL));
   const auto index = dis(gen);
 
-  std::cout << "Brush stroke with size: " << brushSize << " and length  "
-            << length << " lookup -> " << i0 << ":" << i1 << ":" << index
-            << std::endl;
-
   return candidates[index];
 }
 
@@ -93,11 +90,11 @@ void TextureBrushDictionary::createBrushTexturesFromFolder(
     return elems;
   };
 
-  std::map<uint32_t, std::map<uint32_t, std::vector<Mat1d>>> textureMap;
+  std::map<uint32_t, std::map<uint32_t, std::vector<Entry>>> textureMap;
 
   for (const auto& p : std::filesystem::directory_iterator(folder)) {
     const auto filepath = p.path();
-    std::cout << filepath << std::endl;
+    // std::cout << filepath << std::endl;
 
     const std::string filename =
       split(split(filepath, '.').front(), '/').back();
@@ -105,16 +102,34 @@ void TextureBrushDictionary::createBrushTexturesFromFolder(
     std::vector<std::string> tokens = split(filename, '_');
     const auto radius = static_cast<uint32_t>(std::stoi(tokens[0]));
     const auto length = static_cast<uint32_t>(std::stoi(tokens[1]));
-    // const auto id     = static_cast<uint32_t>(std::stoi(tokens[2]));
 
-    textureMap[radius][length].push_back(loadHeightMap(filepath));
+    Entry entry;
+    entry.texHost = loadHeightMap(filepath);
+
+    Mat1f fImage = {};
+    {
+      Mat1f copy = {};
+      cv::normalize(entry.texHost, copy, 0.0, 1.0, cv::NORM_MINMAX);
+      cv::flip(copy, copy, 0);
+      copy.convertTo(fImage, CV_32FC1, 1.0);
+    }
+
+    // cv::imshow("brush_tex", byteImage);
+    // cv::waitKey(100);
+
+    entry.texGpu = prgl::Texture2d::Create(
+      fImage.cols, fImage.rows, prgl::TextureFormatInternal::R32F,
+      prgl::TextureFormat::Red, prgl::DataType::Float);
+    entry.texGpu->upload(fImage.data);
+
+    textureMap[radius][length].push_back(entry);
   }
 
   _brushTexturesBySizeByLength.clear();
   for (const auto& e : textureMap) {
-    _brushTexturesBySizeByLength.push_back(std::vector<std::vector<Mat1d>>());
+    _brushTexturesBySizeByLength.push_back(std::vector<std::vector<Entry>>());
     for (const auto& a : e.second) {
-      _brushTexturesBySizeByLength.back().push_back(std::vector<Mat1d>());
+      _brushTexturesBySizeByLength.back().push_back(std::vector<Entry>());
       for (const auto& tex : a.second) {
         _brushTexturesBySizeByLength.back().back().push_back(tex);
       }
@@ -130,7 +145,7 @@ void TextureBrushDictionary::createBrushTexturesFromFolder(
   for (auto i = 0U; i < _brushTexturesBySizeByLength.size(); i++) {
     for (auto j = 0U; j < _brushTexturesBySizeByLength[i].size(); j++) {
       for (const auto& texture : _brushTexturesBySizeByLength[i][j]) {
-        _avgSizes[i] += static_cast<double>(texture.rows);
+        _avgSizes[i] += static_cast<double>(texture.texHost.rows);
         brushSizesCounters[i]++;
       }
     }
@@ -151,7 +166,7 @@ void TextureBrushDictionary::createBrushTexturesFromFolder(
   for (auto i = 0U; i < _brushTexturesBySizeByLength.size(); i++) {
     for (auto j = 0U; j < _brushTexturesBySizeByLength[i].size(); j++) {
       for (const auto& texture : _brushTexturesBySizeByLength[i][j]) {
-        _avgTexLength[i][j] += static_cast<double>(texture.cols);
+        _avgTexLength[i][j] += static_cast<double>(texture.texHost.cols);
         brushLengthCounters[i][j]++;
       }
     }

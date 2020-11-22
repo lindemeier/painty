@@ -14,7 +14,6 @@
 #include "painty/renderer/BrushStrokeSample.hxx"
 #include "painty/renderer/Canvas.hxx"
 #include "painty/renderer/Smudge.hxx"
-#include "painty/renderer/TextureBrushDictionary.hxx"
 
 namespace painty {
 template <class vector_type>
@@ -25,8 +24,7 @@ class TextureBrush final : public BrushBase<vector_type> {
  public:
   TextureBrush(const std::string& sampleDir)
       : _brushStrokeSample(sampleDir),
-        _smudge(static_cast<int32_t>(2.0 * _radius)),
-        _textureBrushDictionary() {
+        _smudge(static_cast<int32_t>(2.0 * _radius)) {
     for (auto& c : _paintStored) {
       c.fill(static_cast<T>(0.1));
     }
@@ -66,9 +64,6 @@ class TextureBrush final : public BrushBase<vector_type> {
       verticesArg.back() +
       (verticesArg.back() - verticesArg[verticesArg.size() - 2U]).normalized() *
         _radius);
-
-    _brushStrokeSample.generateFromTexture(
-      _textureBrushDictionary.lookup(vertices, 2.0 * _radius));
 
     // compute bounding rectangle
     auto boundMin = vertices.front();
@@ -119,8 +114,8 @@ class TextureBrush final : public BrushBase<vector_type> {
       // compute perpendicular vector to spine
       const vec2 d = {-t[1], t[0]};
 
-      const auto l = c - _radius * d;
-      const auto r = c + _radius * d;
+      const vec2 l = c - _radius * d;
+      const vec2 r = c + _radius * d;
 
       upCanvasCoordinates.push_back(l);
       downCanvasCoordinates.push_back(r);
@@ -142,6 +137,7 @@ class TextureBrush final : public BrushBase<vector_type> {
     for (auto& p : thicknessMap) {
       p = static_cast<T>(0.0);
     }
+
     std::vector<vec<int32_t, 2U>> pixels;
     for (auto x = static_cast<int32_t>(boundMin[0U]);
          x <= static_cast<int32_t>(boundMax[0U]); x++) {
@@ -238,11 +234,5 @@ class TextureBrush final : public BrushBase<vector_type> {
   Smudge<vector_type> _smudge;
 
   bool _useSmudge = true;
-
-  /**
-   * @brief Retrieve brush textures according to brush radii and path length.
-   *
-   */
-  TextureBrushDictionary _textureBrushDictionary;
 };
 }  // namespace painty

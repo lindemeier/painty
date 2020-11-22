@@ -192,6 +192,51 @@ bool painty::io::imSave(const std::string& filenameOriginal,
 }
 
 /**
+ * @brief Write images to file.
+ *
+ * @param filenameOriginal
+ * @param linear_rgb
+ * @param convertTo_sRGB convert image to sRGB when saving.
+ * @return true
+ * @return false
+ */
+bool painty::io::imSave(const std::string& filenameOriginal,
+                        const Mat<vec3f>& linear_rgb,
+                        const bool convertTo_sRGB) {
+  std::string filename = filenameOriginal;
+  std::replace(filename.begin(), filename.end(), '\\', '/');
+
+  std::string filetype = extractFiletype(filename);
+
+  // convert from linear rgb to srgb
+  ColorConverter<float> converter;
+  Mat<vec3f> out(linear_rgb.size());
+  if (convertTo_sRGB) {
+    for (int32_t i = 0; i < static_cast<int32_t>(linear_rgb.total()); i++) {
+      converter.rgb2srgb(linear_rgb(i), out(i));
+    }
+  } else {
+    out = linear_rgb;
+  }
+
+  cv::Mat m;
+  if (filetype == "png") {
+    const auto scale = static_cast<double>(0xffff);
+    out.convertTo(m, CV_MAKETYPE(CV_16U, 3), scale);
+  } else {
+    const auto scale = static_cast<double>(0xff);
+    out.convertTo(m, CV_MAKETYPE(CV_8U, 3), scale);
+  }
+  cv::cvtColor(m, m, cv::COLOR_RGB2BGR);
+  std::vector<int32_t> params;
+  params.push_back(cv::IMWRITE_JPEG_QUALITY);
+  params.push_back(100);
+  params.push_back(cv::IMWRITE_PNG_COMPRESSION);
+  params.push_back(0);
+  return cv::imwrite(filename, m, params);
+}
+
+/**
  * @brief Save images to a file.
  *
  * @param filenameOriginal

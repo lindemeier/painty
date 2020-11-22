@@ -20,15 +20,17 @@
 
 namespace painty {
 PictureTargetSbrPainter::PictureTargetSbrPainter(
-  const std::shared_ptr<Canvas<vec3>>& canvasPtr,
-  const std::shared_ptr<PaintMixer>& basePigmentsMixerPtr,
-  const std::shared_ptr<BrushBase<vec3>>& painterPtr)
-    : _canvasPtr(canvasPtr),
-      _basePigmentsMixerPtr(basePigmentsMixerPtr),
-      _brushPtr(painterPtr) {}
+  const std::shared_ptr<GpuTaskQueue>& gpuTaskQueue, const Size& rendererSize,
+  const std::shared_ptr<PaintMixer>& basePigmentsMixerPtr)
+    : _renderThread(gpuTaskQueue, rendererSize),
+      _basePigmentsMixerPtr(basePigmentsMixerPtr) {}
 
 void PictureTargetSbrPainter::enableCoatCanvas(bool enable) {
   _coatCanvas = enable;
+}
+
+void PictureTargetSbrPainter::enableSmudge(bool enable) {
+  _renderThread.enableSmudge(enable);
 }
 
 auto PictureTargetSbrPainter::extractRegions(const Mat3d& target_Lab,
@@ -97,7 +99,7 @@ auto PictureTargetSbrPainter::generateBrushStrokes(
   PathTracer tracer(tensors);
   tracer.setMinLen(_paramsStroke.minLen);
   tracer.setMaxLen(_paramsStroke.maxLen);
-  tracer.setStep((_paramsStroke.stepSize <= 0.0) ? (brushRadius * 0.5)
+  tracer.setStep((_paramsStroke.stepSize <= 0.0) ? (brushRadius * 0.25)
                                                  : _paramsStroke.stepSize);
   tracer.setFrame(cv::Rect2i(0, 0, target_Lab.cols, target_Lab.rows));
   tracer.setFc(_paramsStroke.curvatureAlpha);
@@ -164,7 +166,7 @@ auto PictureTargetSbrPainter::generateBrushStrokes(
       converter.lab2rgb(LabCanvas, R0_test);
       const auto R1 = ComputeReflectance(
         closestPaint.K, closestPaint.S, R0_test,
-        AssumedAvgThickness * _brushPtr->getThicknessScale());
+        AssumedAvgThickness * _renderThread.getBrushThicknessScale());
 
       vec3 Lab1;
       converter.rgb2lab(R1, Lab1);
@@ -219,10 +221,10 @@ auto PictureTargetSbrPainter::findBestPaintIndex(const vec3& R_target,
 
   for (size_t i = 0UL; (i < palette.size()); i++) {
     vec3 R_Lab;
-    con.rgb2lab(
-      ComputeReflectance(palette[i].K, palette[i].S, R0,
-                         AssumedAvgThickness * _brushPtr->getThicknessScale()),
-      R_Lab);
+    con.rgb2lab(ComputeReflectance(
+                  palette[i].K, palette[i].S, R0,
+                  AssumedAvgThickness * _renderThread.getBrushThicknessScale()),
+                R_Lab);
 
     const auto ld = (R_Lab - R_target_Lab).squaredNorm();
     if (ld < d) {
@@ -258,7 +260,7 @@ auto PictureTargetSbrPainter::computeDifference(const Mat3d& target_Lab,
   return difference;
 }
 
-auto PictureTargetSbrPainter::paint() -> bool {
+auto PictureTargetSbrPainter::paint() -> Mat3d {
   if (_paramsInput.inputSRGB.empty()) {
     throw std::runtime_error("_paramsInput.inputSRGB.empty()");
   }
@@ -302,7 +304,7 @@ auto PictureTargetSbrPainter::paint() -> bool {
     std::cout << "Switching to brush size: " << brushSize << std::endl;
     const double brushRadius = brushSize / 2.0;
 
-    _brushPtr->setThicknessScale(_paramsStroke.thicknessScale);
+    _renderThread.setBrushThicknessScale(_paramsStroke.thicknessScale);
 
     std::cout << "Computing structure tensor field" << std::endl;
     // compute structure tensor field
@@ -328,7 +330,9 @@ auto PictureTargetSbrPainter::paint() -> bool {
                                          _paramsStroke.brushSizes.size()));
 
       std::cout << "Getting current state of the canvas" << std::endl;
-      const auto canvasCurrentRGBLinear = Renderer<vec3>().compose(*_canvasPtr);
+
+      const Mat3d canvasCurrentRGBLinear =
+        _renderThread.getLinearRgbImage().get();
       painty::io::imSave("/tmp/canvasCurrent.jpg", canvasCurrentRGBLinear,
                          true);
       const auto canvasCurrentLab = ScaledMat(
@@ -348,16 +352,16 @@ auto PictureTargetSbrPainter::paint() -> bool {
 
       // discard already close enough regions
       if (checkConvergence(difference, regions, labels, epsFac)) {
-        return true;
+        return _renderThread.getLinearRgbImage().get();
       }
 
       auto brushStrokeMap = generateBrushStrokes(
         regions, target_Lab, canvasCurrentLab, difference, brushRadius, palette,
         labels, _paramsInput.mask, tensors);
       std::cout << "Rendering strokes" << std::endl;
-      const auto xs = static_cast<double>(_canvasPtr->getR0().cols) /
+      const auto xs = static_cast<double>(_renderThread.getSize().width) /
                       static_cast<double>(target_Lab.cols);
-      const auto ys = static_cast<double>(_canvasPtr->getR0().rows) /
+      const auto ys = static_cast<double>(_renderThread.getSize().height) /
                       static_cast<double>(target_Lab.rows);
       for (auto& element : brushStrokeMap) {
         const auto paint = palette[element.first];
@@ -367,33 +371,30 @@ auto PictureTargetSbrPainter::paint() -> bool {
             vertex[0U] *= xs;
             vertex[1U] *= ys;
           }
-          _brushPtr->dip({brushStroke.paint.K, brushStroke.paint.S});
-          _brushPtr->setRadius(((xs + ys) * 0.5) * brushStroke.radius);
-          // std::cout << "brush path length: " << brushStroke.path.size()
-          //           << std::endl;
-          _brushPtr->paintStroke(brushStroke.path, *_canvasPtr);
+          _renderThread.render(brushStroke.path,
+                               ((xs + ys) * 0.5) * brushStroke.radius,
+                               {brushStroke.paint.K, brushStroke.paint.S});
         }
       }
     }
 
     future.wait();
   }
+  _renderThread.dryCanvas().wait();
 
-  return true;
+  return _renderThread.getLinearRgbImage().get();
 }
 
 void PictureTargetSbrPainter::paintCoatCanvas(const PaintCoeff& paint) {
-  const auto step = static_cast<double>(_canvasPtr->get_h().rows) / 10.0;
+  const auto step = static_cast<double>(_renderThread.getSize().height) / 10.0;
 
-  _brushPtr->dip({paint.K, paint.S});
-  _brushPtr->setRadius(step * 0.8);
-
-  for (auto u = step * 0.5; u < static_cast<double>(_canvasPtr->get_h().rows);
-       u += step) {
+  for (auto u = step * 0.5;
+       u < static_cast<double>(_renderThread.getSize().height); u += step) {
     std::vector<vec2> path = {
       {-2.0 * step, u},
-      {static_cast<double>(_canvasPtr->get_h().cols) + 2.0 * step, u}};
-    _brushPtr->paintStroke(path, *_canvasPtr);
+      {static_cast<double>(_renderThread.getSize().width) + 2.0 * step, u}};
+
+    _renderThread.render(path, step * 0.8, {paint.K, paint.S});
   }
 }
 

@@ -38,10 +38,18 @@ if(NOT json_POPULATED)
   add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
+FetchContent_Declare(
+  prgl
+  GIT_REPOSITORY https://github.com/lindemeier/prgl.git
+  GIT_TAG        develop
+)
+FetchContent_MakeAvailable(prgl)
+
 
 # modules
 add_subdirectory(painty/core)
 add_subdirectory(painty/image)
+add_subdirectory(painty/gpu)
 add_subdirectory(painty/io)
 add_subdirectory(painty/mixer)
 add_subdirectory(painty/renderer)
