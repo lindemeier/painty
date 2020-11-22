@@ -9,8 +9,8 @@
 
 #include <atomic>
 #include <chrono>
-#include <future>
 #include <functional>
+#include <future>
 
 namespace painty {
 /**

@@ -25,7 +25,6 @@ const auto gpuQueue = std::make_shared<painty::GpuTaskQueue>(windowSize);
 
 TEST(SbrRenderThreadTest, Construct) {
   painty::SbrRenderThread renderThread(gpuQueue, windowSize);
-
 }
 
 TEST(SbrRenderThreadTest, Smudge) {

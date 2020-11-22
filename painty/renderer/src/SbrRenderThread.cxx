@@ -9,11 +9,10 @@
 
 painty::SbrRenderThread::SbrRenderThread(
   const std::shared_ptr<GpuTaskQueue>& gpuTaskQueue, const Size& canvasSize)
-    :       _brushPtr(nullptr),
+    : _brushPtr(nullptr),
       _canvasPtr(nullptr),
       _canvasSize(canvasSize),
       _gpuTaskQueue(gpuTaskQueue) {
-
   _brushPtr = _gpuTaskQueue
                 ->add_task([]() -> std::unique_ptr<TextureBrushGpu> {
                   return std::make_unique<TextureBrushGpu>();

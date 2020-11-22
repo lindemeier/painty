@@ -46,9 +46,9 @@ class TextureBrushGpu final : public BrushBase<vec3> {
 
   std::shared_ptr<prgl::GlslRenderingPipelineProgram> _shaderWarp = nullptr;
 
-  std::shared_ptr<prgl::GlslComputeShader> _shaderImprint         = nullptr;
+  std::shared_ptr<prgl::GlslComputeShader> _shaderImprint = nullptr;
 
-  std::shared_ptr<prgl::Texture2d> _warpedBrushTexture            = nullptr;
+  std::shared_ptr<prgl::Texture2d> _warpedBrushTexture = nullptr;
 
   std::shared_ptr<prgl::FrameBufferObject> _warpedBrushTextureFbo = nullptr;
 

@@ -22,7 +22,6 @@ void Timer::stop() {
   if (_future.valid()) {
     _future.wait();
   }
-
 }
 
 }  // namespace painty
